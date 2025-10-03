@@ -18,7 +18,11 @@
 
     <modules>
         <module>location-service</module>
+        <module>geofence-service</module>
+        <module>map-service</module>
         <module>auth-service</module>
+        <module>user-service</module>
+        <module>notification-service</module>
     </modules>
   <dependencyManagement>
     <dependencies>
