@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
+import java.util.Set;
+
 @RestController
 @AllArgsConstructor
 public class PublishController {
@@ -16,9 +18,9 @@ public class PublishController {
     private final PublishService publishService;
 
     @PostMapping("/")
-    public Mono<ResponseEntity<Void>> publish(@Valid @RequestBody PublishLocationRequest request) {
-        publishService.publish(request);
-        return Mono.just(ResponseEntity.ok().build());
+    public Mono<ResponseEntity<Void>> publish(@Valid @RequestBody Set<PublishLocationRequest> requests) {
+        publishService.publish(requests);
+        return Mono.just(ResponseEntity.ok().build()); //TODO: evaluate async return of record ids
     }
 
 }

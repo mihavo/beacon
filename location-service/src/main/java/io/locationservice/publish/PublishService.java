@@ -8,9 +8,10 @@ import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.util.Map;
+import java.util.Set;
 
 @Service
 @AllArgsConstructor
@@ -18,15 +19,17 @@ public class PublishService {
 
     private final ReactiveRedisTemplate<String, Object> redisTemplate;
 
-    public Mono<RecordId> publish(PublishLocationRequest input) {
-        String recordKey = CacheUtils.buildLocationRecordKey(input.userId());
-        RecordId recordId = CacheUtils.buildLocationRecordId(input.capturedAt());
-        Map<String, Double> fields = Map.of("lat", input.coords().latitude(), "lon", input.coords().longitude());
-        MapRecord<String, String, Double> record = StreamRecords.newRecord()
-                .in(recordKey)
-                .withId(recordId)
-                .ofMap(fields);
-        return redisTemplate.opsForStream().add(record);
+    public Flux<RecordId> publish(Set<PublishLocationRequest> input) {
+        return Flux.fromIterable(input).flatMap(request -> {
+            String recordKey = CacheUtils.buildLocationRecordKey(request.userId());
+            RecordId recordId = CacheUtils.buildLocationRecordId(request.capturedAt());
+            Map<String, Double> fields = Map.of("lat", request.coords().latitude(), "lon", request.coords().longitude());
+            MapRecord<String, String, Double> record = StreamRecords.newRecord()
+                    .in(recordKey)
+                    .withId(recordId)
+                    .ofMap(fields);
+            return redisTemplate.opsForStream().add(record);
+        });
     }
 
 }
