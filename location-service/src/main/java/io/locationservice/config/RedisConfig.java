@@ -13,7 +13,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 public class RedisConfig {
 
     @Bean
-    public ReactiveRedisConnectionFactory redisConnectionFactory() {
+    public ReactiveRedisConnectionFactory connectionFactory() {
         return new LettuceConnectionFactory();
     }
 
