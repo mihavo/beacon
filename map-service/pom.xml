@@ -105,6 +105,9 @@
                         <goals>
                             <goal>generate</goal>
                         </goals>
+                        <configuration>
+                            <failOnMissingSources>false</failOnMissingSources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
