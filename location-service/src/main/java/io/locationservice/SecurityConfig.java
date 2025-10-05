@@ -13,7 +13,7 @@ public class SecurityConfig {
   @Bean
   public SecurityWebFilterChain filterChain(ServerHttpSecurity http) throws Exception {
     return http.authorizeExchange(exchanges -> exchanges
-            .anyExchange().permitAll())
+                    .anyExchange().permitAll()).csrf(ServerHttpSecurity.CsrfSpec::disable)
         .build();
   }
 }
