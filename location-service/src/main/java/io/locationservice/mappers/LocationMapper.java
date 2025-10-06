@@ -14,7 +14,8 @@ public final class LocationMapper {
     String streamId = Objects.requireNonNull(locationRecord.getStream());
     return Location.builder().userId(CacheUtils.extractUserId(streamId))
         .instant(CacheUtils.extractCapturedAtTimestamp(locationRecord.getId().getValue()))
-        .coords(new Coordinates((Double) values.get("lat"), (Double) values.get("lon"))).build();
+        .coords(new Coordinates(Double.valueOf(values.get("lat").toString()),
+            Double.valueOf(values.get("lon").toString()))).build();
   }
 
 }
