@@ -21,7 +21,7 @@ public class PublishService {
     public Flux<RecordId> publish(Set<PublishLocationRequest> input) {
         return Flux.fromIterable(input).flatMap(request -> {
           String streamKey = CacheUtils.buildLocationStreamKey(request.userId());
-            RecordId recordId = CacheUtils.buildLocationRecordId(request.capturedAt());
+          RecordId recordId = CacheUtils.buildLocationRecordId(request.capturedAt());
             Map<String, Double> fields = Map.of("lat", request.coords().latitude(), "lon", request.coords().longitude());
             MapRecord<String, String, Double> record = StreamRecords.newRecord()
                 .in(streamKey)
