@@ -1,19 +1,28 @@
 package io.locationservice.utils;
 
-import lombok.experimental.UtilityClass;
-import org.springframework.data.redis.connection.stream.RecordId;
-
 import java.time.Instant;
 import java.util.UUID;
+import lombok.experimental.UtilityClass;
+import org.springframework.data.redis.connection.stream.RecordId;
 
 @UtilityClass
 public class CacheUtils {
 
-    public String buildLocationRecordKey(UUID userId) {
+    public String buildLocationStreamKey(UUID userId) {
         return String.format("locations:%s", userId);
     }
 
     public RecordId buildLocationRecordId(Instant timestamp) {
         return RecordId.of(timestamp.toEpochMilli(), timestamp.getNano() / 1000);
+    }
+
+    public UUID extractUserId(String recordKey) {
+        return UUID.fromString(recordKey.substring("locations:".length()));
+    }
+
+    public Instant extractCapturedAtTimestamp(String recordId) {
+        long millis = Long.parseLong(recordId.split("-")[0]);
+        long nanos = Long.parseLong(recordId.split("-")[1]);
+        return Instant.ofEpochMilli(millis).plusNanos(nanos);
     }
 }

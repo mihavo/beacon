@@ -1,13 +1,14 @@
 package io.locationservice.entity;
 
 import io.locationservice.model.Coordinates;
-import lombok.AllArgsConstructor;
-import lombok.Value;
-
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Value;
 
 @AllArgsConstructor
+@Builder
 @Value
 public class Location {
     UUID userId;
