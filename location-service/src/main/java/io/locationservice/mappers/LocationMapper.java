@@ -9,8 +9,8 @@ import org.springframework.data.redis.connection.stream.MapRecord;
 
 public final class LocationMapper {
 
-  public static Location toLocation(MapRecord<String, Object, Object> locationRecord) {
-    Map<Object, Object> values = locationRecord.getValue();
+  public static Location toLocation(MapRecord<String, String, Object> locationRecord) {
+    Map<String, Object> values = locationRecord.getValue();
     String streamId = Objects.requireNonNull(locationRecord.getStream());
     return Location.builder().userId(CacheUtils.extractUserId(streamId))
         .instant(CacheUtils.extractCapturedAtTimestamp(locationRecord.getId().getValue()))

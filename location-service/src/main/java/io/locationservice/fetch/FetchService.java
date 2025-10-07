@@ -21,7 +21,7 @@ public class FetchService {
 
   public Flux<Location> fetchRecent(UUID userId) {
     String key = CacheUtils.buildLocationStreamKey(userId);
-    return redisTemplate.opsForStream()
+    return redisTemplate.<String, Object>opsForStream()
         .reverseRange(key, Range.unbounded(), Limit.limit().count(RECENTS_COUNT)).map(
             LocationMapper::toLocation);
   }

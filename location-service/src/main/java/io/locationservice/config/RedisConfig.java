@@ -1,12 +1,17 @@
 package io.locationservice.config;
 
+import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
+import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.data.redis.serializer.RedisSerializationContext.SerializationPair;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.data.redis.stream.StreamReceiver;
+import org.springframework.data.redis.stream.StreamReceiver.StreamReceiverOptions;
 
 @Configuration
 public class RedisConfig {
@@ -19,4 +24,19 @@ public class RedisConfig {
         RedisSerializationContext<String, Object> context = builder.value(valueSerializer).build();
         return new ReactiveRedisTemplate<>(factory, context);
     }
+
+  @Bean
+  public StreamReceiver<String, MapRecord<String, String, Object>> locationStreamReceiver(
+      ReactiveRedisConnectionFactory factory) {
+    StreamReceiverOptions<String, MapRecord<String, String, Object>> options = StreamReceiverOptions.builder()
+        .pollTimeout(Duration.ofMillis(100))
+        .hashValueSerializer(
+            SerializationPair.fromSerializer(new Jackson2JsonRedisSerializer<>(Object.class)))
+        .hashKeySerializer(SerializationPair.fromSerializer(new StringRedisSerializer()))
+        .build();
+
+    return StreamReceiver.create(factory, options);
+  }
+
+
 }
