@@ -15,7 +15,6 @@ import org.springframework.data.neo4j.core.schema.Node;
 import org.springframework.data.neo4j.core.schema.Property;
 import org.springframework.data.neo4j.core.schema.Relationship;
 import org.springframework.data.neo4j.core.schema.Relationship.Direction;
-import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 
 @Node("User")
 @Getter
@@ -25,7 +24,7 @@ import org.springframework.data.neo4j.core.support.UUIDStringGenerator;
 public class User {
 
   @Id
-  @GeneratedValue(UUIDStringGenerator.class)
+  @GeneratedValue
   private UUID id;
 
   @Property("username")

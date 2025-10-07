@@ -3,6 +3,7 @@ package io.beacon.userservice.controller;
 import io.beacon.userservice.dto.UserRequest;
 import io.beacon.userservice.dto.UserResponse;
 import io.beacon.userservice.service.UserService;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,7 @@ public class UserController {
   }
 
   @PostMapping("/")
-  public Mono<ResponseEntity<UserResponse>> createUser(@RequestBody UserRequest request) {
+  public Mono<ResponseEntity<UserResponse>> createUser(@Valid @RequestBody UserRequest request) {
     Mono<UserResponse> user = userService.createUser(request);
     return user.map((response) -> new ResponseEntity<>(response, HttpStatus.CREATED));
   }
