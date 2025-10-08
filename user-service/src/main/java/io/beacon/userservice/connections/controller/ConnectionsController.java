@@ -1,5 +1,7 @@
 package io.beacon.userservice.connections.controller;
 
+import io.beacon.userservice.connections.dto.AcceptRequest;
+import io.beacon.userservice.connections.dto.AcceptResponse;
 import io.beacon.userservice.connections.dto.ConnectRequest;
 import io.beacon.userservice.connections.dto.ConnectResponse;
 import io.beacon.userservice.connections.service.ConnectionsService;
@@ -28,5 +30,11 @@ public class ConnectionsController {
     return connectionsService.connect(targetUserId, request.userId())
         .map(response -> ResponseEntity.status(
         HttpStatus.CREATED).body(response));
+  }
+
+  @PostMapping("/accept")
+  public Mono<ResponseEntity<AcceptResponse>> accept(@RequestBody AcceptRequest request) {
+    return connectionsService.accept(request.targetUserId(), request.userId())
+        .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
   }
 }
