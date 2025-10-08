@@ -1,5 +1,6 @@
 package io.beacon.userservice.connections.controller;
 
+import io.beacon.userservice.connections.dto.ConnectRequest;
 import io.beacon.userservice.connections.dto.ConnectResponse;
 import io.beacon.userservice.connections.service.ConnectionsService;
 import java.util.UUID;
@@ -20,11 +21,12 @@ public class ConnectionsController {
 
   private final ConnectionsService connectionsService;
 
-  @PostMapping("/{targetUserId}")
+  @PostMapping("/{targetUserId}/connect")
   public Mono<ResponseEntity<ConnectResponse>> connect(@PathVariable UUID targetUserId,
-      @RequestBody UUID userId) {
+      @RequestBody ConnectRequest request) {
     //TODO: remove user id from request body and get it from security contextHolder
-    return connectionsService.connect(targetUserId, userId).map(response -> ResponseEntity.status(
+    return connectionsService.connect(targetUserId, request.userId())
+        .map(response -> ResponseEntity.status(
         HttpStatus.CREATED).body(response));
   }
 }
