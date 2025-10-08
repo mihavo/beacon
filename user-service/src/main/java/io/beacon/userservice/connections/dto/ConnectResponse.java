@@ -1,5 +1,7 @@
 package io.beacon.userservice.connections.dto;
 
-public record ConnectResponse() {
+import java.time.Instant;
+
+public record ConnectResponse(String message, Instant timestamp) {
 
 }

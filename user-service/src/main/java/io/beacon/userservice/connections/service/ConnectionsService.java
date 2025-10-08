@@ -5,6 +5,7 @@ import io.beacon.userservice.exceptions.AlreadyFriendsException;
 import io.beacon.userservice.exceptions.ConnectionRequestExistsException;
 import io.beacon.userservice.exceptions.UserNotFoundException;
 import io.beacon.userservice.user.repository.UserRepository;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,10 +25,11 @@ public class ConnectionsService {
 
     return userRepository.findById(targetUserId).switchIfEmpty(
             Mono.error(new UserNotFoundException("User with id " + userId + " not found.")))
-        .flatMap(user -> performRequestValidations(userId, targetUserId)).flatMap(
-            valid -> userRepository.sendFriendRequest(userId, targetUserId).flatMap(
-                created -> created ? Mono.empty()
-                    : Mono.error(new IllegalStateException("Failed to send connection request."))));
+        .flatMap(user -> performRequestValidations(userId, targetUserId))
+        .then(Mono.defer(() -> userRepository.sendFriendRequest(userId, targetUserId).flatMap(
+            created -> created ? Mono.just(
+                new ConnectResponse("Connect request sent!", Instant.now()))
+                : Mono.error(new IllegalStateException("Failed to send connection request.")))));
   }
 
   private Mono<Void> performRequestValidations(UUID userId, UUID targetUserId) {

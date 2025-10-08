@@ -4,6 +4,7 @@ import io.beacon.userservice.connections.dto.ConnectResponse;
 import io.beacon.userservice.connections.service.ConnectionsService;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,6 +24,7 @@ public class ConnectionsController {
   public Mono<ResponseEntity<ConnectResponse>> connect(@PathVariable UUID targetUserId,
       @RequestBody UUID userId) {
     //TODO: remove user id from request body and get it from security contextHolder
-    connectionsService.connect(targetUserId, userId);
+    return connectionsService.connect(targetUserId, userId).map(response -> ResponseEntity.status(
+        HttpStatus.CREATED).body(response));
   }
 }
