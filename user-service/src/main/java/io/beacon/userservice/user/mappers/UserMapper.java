@@ -1,7 +1,7 @@
-package io.beacon.userservice.mappers;
+package io.beacon.userservice.user.mappers;
 
-import io.beacon.userservice.dto.UserResponse;
-import io.beacon.userservice.entity.User;
+import io.beacon.userservice.user.dto.UserResponse;
+import io.beacon.userservice.user.entity.User;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel = "spring")

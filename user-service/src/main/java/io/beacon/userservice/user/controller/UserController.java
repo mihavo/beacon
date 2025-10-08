@@ -1,8 +1,8 @@
-package io.beacon.userservice.controller;
+package io.beacon.userservice.user.controller;
 
-import io.beacon.userservice.dto.UserRequest;
-import io.beacon.userservice.dto.UserResponse;
-import io.beacon.userservice.service.UserService;
+import io.beacon.userservice.user.dto.UserRequest;
+import io.beacon.userservice.user.dto.UserResponse;
+import io.beacon.userservice.user.service.UserService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

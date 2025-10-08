@@ -1,4 +1,4 @@
-package io.beacon.userservice.model;
+package io.beacon.userservice.user.model;
 
 public final class RelationshipTypes {
 

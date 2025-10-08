@@ -1,6 +1,6 @@
-package io.beacon.userservice.entity;
+package io.beacon.userservice.user.entity;
 
-import io.beacon.userservice.model.RelationshipTypes;
+import io.beacon.userservice.user.model.RelationshipTypes;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;

@@ -1,11 +1,11 @@
-package io.beacon.userservice.service;
+package io.beacon.userservice.user.service;
 
-import io.beacon.userservice.dto.UserRequest;
-import io.beacon.userservice.dto.UserResponse;
-import io.beacon.userservice.entity.User;
 import io.beacon.userservice.exceptions.UserNotFoundException;
-import io.beacon.userservice.mappers.UserMapper;
-import io.beacon.userservice.repository.UsersRepository;
+import io.beacon.userservice.user.dto.UserRequest;
+import io.beacon.userservice.user.dto.UserResponse;
+import io.beacon.userservice.user.entity.User;
+import io.beacon.userservice.user.mappers.UserMapper;
+import io.beacon.userservice.user.repository.UserRepository;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,24 +19,24 @@ public class UserService {
 
   private final UserMapper userMapper;
 
-  private final UsersRepository usersRepository;
+  private final UserRepository userRepository;
 
   public Mono<UserResponse> getUser(UUID userId) {
-    return usersRepository.findById(userId).map(userMapper::toUserResponse);
+    return userRepository.findById(userId).map(userMapper::toUserResponse);
   }
 
   public Mono<UserResponse> createUser(UserRequest request) {
     User user = User.builder().username(request.username()).fullName(request.fullName()).build();
-    return usersRepository.save(user).map(userMapper::toUserResponse);
+    return userRepository.save(user).map(userMapper::toUserResponse);
   }
 
   public Mono<Void> deleteUser(UUID userId) {
-    return usersRepository.existsById(userId)
+    return userRepository.existsById(userId)
         .flatMap(exists -> {
           if (!exists) {
             return Mono.error(new UserNotFoundException("User with id " + userId + " not found"));
           }
-          return usersRepository.deleteById(userId);
+          return userRepository.deleteById(userId);
         });
   }
 }

@@ -1,4 +1,4 @@
-package io.beacon.userservice.dto;
+package io.beacon.userservice.user.dto;
 
 import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.Length;
