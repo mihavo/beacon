@@ -7,6 +7,4 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UsersRepository extends ReactiveNeo4jRepository<User, UUID> {
-
-  UUID id(UUID id);
 }

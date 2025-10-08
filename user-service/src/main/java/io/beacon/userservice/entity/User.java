@@ -2,13 +2,13 @@ package io.beacon.userservice.entity;
 
 import io.beacon.userservice.model.RelationshipTypes;
 import java.time.Instant;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
 import org.springframework.data.neo4j.core.schema.Id;
 import org.springframework.data.neo4j.core.schema.Node;
@@ -34,16 +34,17 @@ public class User {
   private String fullName;
 
   @Property("createdAt")
-  private final Instant createdAt = Instant.now();
+  @CreatedDate
+  private Instant createdAt;
 
   @Relationship(type = RelationshipTypes.SENT_REQUEST, direction = Direction.OUTGOING)
-  private final Set<User> outgoingRequests = new HashSet<>();
+  private Set<User> outgoingRequests;
 
   @Relationship(type = RelationshipTypes.SENT_REQUEST, direction = Direction.INCOMING)
-  private final Set<User> incomingRequests = new HashSet<>();
+  private Set<User> incomingRequests;
 
   @Relationship(type = RelationshipTypes.FRIENDS_WITH, direction = Direction.OUTGOING)
-  private final Set<User> friends = new HashSet<>();
+  private Set<User> friends;
 
 
 }
