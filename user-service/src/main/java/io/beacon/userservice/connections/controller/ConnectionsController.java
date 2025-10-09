@@ -4,11 +4,14 @@ import io.beacon.userservice.connections.dto.AcceptRequest;
 import io.beacon.userservice.connections.dto.AcceptResponse;
 import io.beacon.userservice.connections.dto.ConnectRequest;
 import io.beacon.userservice.connections.dto.ConnectResponse;
+import io.beacon.userservice.connections.dto.DeclineRequest;
+import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.connections.service.ConnectionsService;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,5 +39,11 @@ public class ConnectionsController {
   public Mono<ResponseEntity<AcceptResponse>> accept(@RequestBody AcceptRequest request) {
     return connectionsService.accept(request.targetUserId(), request.userId())
         .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
+  }
+
+  @DeleteMapping("/decline")
+  public Mono<ResponseEntity<DeclineResponse>> decline(@RequestBody DeclineRequest request) {
+    return connectionsService.decline(request.targetUserId(), request.userId())
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 }

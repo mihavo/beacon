@@ -2,6 +2,7 @@ package io.beacon.userservice.connections.service;
 
 import io.beacon.userservice.connections.dto.AcceptResponse;
 import io.beacon.userservice.connections.dto.ConnectResponse;
+import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.exceptions.AlreadyFriendsException;
 import io.beacon.userservice.exceptions.ConnectionRequestExistsException;
 import io.beacon.userservice.exceptions.ConnectionRequestNotExistsException;
@@ -42,6 +43,31 @@ public class ConnectionsService {
                 created -> created ? Mono.just(
                     new AcceptResponse("You are now connected with user: " + targetUserId + "!"))
                     : Mono.error(new IllegalArgumentException("Failed to accept request")))));
+  }
+
+  public Mono<DeclineResponse> decline(UUID targetUserId, UUID userId) {
+    return isSameUser(targetUserId, userId).then(
+            Mono.defer(() -> checkUserExistence(targetUserId, userId)))
+        .flatMap(user -> performDeclineRequestValidations(userId, targetUserId))
+        .then(Mono.defer(() -> userRepository.deleteRequest(userId, targetUserId))).flatMap(
+            deleted -> deleted ? Mono.empty()
+                : Mono.error(new IllegalArgumentException("Could not delete connection request")));
+  }
+
+  private Mono<Void> performDeclineRequestValidations(UUID userId, UUID targetUserId) {
+    return Mono.zip(
+        userRepository.areFriends(userId, targetUserId),
+        userRepository.hasPendingRequest(userId, targetUserId)
+    ).flatMap(validationResults -> {
+      Boolean areFriends = validationResults.getT1();
+      Boolean hasPendingRequest = validationResults.getT2();
+
+      if (areFriends || !hasPendingRequest) {
+        return Mono.error(new ConnectionRequestNotExistsException(
+            "There is no existing connection request with user: " + targetUserId));
+      }
+      return Mono.empty();
+    });
   }
 
   private Mono<Void> performConnectRequestValidations(UUID userId, UUID targetUserId) {

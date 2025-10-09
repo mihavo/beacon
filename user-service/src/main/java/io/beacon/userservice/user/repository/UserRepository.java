@@ -42,11 +42,11 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
   Mono<Boolean> acceptFriendRequest(UUID senderId, UUID receiverId);
 
   @Query("""
-      MATCH (a:User {id: $userId}) - [r:SENT_REQUEST] -> (b:User {id: $targetId})
+      MATCH (a:User {id: $initiatorUserId}) - [r:SENT_REQUEST] -> (b:User {id: $selfUserId})
       DELETE r
       RETURN COUNT(r) > 0
       """)
-  Mono<Boolean> deleteRequest(UUID userId, UUID targetId);
+  Mono<Boolean> deleteRequest(UUID selfUserId, UUID initiatorUserId);
 
   @Query("""
       MATCH (a:User {id: $userId}) - [r:FRIENDS_WITH] - (b:User {id: $targetId})
