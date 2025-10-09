@@ -26,7 +26,7 @@ public class UserService {
   }
 
   public Mono<UserResponse> createUser(UserRequest request) {
-    User user = User.builder().username(request.username()).fullName(request.fullName()).build();
+    User user = new User(request.username(), (request.fullName()));
     return userRepository.save(user).map(userMapper::toUserResponse);
   }
 

@@ -4,9 +4,8 @@ import io.beacon.userservice.user.model.RelationshipTypes;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.neo4j.core.schema.GeneratedValue;
@@ -19,8 +18,7 @@ import org.springframework.data.neo4j.core.schema.Relationship.Direction;
 @Node("User")
 @Getter
 @Setter
-@Builder
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class User {
 
   @Id
@@ -28,10 +26,10 @@ public class User {
   private UUID id;
 
   @Property("username")
-  private String username;
+  private final String username;
 
   @Property("fullName")
-  private String fullName;
+  private final String fullName;
 
   @Property("createdAt")
   @CreatedDate
@@ -42,9 +40,4 @@ public class User {
 
   @Relationship(type = RelationshipTypes.SENT_REQUEST, direction = Direction.INCOMING)
   private Set<User> incomingRequests;
-
-  @Relationship(type = RelationshipTypes.FRIENDS_WITH, direction = Direction.OUTGOING)
-  private Set<User> friends;
-
-
 }
