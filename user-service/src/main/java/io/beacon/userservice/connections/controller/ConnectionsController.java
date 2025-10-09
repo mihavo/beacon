@@ -6,6 +6,8 @@ import io.beacon.userservice.connections.dto.ConnectRequest;
 import io.beacon.userservice.connections.dto.ConnectResponse;
 import io.beacon.userservice.connections.dto.DeclineRequest;
 import io.beacon.userservice.connections.dto.DeclineResponse;
+import io.beacon.userservice.connections.dto.RemoveConnectionRequest;
+import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
 import io.beacon.userservice.connections.service.ConnectionsService;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -26,7 +28,7 @@ public class ConnectionsController {
 
   private final ConnectionsService connectionsService;
 
-  @PostMapping("/{targetUserId}/connect")
+  @PostMapping("/{targetUserId}")
   public Mono<ResponseEntity<ConnectResponse>> connect(@PathVariable UUID targetUserId,
       @RequestBody ConnectRequest request) {
     //TODO: remove user id from request body and get it from security contextHolder
@@ -44,6 +46,13 @@ public class ConnectionsController {
   @DeleteMapping("/decline")
   public Mono<ResponseEntity<DeclineResponse>> decline(@RequestBody DeclineRequest request) {
     return connectionsService.decline(request.targetUserId(), request.userId())
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
+
+  @DeleteMapping("/{targetUserId}")
+  public Mono<ResponseEntity<RemoveConnectionResponse>> remove(@PathVariable UUID targetUserId,
+      @RequestBody RemoveConnectionRequest request) {
+    return connectionsService.remove(targetUserId, request.userId())
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 }

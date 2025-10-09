@@ -12,7 +12,7 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
 
   @Query("""
       MATCH (a: User {id : $userId}) - [r:FRIENDS_WITH] -  (b: User { id: $targetId } )
-      RETURN COUNT(r) > 0 
+      RETURN COUNT(r) > 0;
       """)
   Mono<Boolean> areFriends(UUID userId, UUID targetId);
 
