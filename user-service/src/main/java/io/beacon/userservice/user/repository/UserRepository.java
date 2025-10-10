@@ -85,4 +85,16 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
   Flux<UserInfo> getConnections(UUID userId);
 
 
+  @Query("""
+      MATCH (a:User {id: $userId})-[r:FRIENDS_WITH]-(b:User)
+      RETURN
+      b.fullName AS fullName,
+       b.username as username,
+      type(r) AS status,
+       r.since AS lastConnectionTimestamp
+      ORDER BY lastConnectionTimestamp DESC
+      """)
+  Flux<UserInfo> getFriends(UUID userId);
+
+
 }

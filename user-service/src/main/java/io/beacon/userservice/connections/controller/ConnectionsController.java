@@ -8,6 +8,7 @@ import io.beacon.userservice.connections.dto.ConnectionsInfo;
 import io.beacon.userservice.connections.dto.ConnectionsRequest;
 import io.beacon.userservice.connections.dto.DeclineRequest;
 import io.beacon.userservice.connections.dto.DeclineResponse;
+import io.beacon.userservice.connections.dto.FriendsRequest;
 import io.beacon.userservice.connections.dto.RemoveConnectionRequest;
 import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
 import io.beacon.userservice.connections.dto.StatusRequest;
@@ -57,6 +58,14 @@ public class ConnectionsController {
     return connectionsService.getConnections(request.userId())
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
+
+
+  @GetMapping("/friends")
+  public Mono<ResponseEntity<ConnectionsInfo>> friends(@RequestBody FriendsRequest request) {
+    return connectionsService.getFriends(request.userId())
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
+
 
   @PostMapping("/accept")
   public Mono<ResponseEntity<AcceptResponse>> accept(@RequestBody AcceptRequest request) {

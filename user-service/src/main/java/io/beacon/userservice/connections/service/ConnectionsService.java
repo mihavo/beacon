@@ -157,4 +157,8 @@ public class ConnectionsService {
   public Mono<ConnectionsInfo> getConnections(UUID userId) {
     return userRepository.getConnections(userId).collectList().map(ConnectionsInfo::new);
   }
+
+  public Mono<ConnectionsInfo> getFriends(UUID userId) {
+    return userRepository.getFriends(userId).collectList().map(ConnectionsInfo::new);
+  }
 }
