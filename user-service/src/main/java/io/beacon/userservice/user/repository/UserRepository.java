@@ -1,6 +1,7 @@
 package io.beacon.userservice.user.repository;
 
 import io.beacon.userservice.user.entity.User;
+import io.beacon.userservice.user.model.RelationshipTypes;
 import java.util.UUID;
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -15,6 +16,18 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
       RETURN COUNT(r) > 0;
       """)
   Mono<Boolean> areFriends(UUID userId, UUID targetId);
+
+  @Query("""
+      MATCH (a:User {id: $selfId}), (b:User {id: $targetId})
+      RETURN
+        CASE
+          WHEN EXISTS((a)-[:FRIENDS_WITH]-(b)) THEN \""" + RelationshipTypes.FRIENDS_WITH + \"""
+      WHEN EXISTS((a)-[:SENT_REQUEST]->(b)) THEN \""" + RelationshipTypes.SENT_REQUEST + \"""
+      WHEN EXISTS((b)-[:SENT_REQUEST]->(a)) THEN \""" + RelationshipTypes.RECEIVED_REQUEST + \"""
+      ELSE \""" + RelationshipTypes.NONE + \"""
+        END AS relationshipType
+      """)
+  Mono<RelationshipTypes> getRelationshipType(UUID selfId, UUID targetId);
 
 
   @Query("""

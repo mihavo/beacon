@@ -8,6 +8,8 @@ import io.beacon.userservice.connections.dto.DeclineRequest;
 import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.connections.dto.RemoveConnectionRequest;
 import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
+import io.beacon.userservice.connections.dto.StatusRequest;
+import io.beacon.userservice.connections.dto.UserStatusInfo;
 import io.beacon.userservice.connections.service.ConnectionsService;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -38,7 +40,13 @@ public class ConnectionsController {
         HttpStatus.CREATED).body(response));
   }
 
-  @GetMapping("")
+  @GetMapping("/{targetUserId}/status")
+  public Mono<ResponseEntity<UserStatusInfo>> status(@PathVariable UUID targetUserId,
+      @RequestBody StatusRequest request) {
+    //TODO: remove user id from request body and get it from security contextHolder
+    return connectionsService.getStatus(targetUserId, request.userId())
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
 
   @PostMapping("/accept")
   public Mono<ResponseEntity<AcceptResponse>> accept(@RequestBody AcceptRequest request) {
