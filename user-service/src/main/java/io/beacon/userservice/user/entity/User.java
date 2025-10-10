@@ -1,6 +1,6 @@
 package io.beacon.userservice.user.entity;
 
-import io.beacon.userservice.user.model.RelationshipTypes;
+import io.beacon.userservice.user.model.ConnectionType;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
@@ -35,9 +35,9 @@ public class User {
   @CreatedDate
   private Instant createdAt;
 
-  @Relationship(type = RelationshipTypes.SENT_REQUEST, direction = Direction.OUTGOING)
+  @Relationship(type = ConnectionType.SENT_REQUEST, direction = Direction.OUTGOING)
   private Set<SentRequest> outgoingRequests;
 
-  @Relationship(type = RelationshipTypes.SENT_REQUEST, direction = Direction.INCOMING)
+  @Relationship(type = ConnectionType.SENT_REQUEST, direction = Direction.INCOMING)
   private Set<SentRequest> incomingRequests;
 }

@@ -4,6 +4,8 @@ import io.beacon.userservice.connections.dto.AcceptRequest;
 import io.beacon.userservice.connections.dto.AcceptResponse;
 import io.beacon.userservice.connections.dto.ConnectRequest;
 import io.beacon.userservice.connections.dto.ConnectResponse;
+import io.beacon.userservice.connections.dto.ConnectionsInfo;
+import io.beacon.userservice.connections.dto.ConnectionsRequest;
 import io.beacon.userservice.connections.dto.DeclineRequest;
 import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.connections.dto.RemoveConnectionRequest;
@@ -48,6 +50,14 @@ public class ConnectionsController {
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
+  @GetMapping
+  public Mono<ResponseEntity<ConnectionsInfo>> connections(
+      @RequestBody ConnectionsRequest request) {
+    //TODO: remove user id from request body and get it from security contextHolder
+    return connectionsService.getConnections(request.userId())
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
+
   @PostMapping("/accept")
   public Mono<ResponseEntity<AcceptResponse>> accept(@RequestBody AcceptRequest request) {
     return connectionsService.accept(request.targetUserId(), request.userId())
@@ -63,7 +73,7 @@ public class ConnectionsController {
   @DeleteMapping("/{targetUserId}")
   public Mono<ResponseEntity<RemoveConnectionResponse>> remove(@PathVariable UUID targetUserId,
       @RequestBody RemoveConnectionRequest request) {
-    return connectionsService.remove(targetUserId, request.userId())
+    return connectionsService.removeFriend(targetUserId, request.userId())
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 }

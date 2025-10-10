@@ -2,10 +2,11 @@ package io.beacon.userservice.connections.service;
 
 import io.beacon.userservice.connections.dto.AcceptResponse;
 import io.beacon.userservice.connections.dto.ConnectResponse;
+import io.beacon.userservice.connections.dto.ConnectionsInfo;
 import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
 import io.beacon.userservice.connections.dto.UserStatusInfo;
-import io.beacon.userservice.connections.mappers.UserStatusInfoMapper;
+import io.beacon.userservice.connections.mappers.UserInfoMapper;
 import io.beacon.userservice.exceptions.AlreadyFriendsException;
 import io.beacon.userservice.exceptions.ConnectionRequestExistsException;
 import io.beacon.userservice.exceptions.ConnectionRequestNotExistsException;
@@ -23,7 +24,7 @@ import reactor.core.publisher.Mono;
 public class ConnectionsService {
 
   private final UserRepository userRepository;
-  private final UserStatusInfoMapper userStatusInfoMapper;
+  private final UserInfoMapper userInfoMapper;
 
 
   public Mono<ConnectResponse> connect(UUID targetUserId, UUID userId) {
@@ -56,16 +57,16 @@ public class ConnectionsService {
         .flatMap(user -> performDeclineRequestValidations(userId, targetUserId))
         .then(Mono.defer(() -> userRepository.deleteRequest(userId, targetUserId))).flatMap(
             deleted -> deleted ? Mono.empty()
-                : Mono.error(new IllegalArgumentException("Could not delete connection request")));
+                : Mono.error(new IllegalArgumentException("Could not decline friend request")));
   }
 
-  public Mono<RemoveConnectionResponse> remove(UUID targetUserId, UUID userId) {
+  public Mono<RemoveConnectionResponse> removeFriend(UUID targetUserId, UUID userId) {
     return isSameUser(targetUserId, userId).then(
             Mono.defer(() -> checkUserExistence(targetUserId, userId)))
         .flatMap(user -> performRemoveRequestValidations(userId, targetUserId))
         .then(Mono.defer(() -> userRepository.removeFriend(userId, targetUserId))).flatMap(
             deleted -> deleted ? Mono.empty()
-                : Mono.error(new IllegalArgumentException("Could not remove connection")));
+                : Mono.error(new IllegalArgumentException("Could not remove friend")));
   }
 
 
@@ -79,7 +80,7 @@ public class ConnectionsService {
 
       if (areFriends || !hasPendingRequest) {
         return Mono.error(new ConnectionRequestNotExistsException(
-            "There is no existing connection request with user: " + targetUserId));
+            "There is no existing friend request with user: " + targetUserId));
       }
       return Mono.empty();
     });
@@ -109,7 +110,7 @@ public class ConnectionsService {
     return userRepository.areFriends(userId, targetUserId).flatMap(areFriends -> {
       if (!areFriends) {
         return Mono.error(
-            new AlreadyFriendsException("You are not connected with user: " + userId));
+            new AlreadyFriendsException("You are not friends with user: " + userId));
       }
       return Mono.empty();
     });
@@ -153,6 +154,10 @@ public class ConnectionsService {
 
   public Mono<UserStatusInfo> getStatus(UUID targetUserId, UUID userId) {
     return userRepository.getRelationshipType(userId, targetUserId)
-        .map(userStatusInfoMapper::toUserStatusInfo);
+        .map(userInfoMapper::toUserStatusInfo);
+  }
+
+  public Mono<ConnectionsInfo> getConnections(UUID userId) {
+    return userRepository.getConnections(userId).collectList().map(ConnectionsInfo::new);
   }
 }

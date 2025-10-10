@@ -1,11 +1,13 @@
 package io.beacon.userservice.user.repository;
 
+import io.beacon.userservice.connections.dto.UserInfo;
 import io.beacon.userservice.user.entity.User;
-import io.beacon.userservice.user.model.RelationshipTypes;
+import io.beacon.userservice.user.model.ConnectionType;
 import java.util.UUID;
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
 import org.springframework.stereotype.Repository;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Repository
@@ -27,7 +29,7 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
       ELSE \""" + RelationshipTypes.NONE + \"""
         END AS relationshipType
       """)
-  Mono<RelationshipTypes> getRelationshipType(UUID selfId, UUID targetId);
+  Mono<ConnectionType> getRelationshipType(UUID selfId, UUID targetId);
 
 
   @Query("""
@@ -67,4 +69,22 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
       RETURN COUNT(r) > 0
       """)
   Mono<Boolean> removeFriend(UUID userId, UUID targetId);
+
+
+  @Query("""
+      MATCH (a:User {id: $userId})-[r:FRIENDS_WITH|SENT_REQUEST]-(b:User)
+      RETURN
+      b.firstName AS firstName,
+       b.username as username,
+             CASE 
+               WHEN type(r) = 'FRIENDS_WITH' THEN 'FRIENDS_WITH'
+               WHEN type(r) = 'SENT_REQUEST' AND startNode(r).id = $userId THEN 'SENT_REQUEST'
+               WHEN type(r) = 'SENT_REQUEST' AND endNode(r).id = $userId THEN 'RECEIVED_REQUEST'
+             END AS status,
+             coalesce(r.since, r.createdAt) AS lastConnectionTimestamp
+      ORDER BY lastConnectionTimestamp DESC
+      """)
+  Flux<UserInfo> getConnections(UUID userId);
+
+
 }
