@@ -36,8 +36,8 @@ public class User {
   private Instant createdAt;
 
   @Relationship(type = RelationshipTypes.SENT_REQUEST, direction = Direction.OUTGOING)
-  private Set<User> outgoingRequests;
+  private Set<SentRequest> outgoingRequests;
 
   @Relationship(type = RelationshipTypes.SENT_REQUEST, direction = Direction.INCOMING)
-  private Set<User> incomingRequests;
+  private Set<SentRequest> incomingRequests;
 }
