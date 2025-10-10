@@ -2,7 +2,6 @@ package io.beacon.userservice.user.repository;
 
 import io.beacon.userservice.connections.dto.UserInfo;
 import io.beacon.userservice.user.entity.User;
-import io.beacon.userservice.user.model.ConnectionType;
 import java.util.UUID;
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -20,21 +19,20 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
   Mono<Boolean> areFriends(UUID userId, UUID targetId);
 
   @Query("""
-      MATCH (a:User {id: $selfId}), (b:User {id: $targetId})
-      RETURN
-        CASE
-          WHEN EXISTS((a)-[:FRIENDS_WITH]-(b)) THEN \""" + RelationshipTypes.FRIENDS_WITH + \"""
-      WHEN EXISTS((a)-[:SENT_REQUEST]->(b)) THEN \""" + RelationshipTypes.SENT_REQUEST + \"""
-      WHEN EXISTS((b)-[:SENT_REQUEST]->(a)) THEN \""" + RelationshipTypes.RECEIVED_REQUEST + \"""
-      ELSE \""" + RelationshipTypes.NONE + \"""
-        END AS relationshipType
+          MATCH (a:User {id: $selfId}), (b:User {id: $targetId})
+          RETURN CASE 
+              WHEN EXISTS((a)-[:FRIENDS_WITH]-(b)) THEN 'FRIENDS_WITH'
+              WHEN EXISTS((a)-[:SENT_REQUEST]->(b)) THEN 'SENT_REQUEST'
+              WHEN EXISTS((b)-[:SENT_REQUEST]->(a)) THEN 'RECEIVED_REQUEST'
+              ELSE 'NONE'
+          END
       """)
-  Mono<ConnectionType> getRelationshipType(UUID selfId, UUID targetId);
+  Mono<String> getRelationshipType(UUID selfId, UUID targetId);
 
 
   @Query("""
       MATCH (a : User {id: $userId} ), (b : User {id: $targetId} )
-      OPTIONAL MATCH (a) - [r:SENT_REQUEST] - (b)
+      OPTIONAL MATCH (a) - [r:SENT_REQUEST] -> (b)
       RETURN COUNT(r) > 0
       """)
   Mono<Boolean> hasPendingRequest(UUID userId, UUID targetId);
@@ -74,7 +72,7 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
   @Query("""
       MATCH (a:User {id: $userId})-[r:FRIENDS_WITH|SENT_REQUEST]-(b:User)
       RETURN
-      b.firstName AS firstName,
+      b.fullName AS fullName,
        b.username as username,
              CASE 
                WHEN type(r) = 'FRIENDS_WITH' THEN 'FRIENDS_WITH'

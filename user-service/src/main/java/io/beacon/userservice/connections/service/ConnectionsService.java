@@ -6,7 +6,6 @@ import io.beacon.userservice.connections.dto.ConnectionsInfo;
 import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
 import io.beacon.userservice.connections.dto.UserStatusInfo;
-import io.beacon.userservice.connections.mappers.UserInfoMapper;
 import io.beacon.userservice.exceptions.AlreadyFriendsException;
 import io.beacon.userservice.exceptions.ConnectionRequestExistsException;
 import io.beacon.userservice.exceptions.ConnectionRequestNotExistsException;
@@ -24,8 +23,6 @@ import reactor.core.publisher.Mono;
 public class ConnectionsService {
 
   private final UserRepository userRepository;
-  private final UserInfoMapper userInfoMapper;
-
 
   public Mono<ConnectResponse> connect(UUID targetUserId, UUID userId) {
 
@@ -154,7 +151,7 @@ public class ConnectionsService {
 
   public Mono<UserStatusInfo> getStatus(UUID targetUserId, UUID userId) {
     return userRepository.getRelationshipType(userId, targetUserId)
-        .map(userInfoMapper::toUserStatusInfo);
+        .map(UserStatusInfo::new);
   }
 
   public Mono<ConnectionsInfo> getConnections(UUID userId) {

@@ -1,7 +1,6 @@
 package io.beacon.userservice.user.entity;
 
 import java.time.Instant;
-import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -18,7 +17,7 @@ public class Friendship {
 
   @Id
   @GeneratedValue
-  private UUID id;
+  private String id;
 
 
   private Instant since = Instant.now();
