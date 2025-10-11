@@ -1,9 +1,7 @@
 package io.beacon.userservice.user.service;
 
 import io.beacon.userservice.exceptions.UserNotFoundException;
-import io.beacon.userservice.user.dto.UserRequest;
 import io.beacon.userservice.user.dto.UserResponse;
-import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.mappers.UserMapper;
 import io.beacon.userservice.user.repository.UserRepository;
 import java.util.UUID;
@@ -23,11 +21,6 @@ public class UserService {
 
   public Mono<UserResponse> getUser(UUID userId) {
     return userRepository.findById(userId).map(userMapper::toUserResponse);
-  }
-
-  public Mono<UserResponse> createUser(UserRequest request) {
-    User user = new User(request.username(), (request.fullName()));
-    return userRepository.save(user).map(userMapper::toUserResponse);
   }
 
   public Mono<Void> deleteUser(UUID userId) {

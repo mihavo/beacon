@@ -4,14 +4,15 @@ package userservice;
 
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
-  rpc GetUserByUsername(GetUserByUsernameRequest) returns GetUserByUsernameResponse;
+  rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserByUsernameResponse);
 }
 
 
 message CreateUserRequest {
   string username = 1;
-  string email = 2;
-  string passwordHash = 3;
+  string fullName = 2;
+  string email = 3;
+  string passwordHash = 4;
 }
 
 message CreateUserResponse {
@@ -26,6 +27,6 @@ message GetUserByUsernameRequest {
 message GetUserByUsernameResponse {
   string id = 1;
   string username = 2;
-  string email = 3;
+  string fullName = 3;
   string passwordHash = 4;
 }

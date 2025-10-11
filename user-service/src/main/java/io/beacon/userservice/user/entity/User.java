@@ -31,6 +31,9 @@ public class User {
   @Property("fullName")
   private final String fullName;
 
+  @Property("password")
+  private final String password;
+
   @Property("createdAt")
   @CreatedDate
   private Instant createdAt;
