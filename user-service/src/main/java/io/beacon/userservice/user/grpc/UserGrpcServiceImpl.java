@@ -2,9 +2,12 @@ package io.beacon.userservice.user.grpc;
 
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import io.grpc.stub.StreamObserver;
 import lombok.RequiredArgsConstructor;
 import org.springframework.grpc.server.service.GrpcService;
+import reactor.core.publisher.Mono;
 import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass.CreateUserRequest;
 import userservice.UserServiceOuterClass.CreateUserResponse;
@@ -30,15 +33,20 @@ public class UserGrpcServiceImpl extends UserServiceGrpc.UserServiceImplBase {
   @Override
   public void getUserByUsername(GetUserByUsernameRequest request,
       StreamObserver<GetUserByUsernameResponse> responseObserver) {
-    userRepository.findByUsername(request.getUsername()).map(
-        user -> GetUserByUsernameResponse.newBuilder().setUsername(user.getUsername())
-            .setFullName(user.getFullName()).setId(user.getId().toString())
-            .setPasswordHash(user.getPassword())
-            .build()).subscribe(
-        responseObserver::onNext,
-        responseObserver::onError,
-        responseObserver::onCompleted
-    );
+    userRepository.findUserByUsername(request.getUsername()).switchIfEmpty(
+            Mono.error(Status.NOT_FOUND.withDescription("User not found").asRuntimeException())).map(
+            user -> GetUserByUsernameResponse.newBuilder().setUsername(user.getUsername())
+                .setFullName(user.getFullName()).setId(user.getId().toString())
+                .setPasswordHash(user.getPassword()).build())
+        .subscribe(responseObserver::onNext, error -> {
+          if (error instanceof StatusRuntimeException) {
+            responseObserver.onError(error);
+          } else {
+            responseObserver.onError(
+                Status.INTERNAL.withDescription(error.getMessage()).asRuntimeException());
+          }
+        }, responseObserver::onCompleted);
+
   }
 }
 

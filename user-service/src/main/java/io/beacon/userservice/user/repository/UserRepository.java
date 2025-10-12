@@ -96,5 +96,5 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
       """)
   Flux<UserInfo> getFriends(UUID userId);
 
-  Mono<User> findByUsername(String username);
+  Mono<User> findUserByUsername(String username);
 }

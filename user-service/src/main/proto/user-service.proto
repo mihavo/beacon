@@ -19,7 +19,6 @@ message CreateUserResponse {
   string id = 1;
 }
 
-
 message GetUserByUsernameRequest {
   string username = 1;
 }
