@@ -5,9 +5,11 @@ import io.authservice.dto.LoginResponse;
 import io.authservice.dto.RegisterRequest;
 import io.authservice.dto.RegisterResponse;
 import io.authservice.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,13 +17,15 @@ import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 
 @RestController
+@Validated
 @RequiredArgsConstructor
 public class AuthController {
 
   private final AuthService authService;
 
   @PostMapping("/register")
-  public Mono<ResponseEntity<RegisterResponse>> register(@RequestBody RegisterRequest request) {
+  public Mono<ResponseEntity<RegisterResponse>> register(
+      @Valid @RequestBody RegisterRequest request) {
     return authService.register(request).map(response ->
         ResponseEntity.status(HttpStatus.CREATED).body(response)
     ).onErrorResume(e -> {
@@ -35,7 +39,7 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public Mono<ResponseEntity<LoginResponse>> login(@RequestBody LoginRequest request) {
+  public Mono<ResponseEntity<LoginResponse>> login(@Valid @RequestBody LoginRequest request) {
     return authService.login(request).map(response ->
         ResponseEntity.status(HttpStatus.CREATED).body(response)
     );
