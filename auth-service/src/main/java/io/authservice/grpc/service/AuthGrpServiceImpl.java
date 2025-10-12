@@ -1,6 +1,7 @@
 package io.authservice.grpc.service;
 
 import authservice.AuthServiceGrpc;
+import authservice.AuthServiceOuterClass.GetPublicKeyRequest;
 import authservice.AuthServiceOuterClass.GetPublicKeyResponse;
 import io.authservice.utils.JWTUtility;
 import io.grpc.stub.StreamObserver;
@@ -14,8 +15,10 @@ import org.springframework.grpc.server.service.GrpcService;
 public class AuthGrpServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
 
   private final JWTUtility jwtUtility;
-
-  public void getPublicKey(StreamObserver<GetPublicKeyResponse> responseObserver) {
+  
+  @Override
+  public void getPublicKey(GetPublicKeyRequest request,
+      StreamObserver<GetPublicKeyResponse> responseObserver) {
     try {
       PublicKey publicKey = jwtUtility.getPublicKey();
       String encodedKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());

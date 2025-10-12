@@ -1,6 +1,5 @@
 package io.authservice.utils;
 
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Jwts.SIG;
 import java.io.FileReader;
@@ -39,15 +38,6 @@ public class JWTUtility {
     Date expiry = new Date(now.getTime() + expirationMs);
     return Jwts.builder().subject(subject).issuedAt(now).expiration(expiry)
         .signWith(privateKey, SIG.RS256).compact();
-  }
-
-  public boolean validateToken(String token) {
-    try {
-      Jwts.parser().verifyWith(publicKey).build().parseSignedClaims(token);
-      return true;
-    } catch (JwtException e) {
-      return false;
-    }
   }
 
   private PrivateKey readPrivateKey(String filePath) throws IOException {

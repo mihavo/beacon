@@ -41,7 +41,7 @@ public class AuthService {
       if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
       }
-      String token = jwtUtility.generateToken(request.username());
+      String token = jwtUtility.generateToken(user.getId());
       return new LoginResponse("Logged in.", token);
     }).subscribeOn(Schedulers.boundedElastic());
   }
