@@ -10,6 +10,6 @@ public class GrpcConfig {
 
   @Bean
   UserServiceGrpc.UserServiceBlockingStub stub(GrpcChannelFactory channels) {
-    return UserServiceGrpc.newBlockingStub(channels.createChannel("local"));
+    return UserServiceGrpc.newBlockingStub(channels.createChannel("user"));
   }
 }

@@ -11,7 +11,7 @@ public class GrpcConfig {
 
   @Bean
   AuthServiceBlockingStub stub(GrpcChannelFactory channels) {
-    return AuthServiceGrpc.newBlockingStub(channels.createChannel("local"));
+    return AuthServiceGrpc.newBlockingStub(channels.createChannel("auth"));
   }
 
 }
