@@ -7,6 +7,8 @@ import io.beacon.userservice.user.repository.UserRepository;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -31,5 +33,13 @@ public class UserService {
           }
           return userRepository.deleteById(userId);
         });
+  }
+
+  public Mono<UUID> getCurrentUserId() {
+    return Mono.just(
+            UUID.fromString(
+                (String) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal()))
+        .switchIfEmpty(Mono.error(
+            new AuthenticationCredentialsNotFoundException("No user is currently authenticated")));
   }
 }

@@ -12,6 +12,7 @@ import io.beacon.userservice.exceptions.ConnectionRequestNotExistsException;
 import io.beacon.userservice.exceptions.UserNotFoundException;
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
+import io.beacon.userservice.user.service.UserService;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -23,55 +24,58 @@ import reactor.core.publisher.Mono;
 public class ConnectionsService {
 
   private final UserRepository userRepository;
+  private final UserService userService;
 
-  public Mono<ConnectResponse> connect(UUID targetUserId, UUID userId) {
-
-    return isSameUser(targetUserId, userId).then(
+  public Mono<ConnectResponse> connect(UUID targetUserId) {
+    return userService.getCurrentUserId().flatMap(userId ->
+        isSameUser(targetUserId, userId).then(
         Mono.defer(() -> checkUserExistence(targetUserId, userId)
             .flatMap(user -> performConnectRequestValidations(userId, targetUserId))
             .then(Mono.defer(() -> userRepository.sendFriendRequest(userId, targetUserId).flatMap(
                 created -> created ? Mono.just(
                     new ConnectResponse("Connect request sent!", Instant.now()))
                     : Mono.error(
-                        new IllegalStateException("Failed to send connection request")))))));
+                        new IllegalStateException("Failed to send connection request"))))))));
   }
 
-  public Mono<AcceptResponse> accept(UUID targetUserId, UUID userId) {
-
-    return isSameUser(targetUserId, userId).then(
+  public Mono<AcceptResponse> accept(UUID targetUserId) {
+    return userService.getCurrentUserId().flatMap(userId -> isSameUser(targetUserId, userId).then(
         Mono.defer(() -> checkUserExistence(targetUserId, userId)
             .flatMap(user -> performAcceptRequestValidations(userId, targetUserId))
             .then(Mono.defer(() -> userRepository.acceptFriendRequest(userId, targetUserId)))
             .flatMap(
                 created -> created ? Mono.just(
                     new AcceptResponse("You are now connected with user: " + targetUserId + "!"))
-                    : Mono.error(new IllegalArgumentException("Failed to accept request")))));
+                    : Mono.error(new IllegalArgumentException("Failed to accept request"))))));
   }
 
-  public Mono<DeclineResponse> decline(UUID targetUserId, UUID userId) {
-    return isSameUser(targetUserId, userId).then(
+  public Mono<DeclineResponse> decline(UUID targetUserId) {
+    return userService.getCurrentUserId().flatMap(userId ->
+        isSameUser(targetUserId, userId).then(
             Mono.defer(() -> checkUserExistence(targetUserId, userId)))
-        .flatMap(user -> performDeclineRequestValidations(userId, targetUserId))
+            .flatMap(user -> performDeclineRequestValidations(userId))
         .then(Mono.defer(() -> userRepository.deleteRequest(userId, targetUserId))).flatMap(
             deleted -> deleted ? Mono.empty()
-                : Mono.error(new IllegalArgumentException("Could not decline friend request")));
+                : Mono.error(new IllegalArgumentException("Could not decline friend request"))));
   }
 
-  public Mono<RemoveConnectionResponse> removeFriend(UUID targetUserId, UUID userId) {
-    return isSameUser(targetUserId, userId).then(
+  public Mono<RemoveConnectionResponse> removeFriend(UUID targetUserId) {
+    return userService.getCurrentUserId().flatMap(userId ->
+        isSameUser(targetUserId, userId).then(
             Mono.defer(() -> checkUserExistence(targetUserId, userId)))
         .flatMap(user -> performRemoveRequestValidations(userId, targetUserId))
         .then(Mono.defer(() -> userRepository.removeFriend(userId, targetUserId))).flatMap(
             deleted -> deleted ? Mono.empty()
-                : Mono.error(new IllegalArgumentException("Could not remove friend")));
+                : Mono.error(new IllegalArgumentException("Could not remove friend"))));
   }
 
 
-  private Mono<Void> performDeclineRequestValidations(UUID userId, UUID targetUserId) {
-    return Mono.zip(
+  private Mono<Void> performDeclineRequestValidations(UUID targetUserId) {
+    return userService.getCurrentUserId().flatMap(userId ->
+        isSameUser(targetUserId, userId).then(Mono.zip(
         userRepository.areFriends(userId, targetUserId),
         userRepository.hasPendingRequest(userId, targetUserId)
-    ).flatMap(validationResults -> {
+        )).flatMap(validationResults -> {
       Boolean areFriends = validationResults.getT1();
       Boolean hasPendingRequest = validationResults.getT2();
 
@@ -80,7 +84,7 @@ public class ConnectionsService {
             "There is no existing friend request with user: " + targetUserId));
       }
       return Mono.empty();
-    });
+        }));
   }
 
   private Mono<Void> performConnectRequestValidations(UUID userId, UUID targetUserId) {
@@ -149,16 +153,19 @@ public class ConnectionsService {
         Mono.error(new UserNotFoundException("User with id " + userId + " not found.")));
   }
 
-  public Mono<UserStatusInfo> getStatus(UUID targetUserId, UUID userId) {
-    return userRepository.getRelationshipType(userId, targetUserId)
+  public Mono<UserStatusInfo> getStatus(UUID targetUserId) {
+    return userService.getCurrentUserId()
+        .flatMap(userId -> userRepository.getRelationshipType(userId, targetUserId))
         .map(UserStatusInfo::new);
   }
 
-  public Mono<ConnectionsInfo> getConnections(UUID userId) {
-    return userRepository.getConnections(userId).collectList().map(ConnectionsInfo::new);
+  public Mono<ConnectionsInfo> getConnections() {
+    return userService.getCurrentUserId().flatMap(
+        userId -> userRepository.getConnections(userId).collectList().map(ConnectionsInfo::new));
   }
 
-  public Mono<ConnectionsInfo> getFriends(UUID userId) {
-    return userRepository.getFriends(userId).collectList().map(ConnectionsInfo::new);
+  public Mono<ConnectionsInfo> getFriends() {
+    return userService.getCurrentUserId().flatMap(
+        userId -> userRepository.getFriends(userId).collectList().map(ConnectionsInfo::new));
   }
 }

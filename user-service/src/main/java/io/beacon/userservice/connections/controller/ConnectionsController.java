@@ -2,16 +2,11 @@ package io.beacon.userservice.connections.controller;
 
 import io.beacon.userservice.connections.dto.AcceptRequest;
 import io.beacon.userservice.connections.dto.AcceptResponse;
-import io.beacon.userservice.connections.dto.ConnectRequest;
 import io.beacon.userservice.connections.dto.ConnectResponse;
 import io.beacon.userservice.connections.dto.ConnectionsInfo;
-import io.beacon.userservice.connections.dto.ConnectionsRequest;
 import io.beacon.userservice.connections.dto.DeclineRequest;
 import io.beacon.userservice.connections.dto.DeclineResponse;
-import io.beacon.userservice.connections.dto.FriendsRequest;
-import io.beacon.userservice.connections.dto.RemoveConnectionRequest;
 import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
-import io.beacon.userservice.connections.dto.StatusRequest;
 import io.beacon.userservice.connections.dto.UserStatusInfo;
 import io.beacon.userservice.connections.service.ConnectionsService;
 import java.util.UUID;
@@ -35,54 +30,47 @@ public class ConnectionsController {
   private final ConnectionsService connectionsService;
 
   @PostMapping("/{targetUserId}")
-  public Mono<ResponseEntity<ConnectResponse>> connect(@PathVariable UUID targetUserId,
-      @RequestBody ConnectRequest request) {
-    //TODO: remove user id from request body and get it from security contextHolder
-    return connectionsService.connect(targetUserId, request.userId())
+  public Mono<ResponseEntity<ConnectResponse>> connect(@PathVariable UUID targetUserId) {
+    return connectionsService.connect(targetUserId)
         .map(response -> ResponseEntity.status(
         HttpStatus.CREATED).body(response));
   }
 
   @GetMapping("/{targetUserId}/status")
-  public Mono<ResponseEntity<UserStatusInfo>> status(@PathVariable UUID targetUserId,
-      @RequestBody StatusRequest request) {
-    //TODO: remove user id from request body and get it from security contextHolder
-    return connectionsService.getStatus(targetUserId, request.userId())
+  public Mono<ResponseEntity<UserStatusInfo>> status(@PathVariable UUID targetUserId) {
+    return connectionsService.getStatus(targetUserId)
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
   @GetMapping
-  public Mono<ResponseEntity<ConnectionsInfo>> connections(
-      @RequestBody ConnectionsRequest request) {
-    //TODO: remove user id from request body and get it from security contextHolder
-    return connectionsService.getConnections(request.userId())
+  public Mono<ResponseEntity<ConnectionsInfo>> connections() {
+    return connectionsService.getConnections()
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
 
   @GetMapping("/friends")
-  public Mono<ResponseEntity<ConnectionsInfo>> friends(@RequestBody FriendsRequest request) {
-    return connectionsService.getFriends(request.userId())
+  public Mono<ResponseEntity<ConnectionsInfo>> friends() {
+    return connectionsService.getFriends()
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
 
   @PostMapping("/accept")
   public Mono<ResponseEntity<AcceptResponse>> accept(@RequestBody AcceptRequest request) {
-    return connectionsService.accept(request.targetUserId(), request.userId())
+    return connectionsService.accept(request.targetUserId())
         .map(response -> ResponseEntity.status(HttpStatus.CREATED).body(response));
   }
 
   @DeleteMapping("/decline")
   public Mono<ResponseEntity<DeclineResponse>> decline(@RequestBody DeclineRequest request) {
-    return connectionsService.decline(request.targetUserId(), request.userId())
+    return connectionsService.decline(request.targetUserId())
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
   @DeleteMapping("/{targetUserId}")
-  public Mono<ResponseEntity<RemoveConnectionResponse>> remove(@PathVariable UUID targetUserId,
-      @RequestBody RemoveConnectionRequest request) {
-    return connectionsService.removeFriend(targetUserId, request.userId())
+  public Mono<ResponseEntity<RemoveConnectionResponse>> remove(@PathVariable UUID targetUserId) {
+    return connectionsService.removeFriend(targetUserId)
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 }
