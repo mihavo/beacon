@@ -9,6 +9,7 @@ import io.beacon.userservice.connections.dto.UserStatusInfo;
 import io.beacon.userservice.exceptions.AlreadyFriendsException;
 import io.beacon.userservice.exceptions.ConnectionRequestExistsException;
 import io.beacon.userservice.exceptions.ConnectionRequestNotExistsException;
+import io.beacon.userservice.exceptions.SelfConnectRequestException;
 import io.beacon.userservice.exceptions.UserNotFoundException;
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
@@ -142,7 +143,7 @@ public class ConnectionsService {
 
   private Mono<Void> isSameUser(UUID targetUserId, UUID userId) {
     if (userId.equals(targetUserId)) {
-      return Mono.error(new IllegalArgumentException("Cannot send request to yourself"));
+      return Mono.error(new SelfConnectRequestException("Cannot send request to yourself"));
     }
     return Mono.empty();
   }

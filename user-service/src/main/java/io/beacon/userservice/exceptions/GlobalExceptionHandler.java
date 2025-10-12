@@ -45,6 +45,14 @@ public class GlobalExceptionHandler {
     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response));
   }
 
+  @ExceptionHandler(SelfConnectRequestException.class)
+  public Mono<ResponseEntity<APIErrorResponse>> handleSelfConnectRequestException(
+      SelfConnectRequestException ex) {
+    APIErrorResponse response = new APIErrorResponse(HttpStatus.BAD_REQUEST, ex.getMessage()
+        , OffsetDateTime.now());
+    return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response));
+  }
+
   @ExceptionHandler(Exception.class)
   public Mono<ResponseEntity<Void>> handleGenericException(Exception ex) {
     log.error("Unexpected error", ex);
