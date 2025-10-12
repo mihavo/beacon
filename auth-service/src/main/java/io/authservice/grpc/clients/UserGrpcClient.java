@@ -2,7 +2,7 @@ package io.authservice.grpc.clients;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import userservice.UserServiceGrpc;
+import userservice.UserServiceGrpc.UserServiceBlockingStub;
 import userservice.UserServiceOuterClass.CreateUserRequest;
 import userservice.UserServiceOuterClass.CreateUserResponse;
 import userservice.UserServiceOuterClass.GetUserByUsernameRequest;
@@ -12,7 +12,7 @@ import userservice.UserServiceOuterClass.GetUserByUsernameResponse;
 @RequiredArgsConstructor
 public class UserGrpcClient {
 
-  private final UserServiceGrpc.UserServiceBlockingStub userServiceStub;
+  private final UserServiceBlockingStub userServiceStub;
 
   public String createUser(String username, String fullName, String passwordHash) {
     CreateUserRequest req = CreateUserRequest.newBuilder()

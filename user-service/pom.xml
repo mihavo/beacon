@@ -31,6 +31,8 @@
         <grpc.version>1.74.0</grpc.version>
         <protobuf-java.version>4.31.1</protobuf-java.version>
         <spring-grpc.version>0.11.0</spring-grpc.version>
+      <jwt.version>0.12.6</jwt.version>
+      <bouncy-castle-version>1.82</bouncy-castle-version>
       <io-grpc.version>1.76.0</io-grpc.version>
     </properties>
     <dependencies>
@@ -84,7 +86,31 @@
             <artifactId>reactor-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-security</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-api</artifactId>
+        <version>${jwt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.jsonwebtoken</groupId>
+        <artifactId>jjwt-impl</artifactId>
+        <version>${jwt.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcprov-jdk18on</artifactId>
+        <version>${bouncy-castle-version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.bouncycastle</groupId>
+        <artifactId>bcpkix-jdk18on</artifactId>
+        <version>${bouncy-castle-version}</version>
+      </dependency>
+      <dependency>
             <groupId>org.springframework.grpc</groupId>
             <artifactId>spring-grpc-test</artifactId>
             <scope>test</scope>

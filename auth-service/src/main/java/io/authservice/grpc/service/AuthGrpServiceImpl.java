@@ -5,6 +5,7 @@ import authservice.AuthServiceOuterClass.GetPublicKeyResponse;
 import io.authservice.utils.JWTUtility;
 import io.grpc.stub.StreamObserver;
 import java.security.PublicKey;
+import java.util.Base64;
 import lombok.RequiredArgsConstructor;
 import org.springframework.grpc.server.service.GrpcService;
 
@@ -17,8 +18,9 @@ public class AuthGrpServiceImpl extends AuthServiceGrpc.AuthServiceImplBase {
   public void getPublicKey(StreamObserver<GetPublicKeyResponse> responseObserver) {
     try {
       PublicKey publicKey = jwtUtility.getPublicKey();
+      String encodedKey = Base64.getEncoder().encodeToString(publicKey.getEncoded());
       GetPublicKeyResponse response = GetPublicKeyResponse.newBuilder()
-          .setKey(publicKey.toString())
+          .setKey(encodedKey)
           .build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();

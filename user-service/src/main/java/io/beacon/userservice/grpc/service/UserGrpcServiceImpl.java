@@ -1,4 +1,4 @@
-package io.beacon.userservice.user.grpc;
+package io.beacon.userservice.grpc.service;
 
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
