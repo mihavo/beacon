@@ -8,7 +8,7 @@ import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -36,9 +36,9 @@ public class UserService {
   }
 
   public Mono<UUID> getCurrentUserId() {
-    return Mono.just(
-            UUID.fromString(
-                (String) (SecurityContextHolder.getContext().getAuthentication()).getPrincipal()))
+    return
+        ReactiveSecurityContextHolder.getContext().flatMap(context -> Mono.just(UUID.fromString(
+                (String) context.getAuthentication().getPrincipal())))
         .switchIfEmpty(Mono.error(
             new AuthenticationCredentialsNotFoundException("No user is currently authenticated")));
   }
