@@ -5,7 +5,7 @@ import io.authservice.dto.LoginRequest;
 import io.authservice.dto.LoginResponse;
 import io.authservice.dto.RegisterRequest;
 import io.authservice.dto.RegisterResponse;
-import io.authservice.grpc.UserGrpcClient;
+import io.authservice.grpc.clients.UserGrpcClient;
 import io.authservice.utils.JWTUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

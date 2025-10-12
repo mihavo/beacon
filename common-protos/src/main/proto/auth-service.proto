@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package authservice;
+
+service AuthService {
+  rpc GetPublicKey(GetPublicKeyRequest) returns (GetPublicKeyResponse);
+}
+
+message GetPublicKeyRequest {
+}
+
+message GetPublicKeyResponse {
+  string key = 1;
+}
