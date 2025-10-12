@@ -24,8 +24,8 @@ public class JWTUtility {
 
   private final PrivateKey privateKey;
 
-  @Value("${jwt.expiration-ms}")
-  private long expirationMs;
+  @Value("${jwt.expiration-mins}")
+  private long expirationMins;
 
   public JWTUtility(@Value("${jwt.private-key-path}") String privateKeyPath,
       @Value("${jwt.public-key-path}") String publicKeyPath) throws IOException {
@@ -35,7 +35,7 @@ public class JWTUtility {
 
   public String generateToken(String subject) {
     Date now = new Date();
-    Date expiry = new Date(now.getTime() + expirationMs);
+    Date expiry = new Date(now.getTime() + expirationMins * 60 * 1000);
     return Jwts.builder().subject(subject).issuedAt(now).expiration(expiry)
         .signWith(privateKey, SIG.RS256).compact();
   }

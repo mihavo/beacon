@@ -32,7 +32,7 @@ public class SecurityConfig {
     filter.setAuthenticationFailureHandler(new JwtAuthenticationFailureHandler());
 
     return http.authorizeExchange(exchanges -> exchanges
-            .pathMatchers("/healthcheck/**").permitAll().anyExchange().denyAll())
+            .pathMatchers("/healthcheck/**").permitAll().anyExchange().authenticated())
         .csrf(ServerHttpSecurity.CsrfSpec::disable)
         .addFilterAt(filter, SecurityWebFiltersOrder.AUTHENTICATION)
         .exceptionHandling(exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(
