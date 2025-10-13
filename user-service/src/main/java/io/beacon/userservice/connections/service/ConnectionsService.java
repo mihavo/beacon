@@ -6,6 +6,9 @@ import io.beacon.userservice.connections.dto.ConnectionsInfo;
 import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
 import io.beacon.userservice.connections.dto.UserStatusInfo;
+import io.beacon.userservice.events.FriendshipEventProducer;
+import io.beacon.userservice.events.enums.FriendshipEventType;
+import io.beacon.userservice.events.models.FriendshipEvent;
 import io.beacon.userservice.exceptions.AlreadyFriendsException;
 import io.beacon.userservice.exceptions.ConnectionRequestExistsException;
 import io.beacon.userservice.exceptions.ConnectionRequestNotExistsException;
@@ -26,6 +29,7 @@ public class ConnectionsService {
 
   private final UserRepository userRepository;
   private final UserService userService;
+  private final FriendshipEventProducer friendshipEventProducer;
 
   public Mono<ConnectResponse> connect(UUID targetUserId) {
     return userService.getCurrentUserId().flatMap(userId ->
@@ -44,10 +48,22 @@ public class ConnectionsService {
         Mono.defer(() -> checkUserExistence(targetUserId, userId)
             .flatMap(user -> performAcceptRequestValidations(userId, targetUserId))
             .then(Mono.defer(() -> userRepository.acceptFriendRequest(userId, targetUserId)))
-            .flatMap(
-                created -> created ? Mono.just(
-                    new AcceptResponse("You are now connected with user: " + targetUserId + "!"))
-                    : Mono.error(new IllegalArgumentException("Failed to accept request"))))));
+            .flatMap(created -> {
+              if (!created) {
+                return Mono.error(new IllegalArgumentException("Failed to accept request"));
+              }
+              AcceptResponse response = new AcceptResponse(
+                  "You are now connected with user: " + targetUserId + "!"
+              );
+              return performPostAcceptOperations(userId, targetUserId).thenReturn(response);
+            })
+        )));
+  }
+
+  private Mono<Void> performPostAcceptOperations(UUID userId, UUID targetUserId) {
+    return friendshipEventProducer.send(
+        new FriendshipEvent(FriendshipEventType.FRIEND_ADDED, userId.toString(),
+            targetUserId.toString(), Instant.now()));
   }
 
   public Mono<DeclineResponse> decline(UUID targetUserId) {
