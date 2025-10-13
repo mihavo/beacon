@@ -1,6 +1,6 @@
 package io.locationservice.entity;
 
-import io.locationservice.model.Coordinates;
+import io.locationservice.models.Coordinates;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

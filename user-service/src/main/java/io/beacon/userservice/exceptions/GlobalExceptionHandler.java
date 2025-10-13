@@ -28,7 +28,7 @@ public class GlobalExceptionHandler {
     return Mono.just(ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response));
   }
 
-
+ 
   @ExceptionHandler(ConnectionRequestExistsException.class)
   public Mono<ResponseEntity<APIErrorResponse>> handleConnectionRequestExistsException(
       ConnectionRequestExistsException ex) {

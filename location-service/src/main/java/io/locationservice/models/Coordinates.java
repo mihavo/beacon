@@ -1,4 +1,4 @@
-package io.locationservice.model;
+package io.locationservice.models;
 
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;

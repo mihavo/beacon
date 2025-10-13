@@ -1,7 +1,7 @@
 package io.locationservice.mappers;
 
 import io.locationservice.entity.Location;
-import io.locationservice.model.Coordinates;
+import io.locationservice.models.Coordinates;
 import io.locationservice.utils.CacheUtils;
 import java.util.Map;
 import java.util.Objects;
