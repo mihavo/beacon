@@ -3,6 +3,7 @@ package io.locationservice.config;
 import java.time.Duration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -29,7 +30,8 @@ public class RedisConfig {
     }
 
   @Bean
-  public ReactiveStringRedisTemplate stringRedisTemplate(ReactiveRedisConnectionFactory factory) {
+  @Primary
+  public ReactiveStringRedisTemplate defaultRedisTemplate(ReactiveRedisConnectionFactory factory) {
     RedisSerializationContext<String, String> context = RedisSerializationContext.<String, String>newSerializationContext(
             new StringRedisSerializer())
         .value(SerializationPair.fromSerializer(RedisSerializer.string()))
