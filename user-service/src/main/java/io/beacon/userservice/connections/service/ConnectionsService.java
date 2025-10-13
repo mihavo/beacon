@@ -34,7 +34,7 @@ public class ConnectionsService {
   public Mono<ConnectResponse> connect(UUID targetUserId) {
     return userService.getCurrentUserId().flatMap(userId ->
         isSameUser(targetUserId, userId).then(
-        Mono.defer(() -> checkUserExistence(targetUserId, userId)
+            Mono.defer(() -> checkUserExistence(targetUserId)
             .flatMap(user -> performConnectRequestValidations(userId, targetUserId))
             .then(Mono.defer(() -> userRepository.sendFriendRequest(userId, targetUserId).flatMap(
                 created -> created ? Mono.just(
@@ -45,9 +45,9 @@ public class ConnectionsService {
 
   public Mono<AcceptResponse> accept(UUID targetUserId) {
     return userService.getCurrentUserId().flatMap(userId -> isSameUser(targetUserId, userId).then(
-        Mono.defer(() -> checkUserExistence(targetUserId, userId)
-            .flatMap(user -> performAcceptRequestValidations(userId, targetUserId))
-            .then(Mono.defer(() -> userRepository.acceptFriendRequest(userId, targetUserId)))
+        Mono.defer(() -> checkUserExistence(targetUserId)
+            .flatMap(user -> performAcceptRequestValidations(targetUserId, userId))
+            .then(Mono.defer(() -> userRepository.acceptFriendRequest(targetUserId, userId)))
             .flatMap(created -> {
               if (!created) {
                 return Mono.error(new IllegalArgumentException("Failed to accept request"));
@@ -60,16 +60,16 @@ public class ConnectionsService {
         )));
   }
 
-  private Mono<Void> performPostAcceptOperations(UUID userId, UUID targetUserId) {
+  private Mono<Void> performPostAcceptOperations(UUID senderId, UUID receiverId) {
     return friendshipEventProducer.send(
-        new FriendshipEvent(FriendshipEventType.FRIEND_ADDED, userId.toString(),
-            targetUserId.toString(), Instant.now()));
+        new FriendshipEvent(FriendshipEventType.FRIEND_ADDED, receiverId.toString(),
+            senderId.toString(), Instant.now()));
   }
 
   public Mono<DeclineResponse> decline(UUID targetUserId) {
     return userService.getCurrentUserId().flatMap(userId ->
         isSameUser(targetUserId, userId).then(
-            Mono.defer(() -> checkUserExistence(targetUserId, userId)))
+                Mono.defer(() -> checkUserExistence(targetUserId)))
             .flatMap(user -> performDeclineRequestValidations(userId))
         .then(Mono.defer(() -> userRepository.deleteRequest(userId, targetUserId))).flatMap(
             deleted -> deleted ? Mono.empty()
@@ -79,7 +79,7 @@ public class ConnectionsService {
   public Mono<RemoveConnectionResponse> removeFriend(UUID targetUserId) {
     return userService.getCurrentUserId().flatMap(userId ->
         isSameUser(targetUserId, userId).then(
-            Mono.defer(() -> checkUserExistence(targetUserId, userId)))
+                Mono.defer(() -> checkUserExistence(targetUserId)))
         .flatMap(user -> performRemoveRequestValidations(userId, targetUserId))
         .then(Mono.defer(() -> userRepository.removeFriend(userId, targetUserId))).flatMap(
             deleted -> deleted ? Mono.empty()
@@ -135,22 +135,22 @@ public class ConnectionsService {
   }
 
 
-  private Mono<Void> performAcceptRequestValidations(UUID userId, UUID targetUserId) {
+  private Mono<Void> performAcceptRequestValidations(UUID senderId, UUID receiverId) {
     return Mono.zip(
-        userRepository.areFriends(userId, targetUserId),
-        userRepository.hasPendingRequest(userId, targetUserId)
+        userRepository.areFriends(senderId, receiverId),
+        userRepository.hasPendingRequest(senderId, receiverId)
     ).flatMap(validationResults -> {
       Boolean areFriends = validationResults.getT1();
       Boolean pendingRequestExists = validationResults.getT2();
 
       if (areFriends) {
         return Mono.error(
-            new AlreadyFriendsException("You are already friends with user: " + userId));
+            new AlreadyFriendsException("You are already friends with user: " + senderId));
       }
       ;
       if (!pendingRequestExists) {
         return Mono.error(new ConnectionRequestNotExistsException(
-            "There is no pending request for user: " + userId));
+            "There is no pending request for user: " + receiverId));
       }
       return Mono.empty();
     });
@@ -165,8 +165,8 @@ public class ConnectionsService {
   }
 
 
-  private Mono<User> checkUserExistence(UUID targetUserId, UUID userId) {
-    return userRepository.findById(targetUserId).switchIfEmpty(
+  private Mono<User> checkUserExistence(UUID userId) {
+    return userRepository.findById(userId).switchIfEmpty(
         Mono.error(new UserNotFoundException("User with id " + userId + " not found.")));
   }
 
