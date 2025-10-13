@@ -25,4 +25,8 @@ public class CacheUtils {
         long nanos = Long.parseLong(recordId.split("-")[1]);
         return Instant.ofEpochMilli(millis).plusNanos(nanos);
     }
+
+  public String getFriendshipListKey(String userId) {
+    return String.format("users:%s:friends", userId);
+  }
 }
