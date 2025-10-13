@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 @Component
 @RequiredArgsConstructor
@@ -15,9 +16,9 @@ public class FriendshipEventsListener {
   private final FriendshipPermissionService permissionService;
 
   @KafkaListener(topics = "user-friendship-events")
-  public void onEvent(FriendshipEvent event) {
+  public Mono<Void> onEvent(FriendshipEvent event) {
     log.info("Received friendship event: {}", event);
-    permissionService.handleFriendshipEvent(event);
+    return permissionService.handleFriendshipEvent(event);
   }
 
 

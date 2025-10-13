@@ -32,7 +32,7 @@ public class KafkaProducerConfig {
   }
 
   @Bean
-  public KafkaTemplate<String, FriendshipEvent> kafkaTemplate() {
+  public KafkaTemplate<String, FriendshipEvent> friendshipEventKafkaTemplate() {
     return new KafkaTemplate<>(producerFactory());
   }
 }
