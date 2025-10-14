@@ -30,7 +30,7 @@ public class KafkaConsumerConfig {
     props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
     JsonDeserializer<FriendshipEvent> deserializer = new JsonDeserializer<>(FriendshipEvent.class);
-    deserializer.addTrustedPackages("io.beacon.*");
+    deserializer.addTrustedPackages("io.*");
     return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(),
         deserializer);
   }

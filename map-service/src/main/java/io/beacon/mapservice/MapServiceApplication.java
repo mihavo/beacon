@@ -1,4 +1,4 @@
-package io.mapservice;
+package io.beacon.mapservice;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
