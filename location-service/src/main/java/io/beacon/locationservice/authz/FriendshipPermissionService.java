@@ -1,7 +1,10 @@
 package io.beacon.locationservice.authz;
 
 import io.beacon.events.FriendshipEvent;
+import io.beacon.locationservice.utils.AuthUtils;
 import io.beacon.locationservice.utils.CacheUtils;
+import io.beacon.permissions.FriendshipAction;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
@@ -33,5 +36,19 @@ public class FriendshipPermissionService {
               r -> log.info("Removed friend from cache for user {}", event.userId())).then();
     };
 
+  }
+
+  public Mono<Boolean> canPerform(String targetUserId, FriendshipAction action) {
+    Mono<UUID> currentUserId = AuthUtils.getCurrentUserId();
+    return switch (action) {
+      case VIEW_LOCATION ->
+          currentUserId.flatMap(userId -> isInFriendsList(userId.toString(), targetUserId));
+      //TODO: check for additional actions in the future
+    };
+  }
+
+  private Mono<Boolean> isInFriendsList(String userId, String targetUserId) {
+    String key = CacheUtils.getFriendshipListKey(userId);
+    return stringRedisTemplate.opsForSet().isMember(key, targetUserId);
   }
 }
