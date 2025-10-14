@@ -1,7 +1,7 @@
-package io.locationservice.publish;
+package io.beacon.locationservice.publish;
 
-import io.locationservice.request.PublishLocationRequest;
-import io.locationservice.utils.CacheUtils;
+import io.beacon.locationservice.request.PublishLocationRequest;
+import io.beacon.locationservice.utils.CacheUtils;
 import java.util.Map;
 import java.util.Set;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package io.locationservice;
+package io.beacon.locationservice;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

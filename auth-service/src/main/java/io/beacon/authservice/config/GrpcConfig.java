@@ -1,4 +1,4 @@
-package io.authservice.config;
+package io.beacon.authservice.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

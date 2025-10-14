@@ -1,4 +1,4 @@
-package io.locationservice.config;
+package io.beacon.locationservice.config;
 
 import java.time.Duration;
 import org.springframework.context.annotation.Bean;

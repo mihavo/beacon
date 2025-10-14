@@ -1,6 +1,6 @@
-package io.locationservice.publish;
+package io.beacon.locationservice.publish;
 
-import io.locationservice.request.PublishLocationRequest;
+import io.beacon.locationservice.request.PublishLocationRequest;
 import jakarta.validation.Valid;
 import java.util.Set;
 import lombok.AllArgsConstructor;

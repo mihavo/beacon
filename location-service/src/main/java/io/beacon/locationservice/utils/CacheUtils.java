@@ -1,4 +1,4 @@
-package io.locationservice.utils;
+package io.beacon.locationservice.utils;
 
 import java.time.Instant;
 import java.util.UUID;

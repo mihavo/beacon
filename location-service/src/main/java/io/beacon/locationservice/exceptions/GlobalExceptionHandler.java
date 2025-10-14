@@ -1,4 +1,4 @@
-package io.locationservice.exceptions;
+package io.beacon.locationservice.exceptions;
 
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Path;

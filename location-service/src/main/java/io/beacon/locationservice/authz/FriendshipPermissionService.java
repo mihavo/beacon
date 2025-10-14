@@ -1,7 +1,7 @@
-package io.locationservice.authz;
+package io.beacon.locationservice.authz;
 
-import io.locationservice.authz.events.models.FriendshipEvent;
-import io.locationservice.utils.CacheUtils;
+import io.beacon.locationservice.authz.events.models.FriendshipEvent;
+import io.beacon.locationservice.utils.CacheUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;

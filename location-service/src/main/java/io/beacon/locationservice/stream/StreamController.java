@@ -1,6 +1,6 @@
-package io.locationservice.stream;
+package io.beacon.locationservice.stream;
 
-import io.locationservice.entity.Location;
+import io.beacon.locationservice.entity.Location;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;

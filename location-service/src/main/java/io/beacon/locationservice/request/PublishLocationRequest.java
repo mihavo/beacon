@@ -1,6 +1,6 @@
-package io.locationservice.request;
+package io.beacon.locationservice.request;
 
-import io.locationservice.models.Coordinates;
+import io.beacon.locationservice.models.Coordinates;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PastOrPresent;
 import java.time.Instant;

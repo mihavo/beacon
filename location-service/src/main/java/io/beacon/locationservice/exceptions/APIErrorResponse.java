@@ -1,11 +1,10 @@
-package io.locationservice.exceptions;
+package io.beacon.locationservice.exceptions;
 
+import java.time.ZonedDateTime;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.http.HttpStatus;
-
-import java.time.ZonedDateTime;
 
 @Getter
 @Setter

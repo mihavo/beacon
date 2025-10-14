@@ -1,4 +1,4 @@
-package io.authservice.grpc.clients;
+package io.beacon.authservice.grpc.clients;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

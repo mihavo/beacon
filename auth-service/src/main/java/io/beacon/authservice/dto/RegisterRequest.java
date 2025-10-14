@@ -1,4 +1,4 @@
-package io.authservice.dto;
+package io.beacon.authservice.dto;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

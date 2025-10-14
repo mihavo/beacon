@@ -1,4 +1,4 @@
-package io.locationservice;
+package io.beacon.locationservice;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

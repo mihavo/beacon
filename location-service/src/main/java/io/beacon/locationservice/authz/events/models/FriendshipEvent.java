@@ -1,6 +1,6 @@
-package io.locationservice.authz.events.models;
+package io.beacon.locationservice.authz.events.models;
 
-import io.locationservice.authz.enums.FriendshipEventType;
+import io.beacon.locationservice.authz.enums.FriendshipEventType;
 import java.time.Instant;
 
 public record FriendshipEvent(

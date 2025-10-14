@@ -1,7 +1,7 @@
-package io.locationservice.authz.events;
+package io.beacon.locationservice.authz.events;
 
-import io.locationservice.authz.FriendshipPermissionService;
-import io.locationservice.authz.events.models.FriendshipEvent;
+import io.beacon.locationservice.authz.FriendshipPermissionService;
+import io.beacon.locationservice.authz.events.models.FriendshipEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;

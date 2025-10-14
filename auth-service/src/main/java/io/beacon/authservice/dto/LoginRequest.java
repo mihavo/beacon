@@ -1,4 +1,4 @@
-package io.authservice.dto;
+package io.beacon.authservice.dto;
 
 public record LoginRequest(String username, String password) {
 

@@ -1,4 +1,4 @@
-package io.authservice.security;
+package io.beacon.authservice.security;
 
 
 import org.springframework.context.annotation.Bean;

@@ -1,8 +1,8 @@
-package io.locationservice.mappers;
+package io.beacon.locationservice.mappers;
 
-import io.locationservice.entity.Location;
-import io.locationservice.models.Coordinates;
-import io.locationservice.utils.CacheUtils;
+import io.beacon.locationservice.entity.Location;
+import io.beacon.locationservice.models.Coordinates;
+import io.beacon.locationservice.utils.CacheUtils;
 import java.util.Map;
 import java.util.Objects;
 import org.springframework.data.redis.connection.stream.MapRecord;

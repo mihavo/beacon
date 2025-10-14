@@ -1,4 +1,4 @@
-package io.locationservice.authz.enums;
+package io.beacon.locationservice.authz.enums;
 
 public enum FriendshipEventType {
   FRIEND_ADDED,

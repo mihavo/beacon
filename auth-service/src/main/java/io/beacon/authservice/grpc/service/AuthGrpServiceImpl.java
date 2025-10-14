@@ -1,9 +1,9 @@
-package io.authservice.grpc.service;
+package io.beacon.authservice.grpc.service;
 
 import authservice.AuthServiceGrpc;
 import authservice.AuthServiceOuterClass.GetPublicKeyRequest;
 import authservice.AuthServiceOuterClass.GetPublicKeyResponse;
-import io.authservice.utils.JWTUtility;
+import io.beacon.authservice.utils.JWTUtility;
 import io.grpc.stub.StreamObserver;
 import java.security.PublicKey;
 import java.util.Base64;

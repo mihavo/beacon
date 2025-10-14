@@ -1,4 +1,4 @@
-package io.authservice.utils;
+package io.beacon.authservice.utils;
 
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.Jwts.SIG;

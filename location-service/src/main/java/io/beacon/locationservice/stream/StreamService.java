@@ -1,8 +1,8 @@
-package io.locationservice.stream;
+package io.beacon.locationservice.stream;
 
-import io.locationservice.entity.Location;
-import io.locationservice.mappers.LocationMapper;
-import io.locationservice.utils.CacheUtils;
+import io.beacon.locationservice.entity.Location;
+import io.beacon.locationservice.mappers.LocationMapper;
+import io.beacon.locationservice.utils.CacheUtils;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.connection.stream.MapRecord;

@@ -1,12 +1,12 @@
-package io.authservice.service;
+package io.beacon.authservice.service;
 
 
-import io.authservice.dto.LoginRequest;
-import io.authservice.dto.LoginResponse;
-import io.authservice.dto.RegisterRequest;
-import io.authservice.dto.RegisterResponse;
-import io.authservice.grpc.clients.UserGrpcClient;
-import io.authservice.utils.JWTUtility;
+import io.beacon.authservice.dto.LoginRequest;
+import io.beacon.authservice.dto.LoginResponse;
+import io.beacon.authservice.dto.RegisterRequest;
+import io.beacon.authservice.dto.RegisterResponse;
+import io.beacon.authservice.grpc.clients.UserGrpcClient;
+import io.beacon.authservice.utils.JWTUtility;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;

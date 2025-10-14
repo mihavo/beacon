@@ -1,6 +1,6 @@
-package io.locationservice.entity;
+package io.beacon.locationservice.entity;
 
-import io.locationservice.models.Coordinates;
+import io.beacon.locationservice.models.Coordinates;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;

@@ -1,10 +1,10 @@
-package io.authservice.controller;
+package io.beacon.authservice.controller;
 
-import io.authservice.dto.LoginRequest;
-import io.authservice.dto.LoginResponse;
-import io.authservice.dto.RegisterRequest;
-import io.authservice.dto.RegisterResponse;
-import io.authservice.service.AuthService;
+import io.beacon.authservice.dto.LoginRequest;
+import io.beacon.authservice.dto.LoginResponse;
+import io.beacon.authservice.dto.RegisterRequest;
+import io.beacon.authservice.dto.RegisterResponse;
+import io.beacon.authservice.service.AuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
