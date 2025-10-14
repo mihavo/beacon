@@ -16,7 +16,7 @@ public class FriendshipEventsListener {
   private final FriendshipPermissionService permissionService;
 
   @KafkaListener(topics = "user-friendship-events")
-  public Mono<Void> onEvent(FriendshipEvent event) {
+  public Mono<Void> listen(FriendshipEvent event) {
     log.info("Received friendship event: {}", event);
     return permissionService.handleFriendshipEvent(event);
   }

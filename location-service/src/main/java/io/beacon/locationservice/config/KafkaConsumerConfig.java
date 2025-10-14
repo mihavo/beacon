@@ -20,7 +20,7 @@ public class KafkaConsumerConfig {
 
   @Value(value = "${spring.kafka.bootstrap-servers}")
   private String bootstrapAddress;
-  
+
   @Value("${spring.kafka.consumer.group-id}")
   private String groupId;
 
@@ -30,7 +30,7 @@ public class KafkaConsumerConfig {
     props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
     props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
     JsonDeserializer<FriendshipEvent> deserializer = new JsonDeserializer<>(FriendshipEvent.class);
-    deserializer.addTrustedPackages("io.*");
+    deserializer.addTrustedPackages("io.beacon.*");
     return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(),
         deserializer);
   }
