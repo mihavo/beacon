@@ -1,6 +1,6 @@
 package io.beacon.locationservice.authz;
 
-import io.beacon.locationservice.authz.events.models.FriendshipEvent;
+import io.beacon.events.FriendshipEvent;
 import io.beacon.locationservice.utils.CacheUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -3,16 +3,16 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>io</groupId>
-    <artifactId>beacon</artifactId>
+    <groupId>io.beacon</groupId>
+    <artifactId>beacon-parent</artifactId>
     <version>0.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>common-protos</artifactId>
+  <artifactId>core</artifactId>
   <packaging>jar</packaging>
 
-  <name>common-protos</name>
-  <description>Common proto files for sharing between services</description>
+  <name>core</name>
+  <description>Common files for sharing between services</description>
   <url>http://maven.apache.org</url>
 
   <properties>

@@ -1,4 +1,4 @@
-package io.beacon.userservice.events.enums;
+package io.beacon.events.enums;
 
 public enum FriendshipEventType {
   FRIEND_ADDED,

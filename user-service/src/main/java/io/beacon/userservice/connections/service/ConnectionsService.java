@@ -1,5 +1,7 @@
 package io.beacon.userservice.connections.service;
 
+import io.beacon.events.FriendshipEvent;
+import io.beacon.events.enums.FriendshipEventType;
 import io.beacon.userservice.connections.dto.AcceptResponse;
 import io.beacon.userservice.connections.dto.ConnectResponse;
 import io.beacon.userservice.connections.dto.ConnectionsInfo;
@@ -7,8 +9,6 @@ import io.beacon.userservice.connections.dto.DeclineResponse;
 import io.beacon.userservice.connections.dto.RemoveConnectionResponse;
 import io.beacon.userservice.connections.dto.UserStatusInfo;
 import io.beacon.userservice.events.FriendshipEventProducer;
-import io.beacon.userservice.events.enums.FriendshipEventType;
-import io.beacon.userservice.events.models.FriendshipEvent;
 import io.beacon.userservice.exceptions.AlreadyFriendsException;
 import io.beacon.userservice.exceptions.ConnectionRequestExistsException;
 import io.beacon.userservice.exceptions.ConnectionRequestNotExistsException;

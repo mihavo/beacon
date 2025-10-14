@@ -1,6 +1,6 @@
 package io.beacon.locationservice.config;
 
-import io.beacon.locationservice.authz.events.models.FriendshipEvent;
+import io.beacon.events.FriendshipEvent;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

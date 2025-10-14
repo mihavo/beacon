@@ -1,6 +1,6 @@
 package io.beacon.userservice.config;
 
-import io.beacon.userservice.events.models.FriendshipEvent;
+import io.beacon.events.FriendshipEvent;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;

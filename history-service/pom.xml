@@ -3,12 +3,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <groupId>io</groupId>
-        <artifactId>beacon</artifactId>
+      <groupId>io.beacon</groupId>
+      <artifactId>beacon-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
-        <relativePath/>
     </parent>
-    <groupId>io.beacon</groupId>
     <artifactId>history-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>history-service</name>

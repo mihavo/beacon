@@ -1,6 +1,6 @@
 package io.beacon.userservice.events;
 
-import io.beacon.userservice.events.models.FriendshipEvent;
+import io.beacon.events.FriendshipEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
