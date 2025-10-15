@@ -18,6 +18,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <jwt.version>0.12.6</jwt.version>
+    <bouncy-castle-version>1.82</bouncy-castle-version>
   </properties>
 
   <dependencies>
@@ -51,5 +52,22 @@
       <version>${jwt.version}</version>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>org.projectlombok</groupId>
+      <artifactId>lombok</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcpkix-jdk18on</artifactId>
+      <version>${bouncy-castle-version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>${bouncy-castle-version}</version>
+    </dependency>
   </dependencies>
+
+
 </project>
