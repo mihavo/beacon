@@ -84,8 +84,19 @@ public class ConnectionsService {
                 Mono.defer(() -> checkUserExistence(targetUserId)))
             .flatMap(user -> performRemoveRequestValidations(userId, targetUserId))
             .then(Mono.defer(() -> userRepository.removeFriend(userId, targetUserId))).flatMap(
-                deleted -> deleted ? Mono.empty()
-                    : Mono.error(new IllegalArgumentException("Could not remove friend"))));
+                deleted -> {
+                  if (!deleted) {
+                    return Mono.error(new IllegalArgumentException("Could not remove friend"));
+                  }
+                  RemoveConnectionResponse response = new RemoveConnectionResponse("Friend removed.");
+                  return performPostRemoveOperations(userId, targetUserId).thenReturn(response);
+                }));
+  }
+
+  private Mono<Void> performPostRemoveOperations(UUID senderId, UUID receiverId) {
+    return friendshipEventProducer.send(
+        new FriendshipEvent(FriendshipEventType.FRIEND_REMOVED, receiverId.toString(),
+            senderId.toString(), Instant.now()));
   }
 
   private Mono<Void> performDeclineRequestValidations(UUID targetUserId) {

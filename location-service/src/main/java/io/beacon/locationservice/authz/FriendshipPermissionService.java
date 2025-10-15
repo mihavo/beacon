@@ -31,7 +31,7 @@ public class FriendshipPermissionService {
       case FRIEND_ADDED -> stringRedisTemplate.opsForSet().add(friendshipListKey, friendId)
           .doOnSuccess(
               r -> log.info("Added new friend to cache for user {}", event.userId())).then();
-      case FRIEND_DELETED ->
+      case FRIEND_REMOVED ->
           stringRedisTemplate.opsForSet().remove(friendshipListKey, friendId).doOnSuccess(
               r -> log.info("Removed friend from cache for user {}", event.userId())).then();
     };
