@@ -35,12 +35,14 @@ public class ConnectionsService {
     return userService.getCurrentUserId().flatMap(userId ->
         isSameUser(targetUserId, userId).then(
             Mono.defer(() -> checkUserExistence(targetUserId)
-            .flatMap(user -> performConnectRequestValidations(userId, targetUserId))
-            .then(Mono.defer(() -> userRepository.sendFriendRequest(userId, targetUserId).flatMap(
-                created -> created ? Mono.just(
-                    new ConnectResponse("Connect request sent!", Instant.now()))
-                    : Mono.error(
-                        new IllegalStateException("Failed to send connection request"))))))));
+                .flatMap(user -> performConnectRequestValidations(userId, targetUserId))
+                .then(
+                    Mono.defer(() -> userRepository.sendFriendRequest(userId, targetUserId).flatMap(
+                        created -> created ? Mono.just(
+                            new ConnectResponse("Connect request sent!", Instant.now()))
+                            : Mono.error(
+                                new IllegalStateException(
+                                    "Failed to send connection request"))))))));
   }
 
   public Mono<AcceptResponse> accept(UUID targetUserId) {
@@ -71,36 +73,35 @@ public class ConnectionsService {
         isSameUser(targetUserId, userId).then(
                 Mono.defer(() -> checkUserExistence(targetUserId)))
             .flatMap(user -> performDeclineRequestValidations(userId))
-        .then(Mono.defer(() -> userRepository.deleteRequest(userId, targetUserId))).flatMap(
-            deleted -> deleted ? Mono.empty()
-                : Mono.error(new IllegalArgumentException("Could not decline friend request"))));
+            .then(Mono.defer(() -> userRepository.deleteRequest(userId, targetUserId))).flatMap(
+                deleted -> deleted ? Mono.empty()
+                    : Mono.error(new IllegalArgumentException("Could not decline friend request"))));
   }
 
   public Mono<RemoveConnectionResponse> removeFriend(UUID targetUserId) {
     return userService.getCurrentUserId().flatMap(userId ->
         isSameUser(targetUserId, userId).then(
                 Mono.defer(() -> checkUserExistence(targetUserId)))
-        .flatMap(user -> performRemoveRequestValidations(userId, targetUserId))
-        .then(Mono.defer(() -> userRepository.removeFriend(userId, targetUserId))).flatMap(
-            deleted -> deleted ? Mono.empty()
-                : Mono.error(new IllegalArgumentException("Could not remove friend"))));
+            .flatMap(user -> performRemoveRequestValidations(userId, targetUserId))
+            .then(Mono.defer(() -> userRepository.removeFriend(userId, targetUserId))).flatMap(
+                deleted -> deleted ? Mono.empty()
+                    : Mono.error(new IllegalArgumentException("Could not remove friend"))));
   }
-
 
   private Mono<Void> performDeclineRequestValidations(UUID targetUserId) {
     return userService.getCurrentUserId().flatMap(userId ->
         isSameUser(targetUserId, userId).then(Mono.zip(
-        userRepository.areFriends(userId, targetUserId),
-        userRepository.hasPendingRequest(userId, targetUserId)
+            userRepository.areFriends(userId, targetUserId),
+            userRepository.hasPendingRequest(userId, targetUserId)
         )).flatMap(validationResults -> {
-      Boolean areFriends = validationResults.getT1();
-      Boolean hasPendingRequest = validationResults.getT2();
+          Boolean areFriends = validationResults.getT1();
+          Boolean hasPendingRequest = validationResults.getT2();
 
-      if (areFriends || !hasPendingRequest) {
-        return Mono.error(new ConnectionRequestNotExistsException(
-            "There is no existing friend request with user: " + targetUserId));
-      }
-      return Mono.empty();
+          if (areFriends || !hasPendingRequest) {
+            return Mono.error(new ConnectionRequestNotExistsException(
+                "There is no existing friend request with user: " + targetUserId));
+          }
+          return Mono.empty();
         }));
   }
 
@@ -134,7 +135,6 @@ public class ConnectionsService {
     });
   }
 
-
   private Mono<Void> performAcceptRequestValidations(UUID senderId, UUID receiverId) {
     return Mono.zip(
         userRepository.areFriends(senderId, receiverId),
@@ -156,14 +156,12 @@ public class ConnectionsService {
     });
   }
 
-
   private Mono<Void> isSameUser(UUID targetUserId, UUID userId) {
     if (userId.equals(targetUserId)) {
       return Mono.error(new SelfConnectRequestException("Cannot send request to yourself"));
     }
     return Mono.empty();
   }
-
 
   private Mono<User> checkUserExistence(UUID userId) {
     return userRepository.findById(userId).switchIfEmpty(

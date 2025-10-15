@@ -46,7 +46,6 @@ public class UserGrpcServiceImpl extends UserServiceGrpc.UserServiceImplBase {
                 Status.INTERNAL.withDescription(error.getMessage()).asRuntimeException());
           }
         }, responseObserver::onCompleted);
-
   }
 }
 

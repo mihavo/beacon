@@ -1,4 +1,4 @@
-package io.beacon.locationservice.fetch;
+package io.beacon.locationservice.location;
 
 import io.beacon.locationservice.entity.Location;
 import java.util.UUID;
@@ -11,13 +11,12 @@ import reactor.core.publisher.Flux;
 
 @RestController
 @RequiredArgsConstructor
-public class FetchController {
+public class LocationController {
 
-  private final FetchService fetchService;
+  private final LocationService locationService;
 
   @GetMapping("/{userId}/recent")
   public ResponseEntity<Flux<Location>> fetchRecent(@PathVariable UUID userId) {
-    //TODO: communicate with user service for permissions to view location
-    return ResponseEntity.ok().body(fetchService.fetchRecent(userId));
+    return ResponseEntity.ok().body(locationService.fetchRecent(userId));
   }
 }

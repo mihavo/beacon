@@ -1,4 +1,4 @@
-package io.beacon.locationservice.fetch;
+package io.beacon.locationservice.location.fetch;
 
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.mappers.LocationMapper;

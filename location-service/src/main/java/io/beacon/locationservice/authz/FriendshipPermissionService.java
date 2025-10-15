@@ -1,9 +1,9 @@
 package io.beacon.locationservice.authz;
 
 import io.beacon.events.FriendshipEvent;
-import io.beacon.locationservice.utils.AuthUtils;
 import io.beacon.locationservice.utils.CacheUtils;
 import io.beacon.permissions.FriendshipAction;
+import io.beacon.security.utils.AuthUtils;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,11 +38,11 @@ public class FriendshipPermissionService {
 
   }
 
-  public Mono<Boolean> canPerform(String targetUserId, FriendshipAction action) {
+  public Mono<Boolean> canPerform(UUID targetUserId, FriendshipAction action) {
     Mono<UUID> currentUserId = AuthUtils.getCurrentUserId();
     return switch (action) {
-      case VIEW_LOCATION ->
-          currentUserId.flatMap(userId -> isInFriendsList(userId.toString(), targetUserId));
+      case VIEW_LOCATION -> currentUserId.flatMap(
+          userId -> isInFriendsList(userId.toString(), targetUserId.toString()));
       //TODO: check for additional actions in the future
     };
   }

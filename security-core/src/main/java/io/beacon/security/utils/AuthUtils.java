@@ -1,4 +1,4 @@
-package io.beacon.locationservice.utils;
+package io.beacon.security.utils;
 
 import java.util.UUID;
 import lombok.experimental.UtilityClass;
