@@ -1,4 +1,4 @@
-package io.beacon.locationservice.security;
+package io.beacon.security.jwt;
 
 import java.util.Collection;
 import java.util.List;

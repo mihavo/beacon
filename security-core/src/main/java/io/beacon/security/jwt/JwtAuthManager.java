@@ -1,6 +1,6 @@
-package io.beacon.locationservice.security;
+package io.beacon.security.jwt;
 
-import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
+import io.beacon.security.providers.PublicKeyProvider;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jws;
@@ -12,17 +12,16 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.CredentialsExpiredException;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-@Component
+
 public class JwtAuthManager implements
     ReactiveAuthenticationManager {
 
   private final PublicKey publicKey;
 
-  public JwtAuthManager(AuthGrpcClient authGrpcClient) {
-    this.publicKey = authGrpcClient.getPublicKey();
+  public JwtAuthManager(PublicKeyProvider keyProvider) {
+    this.publicKey = keyProvider.getPublicKey();
   }
 
   @Override

@@ -2,6 +2,7 @@ package io.beacon.locationservice.grpc.clients;
 
 import authservice.AuthServiceGrpc.AuthServiceBlockingStub;
 import authservice.AuthServiceOuterClass.GetPublicKeyRequest;
+import io.beacon.security.providers.PublicKeyProvider;
 import jakarta.annotation.PostConstruct;
 import java.security.PublicKey;
 import java.util.Base64;
@@ -15,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Getter
 @RequiredArgsConstructor
-public class AuthGrpcClient {
+public class AuthGrpcClient implements PublicKeyProvider {
 
   private final AuthServiceBlockingStub authServiceStub;
   private PublicKey publicKey;
