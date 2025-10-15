@@ -19,4 +19,9 @@ public class LocationController {
   public ResponseEntity<Flux<Location>> fetchRecent(@PathVariable UUID userId) {
     return ResponseEntity.ok().body(locationService.fetchRecent(userId));
   }
+
+  @GetMapping("/{id}")
+  public ResponseEntity<String> getLocation(@PathVariable String id) {
+    return ResponseEntity.ok("Location " + id);
+  }
 }
