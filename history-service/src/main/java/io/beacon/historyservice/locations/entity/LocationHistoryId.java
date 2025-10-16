@@ -6,11 +6,13 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Embeddable
 @AllArgsConstructor
 @NoArgsConstructor
+@Getter
 @Builder
 public class LocationHistoryId implements Serializable {
 

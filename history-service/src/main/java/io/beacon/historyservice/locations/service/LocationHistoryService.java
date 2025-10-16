@@ -2,6 +2,7 @@ package io.beacon.historyservice.locations.service;
 
 import io.beacon.events.LocationEvent;
 import io.beacon.historyservice.locations.entity.LocationHistory;
+import io.beacon.historyservice.locations.mappers.LocationMapper;
 import io.beacon.historyservice.locations.repository.LocationHistoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,9 @@ public class LocationHistoryService {
   private final LocationHistoryRepository repository;
 
   public Mono<LocationHistory> persistLocationEvent(LocationEvent event) {
-    return Mono.empty();
+    LocationHistory history = LocationMapper.toLocationHistory(event);
+    return repository.save(history)
+        .doOnError(e -> log.error(
+            "Failed to persist location history for user" + history.getId().getUserId(), e));
   }
 }

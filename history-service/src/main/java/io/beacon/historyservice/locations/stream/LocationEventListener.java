@@ -18,6 +18,6 @@ public class LocationEventListener {
   @KafkaListener(topics = "user-location-events", containerFactory = "locationsKafkaListenerContainerFactory")
   public Mono<Void> listen(LocationEvent event) {
     log.info("Received location event: {} ", event);
-    return 
+    return historyService.persistLocationEvent(event).then();
   }
 }
