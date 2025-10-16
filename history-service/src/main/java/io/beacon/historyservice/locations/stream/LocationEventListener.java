@@ -13,7 +13,7 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class LocationEventListener {
 
-  private  final LocationHistoryService historyService;
+  private final LocationHistoryService historyService;
   
   @KafkaListener(topics = "user-location-events", containerFactory = "locationsKafkaListenerContainerFactory")
   public Mono<Void> listen(LocationEvent event) {

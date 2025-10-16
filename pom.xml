@@ -19,16 +19,17 @@
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
   </properties>
 
-    <modules>
-        <module>location-service</module>
-        <module>geofence-service</module>
-        <module>map-service</module>
-        <module>auth-service</module>
-        <module>user-service</module>
-        <module>notification-service</module>
-      <module>core</module>
-      <module>security-core</module>
-    </modules>
+  <modules>
+    <module>location-service</module>
+    <module>geofence-service</module>
+    <module>map-service</module>
+    <module>auth-service</module>
+    <module>user-service</module>
+    <module>notification-service</module>
+    <module>history-service</module>
+    <module>core</module>
+    <module>security-core</module>
+  </modules>
   <dependencyManagement>
     <dependencies>
         <dependency>

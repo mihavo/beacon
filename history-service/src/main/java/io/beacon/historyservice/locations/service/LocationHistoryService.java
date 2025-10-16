@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 @Service
 @RequiredArgsConstructor
@@ -18,8 +19,9 @@ public class LocationHistoryService {
 
   public Mono<LocationHistory> persistLocationEvent(LocationEvent event) {
     LocationHistory history = LocationMapper.toLocationHistory(event);
-    return repository.save(history)
-        .doOnError(e -> log.error(
-            "Failed to persist location history for user" + history.getId().getUserId(), e));
+    return Mono.fromCallable(() -> repository.save(history))
+        .subscribeOn(Schedulers.boundedElastic()) // Crucial for offloading blocking work
+        .doOnError(e -> log.error("Failed to persist location history for id {}",
+            history.getId(), e));
   }
 }
