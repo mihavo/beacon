@@ -17,7 +17,7 @@ import reactor.core.publisher.Flux;
 @AllArgsConstructor
 public class PublishService {
 
-    private final ReactiveRedisTemplate<String, Object> redisTemplate;
+  private final ReactiveRedisTemplate<String, Object> redisTemplate;
   private final EvictionService evictionService;
 
   public Flux<RecordId> publish(Set<PublishLocationRequest> input) {
