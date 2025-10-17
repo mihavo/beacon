@@ -39,8 +39,8 @@ public class EvictionService {
   
     @Value("${io.beacon.cache.streamTrimRatio}")
   private Double streamTrimRatio;
-    
-    @Value("${io.beacon.cache.mergeDistanceThreshold")
+
+  @Value("${io.beacon.cache.mergeDistanceThreshold}")
     private Integer mergeDistanceThreshold;
     
     private static final SpatialContext GEO = SpatialContext.GEO;
