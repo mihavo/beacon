@@ -2,9 +2,11 @@ package io.beacon.locationservice.location.eviction;
 
 import io.beacon.events.LocationEvent;
 import io.beacon.locationservice.entity.Location;
+import io.beacon.locationservice.location.events.LocationEventsProducer;
 import io.beacon.locationservice.mappers.LocationMapper;
 import io.beacon.locationservice.models.Coordinates;
 import io.beacon.locationservice.utils.CacheUtils;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +21,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.Limit;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -28,7 +32,9 @@ import reactor.core.publisher.Mono;
 public class EvictionService {
   
   private final ReactiveRedisTemplate<String,Object> redisTemplate;
-  
+  private final KafkaTemplate<?, ?> kafkaTemplate;
+  private final LocationEventsProducer locationEventsProducer;
+
   @Value("${io.beacon.cache.maxStreamEntries}")
   private Integer maxStreamEntries;
   
@@ -54,23 +60,36 @@ public class EvictionService {
    */
   public Mono<Void> evaluateEviction(UUID userId) {
     String key = CacheUtils.buildLocationStreamKey(userId);
-     redisTemplate.opsForStream().size(key)
+    return redisTemplate.opsForStream().size(key)
          .filter(size -> size >= maxStreamEntries)
-         .flatMap(size -> trimStream(key,size));
+        .flatMap(size -> trimStream(key, size, userId))
+        .flatMapMany(Flux::fromIterable)
+        .concatMap(location -> {
+          LocationEvent event = LocationMapper.toLocationEvent(location);
+          return locationEventsProducer.send(event).timeout(Duration.ofSeconds(5))
+              .onErrorResume(ex -> {
+                log.error("Send timed out", ex);
+                return Mono.empty();
+              })
+              .then(flushFromCache(location, userId));
+        })
+        .then();
     
   }
 
-  
-  private Mono<List<Location>> trimStream(String key,Long streamSize) {
+  private Mono<List<Location>> trimStream(String key, Long streamSize, UUID userId) {
     int chunkSize = Math.max(1, (int) (streamSize * streamTrimRatio));
-    redisTemplate.<String,Object>opsForStream().range(key, Range.unbounded(),
+    return redisTemplate.<String, Object>opsForStream().range(key, Range.unbounded(),
             Limit.limit().count(chunkSize))
         .collectList().flatMap(records -> {
           List<Location> locations = records.stream().map(LocationMapper::toLocation).toList();
           return mergeCloseCoordinates(locations);
-        }).flatMap(merged -> {
-          
-        })
+        });
+  }
+
+  private Mono<Long> flushFromCache(Location location, UUID userId) {
+    String key = CacheUtils.buildLocationStreamKey(userId);
+    return redisTemplate.opsForStream().delete(key, location.getTimestamp().toString());
   }
 
   private Mono<List<Location>> mergeCloseCoordinates(List<Location> locations) {

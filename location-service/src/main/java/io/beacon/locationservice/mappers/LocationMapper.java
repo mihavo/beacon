@@ -1,5 +1,6 @@
 package io.beacon.locationservice.mappers;
 
+import io.beacon.events.LocationEvent;
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.models.Coordinates;
 import io.beacon.locationservice.utils.CacheUtils;
@@ -13,9 +14,15 @@ public final class LocationMapper {
     Map<String, Object> values = locationRecord.getValue();
     String streamId = Objects.requireNonNull(locationRecord.getStream());
     return Location.builder().userId(CacheUtils.extractUserId(streamId))
-        .instant(CacheUtils.extractCapturedAtTimestamp(locationRecord.getId().getValue()))
+        .timestamp(CacheUtils.extractCapturedAtTimestamp(locationRecord.getId().getValue()))
         .coords(new Coordinates(Double.valueOf(values.get("lat").toString()),
             Double.valueOf(values.get("lon").toString()))).build();
+  }
+
+  public static LocationEvent toLocationEvent(Location location) {
+    return new LocationEvent(location.getUserId().toString(), location.getCoords().latitude(),
+        location.getCoords()
+            .longitude(), location.getTimestamp());
   }
 
 }

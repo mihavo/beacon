@@ -19,5 +19,5 @@ import lombok.ToString;
 public class Location {
     UUID userId;
     Coordinates coords;
-    Instant instant;
+  Instant timestamp;
 }
