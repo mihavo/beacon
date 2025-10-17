@@ -5,11 +5,17 @@ import java.time.Instant;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 @AllArgsConstructor
 @Builder
-@Value
+@Setter
+@Getter
+@ToString
+@EqualsAndHashCode
 public class Location {
     UUID userId;
     Coordinates coords;

@@ -32,6 +32,7 @@
         <spring-grpc.version>0.11.0</spring-grpc.version>
       <bouncy-castle-version>1.82</bouncy-castle-version>
       <jwt.version>0.12.6</jwt.version>
+      <spatial4j.version>0.8</spatial4j.version>
     </properties>
     <dependencies>
         <dependency>
@@ -108,6 +109,11 @@
         <groupId>io.beacon</groupId>
         <artifactId>security-core</artifactId>
         <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>org.locationtech.spatial4j</groupId>
+        <artifactId>spatial4j</artifactId>
+        <version>${spatial4j.version}</version>
       </dependency>
     </dependencies>
     <dependencyManagement>
