@@ -62,7 +62,7 @@ public class EvictionService {
     String key = CacheUtils.buildLocationStreamKey(userId);
     return redisTemplate.opsForStream().size(key)
          .filter(size -> size >= maxStreamEntries)
-        .flatMap(size -> trimStream(key, size, userId))
+        .flatMap(size -> trimStream(key, size))
         .flatMapMany(Flux::fromIterable)
         .concatMap(location -> {
           LocationEvent event = LocationMapper.toLocationEvent(location);
@@ -71,13 +71,21 @@ public class EvictionService {
                 log.error("Send timed out", ex);
                 return Mono.empty();
               })
-              .then(flushFromCache(location, userId));
+              .then(flushFromCache(key, location));
         })
         .then();
     
   }
 
-  private Mono<List<Location>> trimStream(String key, Long streamSize, UUID userId) {
+  /**
+   * Collects a chunk of the redis stream (given by the key) and merges the coordinates of the
+   * stream's records that are close together
+   *
+   * @param key        the stream key
+   * @param streamSize the stream size (num of records)
+   * @return the list of merged locations
+   */
+  private Mono<List<Location>> trimStream(String key, Long streamSize) {
     int chunkSize = Math.max(1, (int) (streamSize * streamTrimRatio));
     return redisTemplate.<String, Object>opsForStream().range(key, Range.unbounded(),
             Limit.limit().count(chunkSize))
@@ -87,11 +95,24 @@ public class EvictionService {
         });
   }
 
-  private Mono<Long> flushFromCache(Location location, UUID userId) {
-    String key = CacheUtils.buildLocationStreamKey(userId);
+  /**
+   * Flushes the provided location from the cache of the provided key.
+   *
+   * @param key      the stream key
+   * @param location the location
+   * @return the number of removed records
+   */
+  private Mono<Long> flushFromCache(String key, Location location) {
     return redisTemplate.opsForStream().delete(key, location.getTimestamp().toString());
   }
 
+  /**
+   * Receives a list of locations, and merges those that are close based on the merge distance
+   * threshold
+   *
+   * @param locations the locations to merge
+   * @return the merged locations list
+   */
   private Mono<List<Location>> mergeCloseCoordinates(List<Location> locations) {
     List<Location> merged = new ArrayList<>();
       ShapeFactory shapeFactory = GEO.getShapeFactory();
