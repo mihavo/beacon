@@ -63,7 +63,7 @@ public class EvictionService {
         .flatMap(size -> trimStream(key, size))
         .flatMapMany(Flux::fromIterable)
         .concatMap(location -> {
-          LocationEvent event = LocationMapper.toLocationEvent(location);
+          LocationEvent event = LocationMapper.toLocationEvent(userId, location);
           return locationEventsProducer.send(event).timeout(Duration.ofSeconds(5))
               .onErrorResume(ex -> {
                 log.error("Send timed out", ex);

@@ -2,7 +2,6 @@ package io.beacon.locationservice.entity;
 
 import io.beacon.locationservice.models.Coordinates;
 import java.time.Instant;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -17,7 +16,6 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode
 public class Location {
-    UUID userId;
-    Coordinates coords;
+  Coordinates coords;
   Instant timestamp;
 }
