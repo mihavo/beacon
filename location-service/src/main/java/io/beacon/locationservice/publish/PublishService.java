@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.RecordId;
 import org.springframework.data.redis.connection.stream.StreamRecords;
@@ -17,6 +18,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
+@Slf4j
 @AllArgsConstructor
 public class PublishService {
 
@@ -34,6 +36,7 @@ public class PublishService {
           StreamRecords.newRecord().in(streamKey).withId(recordId).ofMap(fields);
       return redisTemplate.opsForStream()
           .add(record)
+          .doOnNext((publishedId) -> log.info("Published location for record {}", publishedId))
           .flatMap(id -> evictionService.evaluateEviction(userId).thenReturn(id));
     }));
   }
