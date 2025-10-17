@@ -1,11 +1,13 @@
+import http from "k6/http";
+
 export const options = {
   iterations: 50,
 };
 
-const baseUrl = "localhost:8080";
+const baseUrl = "http://localhost:8080";
 const url = baseUrl + "/locations";
 
-const token = __ENV.TOKEN;
+const token = __ENV.AUTH_TOKEN;
 
 if (!token) {
   throw new Error("AUTH_TOKEN environment variable is not set!");
@@ -20,13 +22,17 @@ export default function () {
   };
 
   const coords = getRandomCoordinates();
-  const payload = {
-    latitude: coords.latitude,
-    longitude: coords.longitude,
-    timestamp: Date.now(),
-  };
+  const payload = JSON.stringify([
+    {
+      coords: {
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      },
+      capturedAt: Date.now() - 1000,
+    },
+  ]);
   const res = http.post(url, payload, params);
-  console.log(res);
+  console.log(`Status: ${res.status} Body: ${res.body}`);
 }
 
 function getRandomCoordinates() {
