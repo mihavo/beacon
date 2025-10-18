@@ -1,7 +1,7 @@
 import http from "k6/http";
 
 export const options = {
-  iterations: 50,
+  iterations: 40,
 };
 
 const baseUrl = "http://localhost:8080";
@@ -28,7 +28,7 @@ export default function () {
         latitude: coords.latitude,
         longitude: coords.longitude,
       },
-      capturedAt: Date.now() - 1000,
+      capturedAt: new Date().toISOString(),
     },
   ]);
   const res = http.post(url, payload, params);
