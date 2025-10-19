@@ -31,6 +31,7 @@ export default function () {
       capturedAt: new Date().toISOString(),
     },
   ]);
+  console.log(JSON.parse(payload)[0].capturedAt);
   const res = http.post(url, payload, params);
   console.log(`Status: ${res.status} Body: ${res.body}`);
 }

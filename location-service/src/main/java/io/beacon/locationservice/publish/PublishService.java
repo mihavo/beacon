@@ -29,11 +29,11 @@ public class PublishService {
     Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
     return futureUserId.flatMapMany(userId -> Flux.fromIterable(input).flatMap(request -> {
       String streamKey = CacheUtils.buildLocationStreamKey(userId);
-      RecordId recordId = CacheUtils.buildLocationRecordId(request.capturedAt());
-      Map<String, Double> fields =
-          Map.of("lat", request.coords().latitude(), "lon", request.coords().longitude());
-      MapRecord<String, String, Double> record =
-          StreamRecords.newRecord().in(streamKey).withId(recordId).ofMap(fields);
+      Map<String, Object> fields =
+          Map.of("lat", request.coords().latitude(), "lon", request.coords().longitude(),
+              "capturedAt", request.capturedAt());
+      MapRecord<String, String, Object> record =
+          StreamRecords.newRecord().in(streamKey).ofMap(fields);
       return redisTemplate.opsForStream()
           .add(record)
           .doOnNext((publishedId) -> log.info("Published location for record {}", publishedId))

@@ -9,6 +9,7 @@ import io.beacon.locationservice.utils.CacheUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ import org.locationtech.spatial4j.shape.ShapeFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.Limit;
+import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
@@ -59,7 +61,7 @@ public class EvictionService {
   public Mono<Void> evaluateEviction(UUID userId) {
     String key = CacheUtils.buildLocationStreamKey(userId);
     return redisTemplate.opsForStream().size(key)
-         .filter(size -> size >= maxStreamEntries)
+        .filter(size -> size >= maxStreamEntries)
         .flatMap(size -> trimStream(key, size))
         .flatMapMany(Flux::fromIterable)
         .concatMap(location -> {
@@ -83,14 +85,12 @@ public class EvictionService {
    * @param streamSize the stream size (num of records)
    * @return the list of merged locations
    */
-  private Mono<List<Location>> trimStream(String key, Long streamSize) {
+  private Mono<List<MapRecord<String, String, Object>>> trimStream(String key, Long streamSize) {
     int chunkSize = Math.max(1, (int) (streamSize * streamTrimRatio));
     return redisTemplate.<String, Object>opsForStream().range(key, Range.unbounded(),
             Limit.limit().count(chunkSize))
-        .collectList().flatMap(records -> {
-          List<Location> locations = records.stream().map(LocationMapper::toLocation).toList();
-          return mergeCloseCoordinates(locations);
-        });
+        .collectList().flatMap(this::mergeCloseCoordinates
+        );
   }
 
   /**
@@ -105,37 +105,50 @@ public class EvictionService {
   }
 
   /**
-   * Receives a list of locations, and merges those that are close based on the merge distance
+   * Receives a list of stream records, and merges those that are close based on the merge distance
    * threshold
    *
-   * @param locations the locations to merge
-   * @return the merged locations list
+   * @param locations the location records to merge
+   * @return the merged records list
    */
-  private Mono<List<Location>> mergeCloseCoordinates(List<Location> locations) {
-    List<Location> merged = new ArrayList<>();
+  private Mono<List<MapRecord<String, String, Object>>> mergeCloseCoordinates(
+      List<MapRecord<String, String, Object>> locations) {
+    List<MapRecord<String, String, Object>> merged = new ArrayList<>();
       ShapeFactory shapeFactory = GEO.getShapeFactory();
-    for(Location location : locations) {
-      Point p1 =
-          shapeFactory.pointXY(location.getCoords().longitude(), location.getCoords()
-              .latitude());
-              Optional<Location> possibleCloseLocation = merged.stream()
-            .filter(m -> {
-                Point p2 = shapeFactory.pointXY(m.getCoords().longitude(), m.getCoords().latitude());
-                double distanceKm = GEO.getDistCalc().distance(p1, p2) * DistanceUtils.DEG_TO_KM;
-                return distanceKm * 1000 < mergeDistanceThreshold;
-            })
-            .findFirst();
-              if(possibleCloseLocation.isPresent()) {
-                Location closeLocation = possibleCloseLocation.get();
-                            double avgLat = (location.getCoords().latitude() + closeLocation.getCoords().latitude()) / 2;
-            double avgLon = (location.getCoords().longitude() + closeLocation.getCoords().longitude()) / 2;
-            closeLocation.setCoords(new Coordinates(avgLat,avgLon));
+    for (MapRecord<String, String, Object> location : locations) {
+      Coordinates coords = parseCoords(location);
+      Point p1 = shapeFactory.pointXY(coords.longitude(), coords.latitude());
+      Optional<MapRecord<String, String, Object>> possibleCloseLocation = merged.stream()
+          .filter(m -> {
+            Coordinates possibleCoords = parseCoords(m);
+            Point p2 = shapeFactory.pointXY(possibleCoords.longitude(), possibleCoords.latitude());
+            double distanceKm = GEO.getDistCalc().distance(p1, p2) * DistanceUtils.DEG_TO_KM;
+            return distanceKm * 1000 < mergeDistanceThreshold;
+          })
+          .findFirst();
+      if (possibleCloseLocation.isPresent()) {
+        MapRecord<String, String, Object> closeLocation = possibleCloseLocation.get();
+        Coordinates closeCoords = parseCoords(closeLocation);
+        double avgLat = (coords.latitude() + closeCoords.latitude()) / 2;
+        double avgLon = (coords.longitude() + closeCoords.longitude()) / 2;
+        setCoords(closeLocation, new Coordinates(avgLat, avgLon));
               }
               else {
                 merged.add(location);
               }
-      
     }
     return Mono.just(merged);
+  }
+
+  private static Coordinates parseCoords(MapRecord<String, String, Object> location) {
+    double lat = Double.parseDouble((String) location.getValue().get("lat"));
+    double lon = Double.parseDouble((String) location.getValue().get("lon"));
+    return new Coordinates(lat, lon);
+  }
+
+  private static void setCoords(MapRecord<String, String, Object> record, Coordinates coords) {
+    Map<String, Object> values = record.getValue();
+    values.put("lon", coords.longitude());
+    values.put("lat", coords.latitude());
   }
 }
