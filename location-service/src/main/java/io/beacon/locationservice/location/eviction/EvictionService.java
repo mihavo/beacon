@@ -1,7 +1,6 @@
 package io.beacon.locationservice.location.eviction;
 
 import io.beacon.events.LocationEvent;
-import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.location.events.LocationEventsProducer;
 import io.beacon.locationservice.mappers.LocationMapper;
 import io.beacon.locationservice.models.Coordinates;
@@ -9,7 +8,6 @@ import io.beacon.locationservice.utils.CacheUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,27 +25,28 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import static io.beacon.locationservice.mappers.LocationMapper.parseCoords;
+import static io.beacon.locationservice.mappers.LocationMapper.setCoords;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class EvictionService {
-  
-  private final ReactiveRedisTemplate<String,Object> redisTemplate;
+
+  private final ReactiveRedisTemplate<String, Object> redisTemplate;
   private final LocationEventsProducer locationEventsProducer;
 
   @Value("${io.beacon.cache.maxStreamEntries}")
   private Integer maxStreamEntries;
-  
-  
-    @Value("${io.beacon.cache.streamTrimRatio}")
+
+  @Value("${io.beacon.cache.streamTrimRatio}")
   private Double streamTrimRatio;
 
   @Value("${io.beacon.cache.mergeDistanceThreshold}")
-    private Integer mergeDistanceThreshold;
-    
-    private static final SpatialContext GEO = SpatialContext.GEO;
-    
-    
+  private Integer mergeDistanceThreshold;
+
+  private static final SpatialContext GEO = SpatialContext.GEO;
+
   /**
    * Checks if the redis stream with key the provided userId has exceeded the maximum allowed
    * size for that stream. If true, it persists the events, sending them via an event
@@ -71,10 +70,9 @@ public class EvictionService {
                 log.error("Send timed out", ex);
                 return Mono.empty();
               })
-              .then(flushFromCache(key, location));
+              .then(flushFromCache(location));
         })
         .then();
-    
   }
 
   /**
@@ -96,12 +94,11 @@ public class EvictionService {
   /**
    * Flushes the provided location from the cache of the provided key.
    *
-   * @param key      the stream key
-   * @param location the location
+   * @param record the location record
    * @return the number of removed records
    */
-  private Mono<Long> flushFromCache(String key, Location location) {
-    return redisTemplate.opsForStream().delete(key, location.getTimestamp().toString());
+  private Mono<Long> flushFromCache(MapRecord<String, String, Object> record) {
+    return redisTemplate.opsForStream().delete(record);
   }
 
   /**
@@ -114,7 +111,7 @@ public class EvictionService {
   private Mono<List<MapRecord<String, String, Object>>> mergeCloseCoordinates(
       List<MapRecord<String, String, Object>> locations) {
     List<MapRecord<String, String, Object>> merged = new ArrayList<>();
-      ShapeFactory shapeFactory = GEO.getShapeFactory();
+    ShapeFactory shapeFactory = GEO.getShapeFactory();
     for (MapRecord<String, String, Object> location : locations) {
       Coordinates coords = parseCoords(location);
       Point p1 = shapeFactory.pointXY(coords.longitude(), coords.latitude());
@@ -132,23 +129,10 @@ public class EvictionService {
         double avgLat = (coords.latitude() + closeCoords.latitude()) / 2;
         double avgLon = (coords.longitude() + closeCoords.longitude()) / 2;
         setCoords(closeLocation, new Coordinates(avgLat, avgLon));
-              }
-              else {
-                merged.add(location);
-              }
+      } else {
+        merged.add(location);
+      }
     }
     return Mono.just(merged);
-  }
-
-  private static Coordinates parseCoords(MapRecord<String, String, Object> location) {
-    double lat = Double.parseDouble((String) location.getValue().get("lat"));
-    double lon = Double.parseDouble((String) location.getValue().get("lon"));
-    return new Coordinates(lat, lon);
-  }
-
-  private static void setCoords(MapRecord<String, String, Object> record, Coordinates coords) {
-    Map<String, Object> values = record.getValue();
-    values.put("lon", coords.longitude());
-    values.put("lat", coords.latitude());
   }
 }
