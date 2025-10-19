@@ -30,7 +30,7 @@ public class PublishService {
     return futureUserId.flatMapMany(userId -> Flux.fromIterable(input).flatMap(request -> {
       String streamKey = CacheUtils.buildLocationStreamKey(userId);
       Map<String, Object> fields =
-          Map.of("lat", request.coords().latitude(), "lon", request.coords().longitude(),
+          Map.of("lat", request.coords().latitude().toString(), "lon", request.coords().longitude().toString(),
               "capturedAt", request.capturedAt());
       MapRecord<String, String, Object> record =
           StreamRecords.newRecord().in(streamKey).ofMap(fields);

@@ -20,7 +20,7 @@ public class LocationHistoryService {
   public Mono<LocationHistory> persistLocationEvent(LocationEvent event) {
     LocationHistory history = LocationMapper.toLocationHistory(event);
     return Mono.fromCallable(() -> repository.save(history))
-        .subscribeOn(Schedulers.boundedElastic()) // Crucial for offloading blocking work
+        .subscribeOn(Schedulers.boundedElastic())
         .doOnError(e -> log.error("Failed to persist location history for id {}",
             history.getId(), e));
   }
