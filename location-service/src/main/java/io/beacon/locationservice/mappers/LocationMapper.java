@@ -32,8 +32,13 @@ public final class LocationMapper {
   }
 
   public static Coordinates parseCoords(MapRecord<String, String, Object> location) {
-    double lat = Double.parseDouble((String) location.getValue().get("lat"));
-    double lon = Double.parseDouble((String) location.getValue().get("lon"));
+    Object latObj = location.getValue().get("lat");
+    Object lonObj = location.getValue().get("lon");
+
+    double lat = latObj instanceof Number ? ((Number) latObj).doubleValue()
+        : Double.parseDouble(latObj.toString());
+    double lon = lonObj instanceof Number ? ((Number) lonObj).doubleValue()
+        : Double.parseDouble(lonObj.toString());
     return new Coordinates(lat, lon);
   }
 
