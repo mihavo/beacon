@@ -1,5 +1,4 @@
-package io.beacon.locationservice.config;
-
+package io.beacon.historyservice.config;
 
 import io.beacon.security.config.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -25,9 +24,8 @@ public class SecurityConfig {
         .csrf(ServerHttpSecurity.CsrfSpec::disable)
         .addFilterAt(filter, SecurityWebFiltersOrder.AUTHENTICATION)
         .exceptionHandling(
-            exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(entryPoint)
-        ).build();
+            exceptionHandlingSpec -> exceptionHandlingSpec.authenticationEntryPoint(entryPoint))
+        .build();
   }
-
 }
 

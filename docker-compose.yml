@@ -14,7 +14,17 @@ services:
       - grafana-data:/var/lib/grafana
     ports:
       - "3000:3000"
-
+  
+  loki:
+    image: grafana/loki:latest
+    container_name: beacon-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yml
+    volumes:
+      - ./docker/loki/config.yml:/etc/loki/local-config.yml
+      - loki-data:/loki
 
 volumes:
   grafana-data:
+  loki-data:

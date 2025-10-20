@@ -24,15 +24,15 @@
         <tag/>
         <url/>
     </scm>
-    <properties>
-        <java.version>25</java.version>
-        <grpc.version>1.74.0</grpc.version>
-        <protobuf-java.version>4.31.1</protobuf-java.version>
-        <spring-grpc.version>0.11.0</spring-grpc.version>
-      <jwt.version>0.12.6</jwt.version>
-      <bouncy-castle-version>1.82</bouncy-castle-version>
-      <io-grpc.version>1.76.0</io-grpc.version>
-    </properties>
+  <properties>
+    <java.version>25</java.version>
+    <grpc.version>1.74.0</grpc.version>
+    <protobuf-java.version>4.31.1</protobuf-java.version>
+    <spring-grpc.version>0.11.0</spring-grpc.version>
+    <jwt.version>0.12.6</jwt.version>
+    <bouncy-castle-version>1.82</bouncy-castle-version>
+    <io-grpc.version>1.76.0</io-grpc.version>
+  </properties>
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -115,6 +115,18 @@
       <dependency>
         <groupId>org.mapstruct</groupId>
         <artifactId>mapstruct</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.github.loki4j</groupId>
+        <artifactId>loki-logback-appender</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-registry-prometheus</artifactId>
       </dependency>
       <dependency>
         <groupId>io.grpc</groupId>

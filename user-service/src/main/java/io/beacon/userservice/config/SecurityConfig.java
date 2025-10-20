@@ -20,7 +20,7 @@ public class SecurityConfig {
   public SecurityWebFilterChain filterChain(ServerHttpSecurity http,
       AuthenticationWebFilter filter, ServerAuthenticationEntryPoint entryPoint) {
     return http.authorizeExchange(exchanges -> exchanges
-            .pathMatchers("/healthcheck/**").permitAll().anyExchange().authenticated())
+            .pathMatchers("/actuator/**").permitAll().anyExchange().authenticated())
         .csrf(ServerHttpSecurity.CsrfSpec::disable)
         .addFilterAt(filter, SecurityWebFiltersOrder.AUTHENTICATION)
         .exceptionHandling(

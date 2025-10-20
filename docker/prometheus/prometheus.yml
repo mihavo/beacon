@@ -3,25 +3,37 @@ global:
 
 scrape_configs:
   - job_name: 'gateway'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:8080' ]
+      - targets: [ 'host.docker.internal:9292' ]
 
   - job_name: 'auth-service'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: [ 'host.docker.internal:8081' ]
 
   - job_name: 'location-service'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: [ 'host.docker.internal:8083' ]
 
   - job_name: 'user-service'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: [ 'host.docker.internal:8084' ]
 
   - job_name: 'history-service'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: [ 'host.docker.internal:8085' ]
 
   - job_name: 'service-registry'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
     static_configs:
       - targets: [ 'host.docker.internal:8761' ]

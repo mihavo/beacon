@@ -33,7 +33,6 @@
       <bouncy-castle-version>1.82</bouncy-castle-version>
       <jwt.version>0.12.6</jwt.version>
       <spatial4j.version>0.8</spatial4j.version>
-      <micrometer.registry.version>1.15.0</micrometer.registry.version>
     </properties>
     <dependencies>
         <dependency>
@@ -119,7 +118,10 @@
       <dependency>
         <groupId>io.micrometer</groupId>
         <artifactId>micrometer-registry-prometheus</artifactId>
-        <version>${micrometer.registry.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.loki4j</groupId>
+        <artifactId>loki-logback-appender</artifactId>
       </dependency>
     </dependencies>
     <dependencyManagement>
