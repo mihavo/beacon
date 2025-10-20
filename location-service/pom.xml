@@ -33,6 +33,7 @@
       <bouncy-castle-version>1.82</bouncy-castle-version>
       <jwt.version>0.12.6</jwt.version>
       <spatial4j.version>0.8</spatial4j.version>
+      <micrometer.registry.version>1.15.0</micrometer.registry.version>
     </properties>
     <dependencies>
         <dependency>
@@ -114,6 +115,11 @@
         <groupId>org.locationtech.spatial4j</groupId>
         <artifactId>spatial4j</artifactId>
         <version>${spatial4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-registry-prometheus</artifactId>
+        <version>${micrometer.registry.version}</version>
       </dependency>
     </dependencies>
     <dependencyManagement>

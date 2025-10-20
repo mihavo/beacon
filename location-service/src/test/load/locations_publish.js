@@ -22,7 +22,7 @@ const users = new SharedArray("Logins", function () {
 
 export const options = {
   vus: users.length,
-  iterations: 10, // 10 iterations per VU
+  iterations: 20, // 10 iterations per VU
 };
 
 export function setup() {
@@ -83,7 +83,7 @@ export default function (data) {
 
   console.log(`Status: ${res.status} Body: ${res.body}`);
 
-  sleep(5 + Math.random() * 5);
+  sleep(2 + Math.random() * 5);
 }
 
 function getRandomCoordinates() {
