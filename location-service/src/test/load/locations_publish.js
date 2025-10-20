@@ -21,7 +21,7 @@ const users = new SharedArray("Logins", function () {
 });
 
 export const options = {
-  vus: users.length,
+  vus: 1,
   iterations: 10, // 10 iterations per VU
 };
 

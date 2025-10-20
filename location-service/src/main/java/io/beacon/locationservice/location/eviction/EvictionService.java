@@ -36,14 +36,11 @@ public class EvictionService {
   private final ReactiveRedisTemplate<String, Object> redisTemplate;
   private final LocationEventsProducer locationEventsProducer;
 
-  @Value("${io.beacon.cache.maxStreamEntries}")
-  private Integer maxStreamEntries;
+  @Value("${io.beacon.cache.maxStreamEntries}") private Integer maxStreamEntries;
 
-  @Value("${io.beacon.cache.streamTrimRatio}")
-  private Double streamTrimRatio;
+  @Value("${io.beacon.cache.streamTrimRatio}") private Double streamTrimRatio;
 
-  @Value("${io.beacon.cache.mergeDistanceThreshold}")
-  private Integer mergeDistanceThreshold;
+  @Value("${io.beacon.cache.mergeDistanceThreshold}") private Integer mergeDistanceThreshold;
 
   private static final SpatialContext GEO = SpatialContext.GEO;
 
@@ -59,18 +56,17 @@ public class EvictionService {
    */
   public Mono<Void> evaluateEviction(UUID userId) {
     String key = CacheUtils.buildLocationStreamKey(userId);
-    return redisTemplate.opsForStream().size(key)
+    return redisTemplate.opsForStream()
+        .size(key)
         .filter(size -> size >= maxStreamEntries)
         .flatMap(size -> trimStream(key, size))
         .flatMapMany(Flux::fromIterable)
         .concatMap(location -> {
           LocationEvent event = LocationMapper.toLocationEvent(userId, location);
-          return locationEventsProducer.send(event).timeout(Duration.ofSeconds(5))
-              .onErrorResume(ex -> {
-                log.error("Send timed out", ex);
-                return Mono.empty();
-              })
-              .then(flushFromCache(location));
+          return locationEventsProducer.send(event).timeout(Duration.ofSeconds(5)).onErrorResume(ex -> {
+            log.error("Send timed out", ex);
+            return Mono.empty();
+          }).then(flushFromCache(location));
         })
         .then();
   }
@@ -85,10 +81,10 @@ public class EvictionService {
    */
   private Mono<List<MapRecord<String, String, Object>>> trimStream(String key, Long streamSize) {
     int chunkSize = Math.max(1, (int) (streamSize * streamTrimRatio));
-    return redisTemplate.<String, Object>opsForStream().range(key, Range.unbounded(),
-            Limit.limit().count(chunkSize))
-        .collectList().flatMap(this::mergeCloseCoordinates
-        );
+    return redisTemplate.<String, Object>opsForStream()
+        .range(key, Range.unbounded(), Limit.limit().count(chunkSize))
+        .collectList()
+        .flatMap(this::mergeCloseCoordinates);
   }
 
   /**
@@ -108,21 +104,18 @@ public class EvictionService {
    * @param locations the location records to merge
    * @return the merged records list
    */
-  private Mono<List<MapRecord<String, String, Object>>> mergeCloseCoordinates(
-      List<MapRecord<String, String, Object>> locations) {
+  private Mono<List<MapRecord<String, String, Object>>> mergeCloseCoordinates(List<MapRecord<String, String, Object>> locations) {
     List<MapRecord<String, String, Object>> merged = new ArrayList<>();
     ShapeFactory shapeFactory = GEO.getShapeFactory();
     for (MapRecord<String, String, Object> location : locations) {
       Coordinates coords = parseCoords(location);
       Point p1 = shapeFactory.pointXY(coords.longitude(), coords.latitude());
-      Optional<MapRecord<String, String, Object>> possibleCloseLocation = merged.stream()
-          .filter(m -> {
-            Coordinates possibleCoords = parseCoords(m);
-            Point p2 = shapeFactory.pointXY(possibleCoords.longitude(), possibleCoords.latitude());
-            double distanceKm = GEO.getDistCalc().distance(p1, p2) * DistanceUtils.DEG_TO_KM;
-            return distanceKm * 1000 < mergeDistanceThreshold;
-          })
-          .findFirst();
+      Optional<MapRecord<String, String, Object>> possibleCloseLocation = merged.stream().filter(m -> {
+        Coordinates possibleCoords = parseCoords(m);
+        Point p2 = shapeFactory.pointXY(possibleCoords.longitude(), possibleCoords.latitude());
+        double distanceKm = GEO.getDistCalc().distance(p1, p2) * DistanceUtils.DEG_TO_KM;
+        return distanceKm * 1000 < mergeDistanceThreshold;
+      }).findFirst();
       if (possibleCloseLocation.isPresent()) {
         MapRecord<String, String, Object> closeLocation = possibleCloseLocation.get();
         Coordinates closeCoords = parseCoords(closeLocation);
