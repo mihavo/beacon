@@ -8,8 +8,10 @@ import io.beacon.locationservice.utils.CacheUtils;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.locationtech.spatial4j.context.SpatialContext;
@@ -44,6 +46,15 @@ public class EvictionService {
 
   private static final SpatialContext GEO = SpatialContext.GEO;
 
+  private final Map<UUID, Mono<Void>> evictionLocks = new ConcurrentHashMap<>();
+
+  public Mono<Void> evaluateEviction(UUID userId) {
+    Mono<Void> current = evictionLocks.getOrDefault(userId, Mono.empty());
+    Mono<Void> next = current.then(runEviction(userId)).cache();
+    evictionLocks.put(userId, next);
+    return next.doFinally(signalType -> evictionLocks.remove(userId));
+  }
+
   /**
    * Checks if the redis stream with key the provided userId has exceeded the maximum allowed
    * size for that stream. If true, it persists the events, sending them via an event
@@ -54,7 +65,7 @@ public class EvictionService {
    * @param userId
    * @return
    */
-  public Mono<Void> evaluateEviction(UUID userId) {
+  public Mono<Void> runEviction(UUID userId) {
     String key = CacheUtils.buildLocationStreamKey(userId);
     return redisTemplate.opsForStream()
         .size(key)
