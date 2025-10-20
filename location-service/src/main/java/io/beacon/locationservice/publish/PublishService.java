@@ -28,7 +28,6 @@ public class PublishService {
   public Flux<RecordId> publish(Set<PublishLocationRequest> input) {
     Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
     return futureUserId.flatMapMany(userId -> Flux.fromIterable(input).flatMap(request -> {
-      System.out.println("capture " + request.capturedAt() + " for user " + userId);
       String streamKey = CacheUtils.buildLocationStreamKey(userId);
       Map<String, Object> fields =
           Map.of("lat", request.coords().latitude().toString(), "lon", request.coords().longitude().toString(),
