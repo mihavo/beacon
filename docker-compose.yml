@@ -24,7 +24,31 @@ services:
     volumes:
       - ./docker/loki/config.yml:/etc/loki/local-config.yml
       - loki-data:/loki
-
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    hostname: kafka
+    container_name: beacon-kafka
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    environment:
+      - KAFKA_ENABLE_KRAFT=yes
+      - KAFKA_PROCESS_ROLES=broker,controller
+      - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_BROKER_ID=1
+      - CLUSTER_ID=EmptNWtoR4GGWx-BH6nGLQ
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_NODE_ID=1
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_NUM_PARTITIONS=3
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
 volumes:
   grafana-data:
   loki-data:
+  kafka_data:
+    driver: local
