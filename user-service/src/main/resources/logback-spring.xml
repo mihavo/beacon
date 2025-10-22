@@ -4,6 +4,7 @@
       value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
   <property name="FILE_LOG_PATTERN"
       value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+  <springProperty name="APP_NAME" source="spring.application.name" defaultValue="default"/>
 
   <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
     <http>
@@ -11,7 +12,7 @@
     </http>
     <format>
       <label>
-        <pattern>compose_service=${CONTEXT_NAME},host=${HOSTNAME},level=%level</pattern>
+        <pattern>compose_service=${APP_NAME},host=${HOSTNAME},level=%level</pattern>
         <readMarkers>true</readMarkers>
       </label>
       <message>
