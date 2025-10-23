@@ -31,7 +31,7 @@ public class HistoryController {
   @GetMapping
   public Mono<ResponseEntity<Set<LocationHistory>>> fetchBetween(@RequestParam("start") Instant start,
       @RequestParam("end") Instant end,
-      @RequestParam(value = "direction", defaultValue = "ASC") Sort.Direction direction
+      @RequestParam(value = "direction", defaultValue = "DESC") Sort.Direction direction
   ) {
     return historyService.fetchBetween(start, end, direction)
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
