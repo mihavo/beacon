@@ -4,12 +4,15 @@ import io.beacon.historyservice.locations.entity.LocationHistory;
 import io.beacon.historyservice.locations.service.LocationHistoryService;
 import jakarta.validation.constraints.Positive;
 import jakarta.ws.rs.QueryParam;
+import java.time.Instant;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
@@ -25,7 +28,12 @@ public class HistoryController {
     return historyService.fetchRecents(limit).map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
-  //@GetMapping
-  //public Mono<ResponseEntity<Set<LocationHistory>>> fetchBetween(@QueryParam("start")Instant start,
-  //    @QueryParam("end") Instant end)
+  @GetMapping
+  public Mono<ResponseEntity<Set<LocationHistory>>> fetchBetween(@RequestParam("start") Instant start,
+      @RequestParam("end") Instant end,
+      @RequestParam(value = "direction", defaultValue = "ASC") Sort.Direction direction
+  ) {
+    return historyService.fetchBetween(start, end, direction)
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
 }
