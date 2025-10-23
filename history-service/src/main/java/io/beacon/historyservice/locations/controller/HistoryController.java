@@ -24,4 +24,8 @@ public class HistoryController {
   public Mono<ResponseEntity<Set<LocationHistory>>> fetchRecents(@Positive @QueryParam("limit") Integer limit) {
     return historyService.fetchRecents(limit).map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
+
+  //@GetMapping
+  //public Mono<ResponseEntity<Set<LocationHistory>>> fetchBetween(@QueryParam("start")Instant start,
+  //    @QueryParam("end") Instant end)
 }

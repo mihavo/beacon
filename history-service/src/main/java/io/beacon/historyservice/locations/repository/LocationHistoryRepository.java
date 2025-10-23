@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Limit;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -14,8 +15,9 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface LocationHistoryRepository extends JpaRepository<LocationHistory,
     LocationHistoryId> {
-
-  Set<LocationHistory> findById_UserIdAndId_TimestampBetween(UUID userId, Instant timestampStart, Instant timestampEnd);
+  
+  Set<LocationHistory> findById_UserIdAndId_TimestampBetween(UUID userId, Instant timestampStart, Instant timestampEnd,
+      Sort sort);
 
   @Query(value = """
       SELECT *
