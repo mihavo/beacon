@@ -1,29 +1,25 @@
 services:
-  prometheus:
-    image: prom/prometheus
-    container_name: beacon-prometheus
+  # Databases
+  user-db:
+    image: neo4j
+    container_name: beacon-user-db
     ports:
-      - "9191:9090"
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-beacon_user_db}
     volumes:
-      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-
-  grafana:
-    image: grafana/grafana
-    container_name: beacon-grafana
-    volumes:
-      - grafana-data:/var/lib/grafana
+      - neo4j_data:/data
+  history-db:
+    image: timescale/timescaledb-ha:pg17
+    container_name: beacon-history-db
     ports:
-      - "3000:3000"
-  
-  loki:
-    image: grafana/loki:latest
-    container_name: beacon-loki
-    ports:
-      - "3100:3100"
-    command: -config.file=/etc/loki/local-config.yml
+      - "5432:5432"
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-beacon_history_db}
     volumes:
-      - ./docker/loki/config.yml:/etc/loki/local-config.yml
-      - loki-data:/loki
+      - postgres_history_data:/pgdata
+  # Event Brokers
   kafka:
     image: confluentinc/cp-kafka:latest
     hostname: kafka
@@ -47,7 +43,35 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       - KAFKA_NUM_PARTITIONS=3
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+
+  # Orchestration
+  prometheus:
+    image: prom/prometheus
+    container_name: beacon-prometheus
+    ports:
+      - "9191:9090"
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  grafana:
+    image: grafana/grafana
+    container_name: beacon-grafana
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+  loki:
+    image: grafana/loki:latest
+    container_name: beacon-loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yml
+    volumes:
+      - ./docker/loki/config.yml:/etc/loki/local-config.yml
+      - loki-data:/loki
+
 volumes:
+  neo4j_data:
+  postgres_history_data:
   grafana-data:
   loki-data:
   kafka_data:
