@@ -1,6 +1,7 @@
 package io.beacon.historyservice.locations.service;
 
 import io.beacon.events.LocationEvent;
+import io.beacon.historyservice.exceptions.InvalidTimeRangeException;
 import io.beacon.historyservice.locations.dto.LocationHistoryResponse;
 import io.beacon.historyservice.locations.entity.LocationHistory;
 import io.beacon.historyservice.locations.mappers.LocationHistoryMapper;
@@ -46,6 +47,9 @@ public class LocationHistoryService {
   }
 
   public Mono<Set<LocationHistoryResponse>> fetchBetween(Instant start, Instant end, Sort.Direction direction) {
+    if (end.isBefore(start)) {
+      return Mono.error(new InvalidTimeRangeException("'end' must be after or equal to 'start'"));
+    }
     Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
     return futureUserId.publishOn(Schedulers.boundedElastic())
         .map(userId -> repository.findById_UserIdAndId_TimestampBetween(userId, start, end, Sort.by(direction, "id.timestamp"))
