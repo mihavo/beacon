@@ -19,6 +19,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-beacon_history_db}
     volumes:
       - postgres_history_data:/pgdata
+      - ./docker/history/init:/docker-entrypoint-initdb.d
   redis:
     image: redis
     container_name: beacon-redis
