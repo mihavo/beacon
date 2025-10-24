@@ -28,10 +28,10 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
       """, nativeQuery = true)
   Set<LocationHistory> findRecents(@Param("userId") UUID userId, @Param("limit") Limit limit);
 
-  @Query("""
+  @Query(value = """
       SELECT l
-      FROM LocationHistory l
-      WHERE dwithin(l.location, : center, :radius) = true AND l.id.userId=:userId
-      """)
+      FROM location_history l
+      WHERE dwithin(l.location, :center, :radius) = true AND l.user_id=:userId
+      """, nativeQuery = true)
   Set<LocationHistory> findNearby(@Param("user_id") UUID userId, @Param("center") Point center, @Param("radius") double radius);
 }

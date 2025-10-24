@@ -28,12 +28,19 @@ public class HistoryController {
     return historyService.fetchRecents(limit).map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
-  @GetMapping
+  @GetMapping("/between")
   public Mono<ResponseEntity<Set<LocationHistoryResponse>>> fetchBetween(@RequestParam("start") Instant start,
       @RequestParam("end") Instant end,
       @RequestParam(value = "direction", defaultValue = "DESC") Sort.Direction direction
   ) {
     return historyService.fetchBetween(start, end, direction)
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
+
+  @GetMapping("/nearby")
+  public Mono<ResponseEntity<Set<LocationHistoryResponse>>> fetchNearby(@RequestParam("latitude") double latitude, @RequestParam(
+      "longitude") double longitude, @RequestParam(value = "radius", defaultValue = "500") double radius) {
+    return historyService.fetchNearby(latitude, longitude, radius)
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 }
