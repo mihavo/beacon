@@ -110,6 +110,10 @@
         <groupId>com.github.loki4j</groupId>
         <artifactId>loki-logback-appender</artifactId>
       </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+      </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -164,6 +168,19 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <annotationProcessorPaths>
+                <path>
+                  <groupId>org.projectlombok</groupId>
+                  <artifactId>lombok</artifactId>
+                </path>
+                <path>
+                  <groupId>org.mapstruct</groupId>
+                  <artifactId>mapstruct-processor</artifactId>
+                </path>
+              </annotationProcessorPaths>
+              <parameters>true</parameters>
+            </configuration>
           </plugin>
         </plugins>
     </build>

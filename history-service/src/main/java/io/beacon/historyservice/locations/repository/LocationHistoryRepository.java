@@ -24,7 +24,6 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
       FROM LOCATION_HISTORY
       WHERE  USER_ID = :userId
       ORDER BY TIMESTAMP DESC
-      LIMIT  :limit
       """, nativeQuery = true)
-  Set<LocationHistory> findRecents(@Param("userI") UUID userId, @Param("limit") Limit limit);
+  Set<LocationHistory> findRecents(@Param("userId") UUID userId, @Param("limit") Limit limit);
 }

@@ -1,9 +1,8 @@
 package io.beacon.historyservice.locations.controller;
 
-import io.beacon.historyservice.locations.entity.LocationHistory;
+import io.beacon.historyservice.locations.dto.LocationHistoryResponse;
 import io.beacon.historyservice.locations.service.LocationHistoryService;
 import jakarta.validation.constraints.Positive;
-import jakarta.ws.rs.QueryParam;
 import java.time.Instant;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
@@ -24,12 +23,13 @@ public class HistoryController {
   private final LocationHistoryService historyService;
 
   @GetMapping("/recents")
-  public Mono<ResponseEntity<Set<LocationHistory>>> fetchRecents(@Positive @QueryParam("limit") Integer limit) {
+  public Mono<ResponseEntity<Set<LocationHistoryResponse>>> fetchRecents(
+      @Positive @RequestParam(value = "limit", defaultValue = "50") Integer limit) {
     return historyService.fetchRecents(limit).map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
   @GetMapping
-  public Mono<ResponseEntity<Set<LocationHistory>>> fetchBetween(@RequestParam("start") Instant start,
+  public Mono<ResponseEntity<Set<LocationHistoryResponse>>> fetchBetween(@RequestParam("start") Instant start,
       @RequestParam("end") Instant end,
       @RequestParam(value = "direction", defaultValue = "DESC") Sort.Direction direction
   ) {
