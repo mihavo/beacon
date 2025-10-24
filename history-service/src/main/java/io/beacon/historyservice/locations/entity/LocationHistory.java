@@ -11,6 +11,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @AllArgsConstructor
@@ -34,4 +35,7 @@ public class LocationHistory {
   @DecimalMax(value = "180.0")
   @NotNull
   private Double longitude;
+
+  @Column(name = "location", columnDefinition = "geography(Point,4326)")
+  private Point location;
 }
