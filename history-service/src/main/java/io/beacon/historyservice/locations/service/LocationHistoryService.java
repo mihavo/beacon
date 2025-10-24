@@ -14,6 +14,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -55,5 +58,21 @@ public class LocationHistoryService {
         .map(userId -> repository.findById_UserIdAndId_TimestampBetween(userId, start, end, Sort.by(direction, "id.timestamp"))
             .stream()
             .map(mapper::toLocationHistoryResponse).collect(Collectors.toSet()));
+  }
+
+  public Mono<Set<LocationHistoryResponse>> fetchNearby(double latitude, double longitude, double radius) {
+    Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
+    return futureUserId.publishOn(Schedulers.boundedElastic()).map(userId -> {
+      GeometryFactory geo = new GeometryFactory();
+      Point point = geo.createPoint(new Coordinate(longitude, latitude));
+      return repository.findNearby(userId, point, radius)
+          .stream()
+          .map(mapper::toLocationHistoryResponse)
+          .collect(Collectors.toSet());
+    });
+  }
+
+  public Mono<Set<LocationHistoryResponse>> fetchNearby(double latitude, double longitude) {
+    return fetchNearby(latitude, longitude, 500.0);
   }
 }

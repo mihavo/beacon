@@ -22,7 +22,7 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
 
   @Query(value = """
       SELECT *
-      FROM LOCATION_HISTORY
+      FROM location_history
       WHERE  USER_ID = :userId
       ORDER BY TIMESTAMP DESC
       """, nativeQuery = true)
@@ -31,7 +31,7 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
   @Query("""
       SELECT l
       FROM LocationHistory l
-      WHERE dwithin(l.location, : center, :radius) = true
+      WHERE dwithin(l.location, : center, :radius) = true AND l.id.userId=:userId
       """)
-  Set<LocationHistory> findNearby(@Param("center") Point center, @Param("radius") double radius);
+  Set<LocationHistory> findNearby(@Param("user_id") UUID userId, @Param("center") Point center, @Param("radius") double radius);
 }
