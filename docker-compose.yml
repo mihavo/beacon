@@ -1,5 +1,5 @@
 services:
-  # Databases
+  # Databases & Caching
   user-db:
     image: neo4j
     container_name: beacon-user-db
@@ -19,6 +19,18 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-beacon_history_db}
     volumes:
       - postgres_history_data:/pgdata
+  redis:
+    image: redis
+    container_name: beacon-redis
+    ports:
+      - "6379:6379"
+    environment:
+      - REDIS_PROTECTED_MODE=yes
+    volumes:
+      - redis_data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+
   # Event Brokers
   kafka:
     image: confluentinc/cp-kafka:latest
@@ -72,6 +84,7 @@ services:
 volumes:
   neo4j_data:
   postgres_history_data:
+  redis_data:
   grafana-data:
   loki-data:
   kafka_data:
