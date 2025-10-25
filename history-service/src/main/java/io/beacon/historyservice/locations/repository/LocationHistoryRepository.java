@@ -5,7 +5,6 @@ import io.beacon.historyservice.locations.entity.LocationHistoryId;
 import java.time.Instant;
 import java.util.Set;
 import java.util.UUID;
-import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Limit;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -29,9 +28,15 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
   Set<LocationHistory> findRecents(@Param("userId") UUID userId, @Param("limit") Limit limit);
 
   @Query(value = """
-      SELECT l
-      FROM location_history l
-      WHERE dwithin(l.location, :center, :radius) = true AND l.user_id=:userId
+        SELECT * FROM location_history
+        WHERE ST_DWithin(
+          location,
+          ST_SetSRID(ST_MakePoint(:longitude, :latitude), 4326)::geography,
+          :radius
+        )
+        AND user_id = :userId
       """, nativeQuery = true)
-  Set<LocationHistory> findNearby(@Param("user_id") UUID userId, @Param("center") Point center, @Param("radius") double radius);
+  Set<LocationHistory> findNearby(@Param("userId") UUID userId, @Param("longitude") double longitude,
+      @Param("latitude") double latitude,
+      @Param("radius") double radius);
 }
