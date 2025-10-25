@@ -36,6 +36,6 @@ public class LocationHistory {
   @NotNull
   private Double longitude;
 
-  @Column(name = "location", columnDefinition = "geography(Point,4326)")
+  @Column(name = "location", columnDefinition = "geography(Point,4326)", insertable = false, updatable = false)
   private Point location;
 }

@@ -20,6 +20,13 @@ const users = new SharedArray("Logins", function () {
   return papaparse.parse(open("./data/creds.csv"), { header: true }).data;
 });
 
+const clusters = [
+  { lat: 23.285, lon: -159.244 }, // Hawaii
+  { lat: 48.8566, lon: 2.3522 }, // Europe (Paris)
+  { lat: 34.0479, lon: 100.6197 }, // Asia (China center)
+  { lat: -72.215, lon: -4.094 }, // South America
+];
+
 export const options = {
   vus: users.length,
   iterations: 20, // 10 iterations per VU
@@ -67,7 +74,7 @@ export default function (data) {
     },
   };
 
-  const baseCoords = getRandomCoordinates();
+  const baseCoords = getRandomClusterCoordinates();
   const captures = [];
   const baseTimestamp = new Date(new Date().getTime() - 24 * 60 * 60 * 1000); //yesterday, same time
   for (let i = 0; i < 15; i++) {
@@ -86,14 +93,13 @@ export default function (data) {
   sleep(2 + Math.random() * 5);
 }
 
-function getRandomCoordinates() {
-  const lat = (Math.random() * 180 - 90).toFixed(6);
-  const lon = (Math.random() * 360 - 180).toFixed(6);
-  return { latitude: parseFloat(lat), longitude: parseFloat(lon) };
+function getRandomClusterCoordinates() {
+  const cluster = clusters[Math.floor(Math.random() * clusters.length)];
+  return { latitude: cluster.lat, longitude: cluster.lon };
 }
 
 function getCloseCoordinates(baseCoords) {
-  const latitude = baseCoords.latitude + (Math.random() - 0.5) * 0.002; // ± ~100m
-  const longitude = baseCoords.longitude + (Math.random() - 0.5) * 0.002; // ± ~100m
+  const latitude = baseCoords.latitude + (Math.random() - 0.5) * 0.5; // ± ~0.5 km
+  const longitude = baseCoords.longitude + (Math.random() - 0.5) * 0.5; // ± ~0.5 km
   return { latitude, longitude };
 }
