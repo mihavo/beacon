@@ -1,8 +1,10 @@
 package io.beacon.historyservice.locations.repository;
 
+import io.beacon.historyservice.locations.dto.ClusteredLocation;
 import io.beacon.historyservice.locations.entity.LocationHistory;
 import io.beacon.historyservice.locations.entity.LocationHistoryId;
 import java.time.Instant;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.Limit;
@@ -39,4 +41,20 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
   Set<LocationHistory> findNearby(@Param("userId") UUID userId, @Param("longitude") double longitude,
       @Param("latitude") double latitude,
       @Param("radius") double radius);
+
+  @Query(value = """
+      SELECT cluster_id,
+             COUNT(*) AS visits,
+             ST_Centroid(ST_Collect(location)) AS center
+      FROM (
+        SELECT ST_ClusterKMeans(location, 5) OVER () AS cluster_id, location
+        FROM location_history
+        WHERE user_id = :userId
+        AND (:start IS NULL OR timestamp >= :start)
+          AND (:end IS NULL OR timestamp <= :end)
+      ) AS clusters
+      GROUP BY cluster_id
+      ORDER BY visits DESC;
+      """, nativeQuery = true)
+  List<ClusteredLocation> findPopular(@Param("userId") UUID userId, @Param("start") Instant start, @Param("end") Instant end);
 }

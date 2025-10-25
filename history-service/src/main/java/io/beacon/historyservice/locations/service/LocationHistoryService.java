@@ -2,6 +2,7 @@ package io.beacon.historyservice.locations.service;
 
 import io.beacon.events.LocationEvent;
 import io.beacon.historyservice.exceptions.InvalidTimeRangeException;
+import io.beacon.historyservice.locations.dto.ClusteredLocation;
 import io.beacon.historyservice.locations.dto.LocationHistoryResponse;
 import io.beacon.historyservice.locations.entity.LocationHistory;
 import io.beacon.historyservice.locations.mappers.LocationHistoryMapper;
@@ -10,6 +11,7 @@ import io.beacon.historyservice.locations.repository.LocationHistoryRepository;
 import io.beacon.security.utils.AuthUtils;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -67,5 +69,11 @@ public class LocationHistoryService {
 
   public Mono<List<LocationHistoryResponse>> fetchNearby(double latitude, double longitude) {
     return fetchNearby(latitude, longitude, 500.0);
+  }
+
+  public Mono<List<ClusteredLocation>> fetchPopular(Optional<Instant> start, Optional<Instant> end) {
+    Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
+    return futureUserId.publishOn(Schedulers.boundedElastic()).map(userId -> repository.findPopular(userId, start.orElse(null),
+        end.orElse(null)).stream().toList());
   }
 }
