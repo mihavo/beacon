@@ -4,7 +4,7 @@ import io.beacon.historyservice.locations.dto.LocationHistoryResponse;
 import io.beacon.historyservice.locations.service.LocationHistoryService;
 import jakarta.validation.constraints.Positive;
 import java.time.Instant;
-import java.util.Set;
+import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -23,13 +23,13 @@ public class HistoryController {
   private final LocationHistoryService historyService;
 
   @GetMapping("/recents")
-  public Mono<ResponseEntity<Set<LocationHistoryResponse>>> fetchRecents(
+  public Mono<ResponseEntity<List<LocationHistoryResponse>>> fetchRecents(
       @Positive @RequestParam(value = "limit", defaultValue = "50") Integer limit) {
     return historyService.fetchRecents(limit).map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
   @GetMapping("/between")
-  public Mono<ResponseEntity<Set<LocationHistoryResponse>>> fetchBetween(@RequestParam("start") Instant start,
+  public Mono<ResponseEntity<List<LocationHistoryResponse>>> fetchBetween(@RequestParam("start") Instant start,
       @RequestParam("end") Instant end,
       @RequestParam(value = "direction", defaultValue = "DESC") Sort.Direction direction
   ) {
@@ -38,7 +38,7 @@ public class HistoryController {
   }
 
   @GetMapping("/nearby")
-  public Mono<ResponseEntity<Set<LocationHistoryResponse>>> fetchNearby(@RequestParam("latitude") double latitude, @RequestParam(
+  public Mono<ResponseEntity<List<LocationHistoryResponse>>> fetchNearby(@RequestParam("latitude") double latitude, @RequestParam(
       "longitude") double longitude, @RequestParam(value = "radius", defaultValue = "500") double radius) {
     return historyService.fetchNearby(latitude, longitude, radius)
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
