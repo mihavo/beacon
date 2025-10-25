@@ -1,10 +1,12 @@
 package io.beacon.historyservice.locations.controller;
 
+import io.beacon.historyservice.locations.dto.ClusteredLocation;
 import io.beacon.historyservice.locations.dto.LocationHistoryResponse;
 import io.beacon.historyservice.locations.service.LocationHistoryService;
 import jakarta.validation.constraints.Positive;
 import java.time.Instant;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
@@ -41,6 +43,14 @@ public class HistoryController {
   public Mono<ResponseEntity<List<LocationHistoryResponse>>> fetchNearby(@RequestParam("latitude") double latitude, @RequestParam(
       "longitude") double longitude, @RequestParam(value = "radius", defaultValue = "500") double radius) {
     return historyService.fetchNearby(latitude, longitude, radius)
+        .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
+
+  @GetMapping("/popular")
+  public Mono<ResponseEntity<List<ClusteredLocation>>> fetchNearby(@RequestParam(value = "start", required = false) Instant start,
+      @RequestParam(
+          value = "end", required = false) Instant end) {
+    return historyService.fetchPopular(Optional.ofNullable(start), Optional.ofNullable(end))
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 }

@@ -44,14 +44,15 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
 
   @Query(value = """
       SELECT cluster_id,
-             COUNT(*) AS visits,
-             ST_Centroid(ST_Collect(location)) AS center
+                   ST_x(ST_Centroid(ST_Collect(location::geometry))) AS longitude,
+                   ST_y(ST_Centroid(ST_Collect(location::geometry))) AS latitude,
+             COUNT(*) AS visits
       FROM (
-        SELECT ST_ClusterKMeans(location, 5) OVER () AS cluster_id, location
+              SELECT ST_ClusterKMeans(location::geometry, 5) OVER () AS cluster_id, location
         FROM location_history
         WHERE user_id = :userId
-        AND (:start IS NULL OR timestamp >= :start)
-          AND (:end IS NULL OR timestamp <= :end)
+      AND (CAST(:start AS timestamptz) IS NULL OR timestamp >= CAST(:start AS timestamptz))
+      AND (CASt(:start AS timestamptz) IS NULL OR timestamp <= CAST(:end AS timestamptz))
       ) AS clusters
       GROUP BY cluster_id
       ORDER BY visits DESC;
