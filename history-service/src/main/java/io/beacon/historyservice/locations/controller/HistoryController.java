@@ -46,10 +46,9 @@ public class HistoryController {
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
-  @GetMapping("/popular")
-  public Mono<ResponseEntity<List<ClusteredLocation>>> fetchNearby(@RequestParam(value = "start", required = false) Instant start,
-      @RequestParam(
-          value = "end", required = false) Instant end) {
+  @GetMapping("/popular") public Mono<ResponseEntity<List<ClusteredLocation>>> fetchPopular(
+      @RequestParam(value = "start", required = false) Instant start,
+      @RequestParam(value = "end", required = false) Instant end) {
     return historyService.fetchPopular(Optional.ofNullable(start), Optional.ofNullable(end))
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
