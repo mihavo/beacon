@@ -31,6 +31,7 @@
         <spring-grpc.version>0.11.0</spring-grpc.version>
       <jts.version>1.20.0</jts.version>
       <hibernate.spatial.version>6.3.1.Final</hibernate.spatial.version>
+      <geolatte-geom.version>1.8.2</geolatte-geom.version>
     </properties>
     <dependencies>
         <dependency>
@@ -121,6 +122,11 @@
         <groupId>org.locationtech.jts</groupId>
         <artifactId>jts-core</artifactId>
         <version>${jts.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.geolatte</groupId>
+        <artifactId>geolatte-geojson</artifactId>
+        <version>${geolatte-geom.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mapstruct</groupId>
