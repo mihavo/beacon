@@ -1,5 +1,5 @@
 import http from "k6/http";
-import {check, sleep} from "k6";
+import { check, sleep } from "k6";
 import faker from "k6/x/faker";
 
 const LOCATIONS_PER_USER = 10;
@@ -99,7 +99,7 @@ export default function (data) {
   }
   sleep(0.1);
 
-  sleep(1);
+  sleep(0.1);
 }
 
 function getRandomClusterCoordinates() {

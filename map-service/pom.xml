@@ -7,7 +7,6 @@
       <artifactId>beacon-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
-    <groupId>io.beacon</groupId>
     <artifactId>map-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>map-service</name>
@@ -30,6 +29,7 @@
         <grpc.version>1.74.0</grpc.version>
         <protobuf-java.version>4.31.1</protobuf-java.version>
         <spring-grpc.version>0.11.0</spring-grpc.version>
+      <hibernate.spatial.version>6.3.1.Final</hibernate.spatial.version>
     </properties>
     <dependencies>
         <dependency>
@@ -39,10 +39,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-webflux</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
@@ -68,6 +64,53 @@
             <artifactId>spring-grpc-test</artifactId>
             <scope>test</scope>
         </dependency>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-validation</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-actuator</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.projectlombok</groupId>
+        <artifactId>lombok</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>io.beacon</groupId>
+        <artifactId>core</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.beacon</groupId>
+        <artifactId>security-core</artifactId>
+        <version>0.1-SNAPSHOT</version>
+      </dependency>
+      <dependency>
+        <groupId>io.micrometer</groupId>
+        <artifactId>micrometer-registry-prometheus</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>com.github.loki4j</groupId>
+        <artifactId>loki-logback-appender</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.hibernate</groupId>
+        <artifactId>hibernate-spatial</artifactId>
+        <version>${hibernate.spatial.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.grpc</groupId>
+        <artifactId>spring-grpc-spring-boot-starter</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.kafka</groupId>
+        <artifactId>spring-kafka</artifactId>
+      </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
@@ -82,7 +125,7 @@
     </dependencyManagement>
 
     <build>
-        <plugins>
+      <plugins>
             <plugin>
                 <groupId>io.github.ascopes</groupId>
                 <artifactId>protobuf-maven-plugin</artifactId>
@@ -113,7 +156,29 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+              <configuration>
+                <compilerArguments>
+                  <arg>-parameters</arg>
+                </compilerArguments>
+              </configuration>
             </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <annotationProcessorPaths>
+              <path>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+              </path>
+              <path>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct-processor</artifactId>
+              </path>
+            </annotationProcessorPaths>
+            <parameters>true</parameters>
+          </configuration>
+        </plugin>
         </plugins>
     </build>
 
