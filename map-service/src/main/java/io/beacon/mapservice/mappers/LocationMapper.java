@@ -2,6 +2,7 @@ package io.beacon.mapservice.mappers;
 
 import io.beacon.events.LocationEvent;
 import io.beacon.mapservice.models.UserLocation;
+import locationservice.LocationServiceOuterClass;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
@@ -11,4 +12,8 @@ public interface LocationMapper {
   @Mapping(source = "latitude", target = "coords.latitude")
   @Mapping(source = "longitude", target = "coords.longitude")
   UserLocation toUserLocation(LocationEvent event);
+
+  @Mapping(source = "latitude", target = "coords.latitude")
+  @Mapping(source = "longitude", target = "coords.longitude")
+  UserLocation toUserLocation(LocationServiceOuterClass.UserLocation grpcLocation);
 }

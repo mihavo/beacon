@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package locationservice;
+
+message BoundingBox {
+  double minLat = 1;
+  double maxLat = 2;
+  double minLon = 3;
+  double maxLon = 4;
+}
+
+message UserLocation {
+  string userId = 1;
+  double latitude = 2;
+  double longitude = 3;
+  int64  timestamp = 4;
+}
+
+
+message LatestLocationsRequest {
+  BoundingBox bbox = 1;
+}
+
+message LatestLocationsResponse {
+  repeated UserLocation locations = 1;
+}
+
+service LocationService {
+  rpc GetLatestLocations(LatestLocationsRequest) returns (LatestLocationsResponse);
+}

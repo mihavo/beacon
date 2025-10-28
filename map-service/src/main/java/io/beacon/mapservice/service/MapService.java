@@ -5,6 +5,9 @@ import io.beacon.mapservice.mappers.LocationMapper;
 import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.UserLocation;
 import io.beacon.mapservice.router.EventRouter;
+import locationservice.LocationServiceGrpc;
+import locationservice.LocationServiceOuterClass;
+import locationservice.LocationServiceOuterClass.LatestLocationsRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -19,6 +22,8 @@ public class MapService {
   private final EventRouter router;
   private final LocationMapper locationMapper;
 
+  private final LocationServiceGrpc.LocationServiceBlockingStub locationServiceStub;
+
   public Mono<Void> processLocation(LocationEvent event) {
     return router.dispatch(event)
         .doOnSuccess(v -> log.debug("Dispatched location event for user {}", event.userId()))
@@ -30,6 +35,16 @@ public class MapService {
   }
 
   public Flux<UserLocation> getCurrentLocations(BoundingBox boundingBox) {
-    return null;
+    LocationServiceOuterClass.BoundingBox bbox =
+        LocationServiceOuterClass.BoundingBox.newBuilder()
+            .setMinLat(boundingBox.minLat())
+            .setMaxLat(boundingBox.maxLat())
+            .setMinLon(
+                boundingBox.minLon())
+            .setMaxLon(boundingBox.maxLon())
+            .build();
+    LatestLocationsRequest req = LatestLocationsRequest.newBuilder().setBbox(bbox).build();
+    LocationServiceOuterClass.LatestLocationsResponse response = locationServiceStub.getLatestLocations(req);
+    return Flux.fromIterable(response.getLocationsList()).map(locationMapper::toUserLocation);
   }
 }

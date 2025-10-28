@@ -1,6 +1,5 @@
 package io.beacon.mapservice.controller;
 
-import io.beacon.events.LocationEvent;
 import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.UserLocation;
 import io.beacon.mapservice.service.MapService;
@@ -30,7 +29,7 @@ public class MapController {
   }
 
   @GetMapping("/snapshot")
-  public Flux<LocationEvent> initialLocations(
+  public Flux<UserLocation> initialLocations(
       @RequestParam double minLat,
       @RequestParam double maxLat,
       @RequestParam double minLon,
