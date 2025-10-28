@@ -1,7 +1,7 @@
-package io.beacon.historyservice.locations.stream;
+package io.beacon.mapservice.stream;
 
 import io.beacon.events.LocationEvent;
-import io.beacon.historyservice.locations.service.LocationHistoryService;
+import io.beacon.mapservice.service.MapService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -13,11 +13,11 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class LocationEventListener {
 
-  private final LocationHistoryService historyService;
-  
+  private final MapService mapService;
+
   @KafkaListener(topics = "user-location-events", containerFactory = "locationsKafkaListenerContainerFactory")
   public Mono<Void> listen(LocationEvent event) {
-    log.debug("Received location event: {} ", event);
-    return historyService.persistLocationEvent(event).then();
+    log.debug("Received location event: {}", event);
+    return mapService.processLocation(event);
   }
 }
