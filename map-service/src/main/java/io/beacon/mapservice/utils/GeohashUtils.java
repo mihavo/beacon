@@ -12,8 +12,17 @@ import lombok.experimental.UtilityClass;
 public class GeohashUtils {
 
   public Set<String> computeGeohashesForBoundingBox(BoundingBox bbox) {
-    GeoHashQuery query = new GeoHashBoundingBoxQuery(new ch.hsr.geohash.BoundingBox(bbox.minLat(), bbox.maxLat(), bbox.minLon(),
-        bbox.maxLon()));
+    GeoHashQuery query = getGeoHashQuery(bbox);
     return query.getSearchHashes().stream().map(GeoHash::toBase32).collect(Collectors.toSet());
+  }
+
+  public boolean includes(BoundingBox bbox, String geohash) {
+    GeoHashQuery query = getGeoHashQuery(bbox);
+    return query.contains(GeoHash.fromGeohashString(geohash));
+  }
+
+  private static GeoHashQuery getGeoHashQuery(BoundingBox bbox) {
+    return new GeoHashBoundingBoxQuery(new ch.hsr.geohash.BoundingBox(bbox.minLat(), bbox.maxLat(), bbox.minLon(),
+        bbox.maxLon()));
   }
 }

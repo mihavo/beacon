@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 import reactor.core.publisher.Sinks;
 
 @Component
@@ -40,7 +41,15 @@ public class EventRouter {
     log.debug("Unsubscribed client {} from location events", clientId);
   }
 
-  public void dispatch() {
-    
+  public Mono<Void> dispatch(LocationEvent event) {
+    return Mono.fromRunnable(() -> {
+      String geohash = org.locationtech.spatial4j.io.GeohashUtils.encodeLatLon(event.longitude(), event.latitude());
+      Set<LocationSubscription> subscriptions = geohashSubscriptions.get(geohash);
+      subscriptions.forEach(sub -> {
+        if (sub.bbox().contains(event.longitude(), event.latitude())) {
+          sub.sink().tryEmitNext(event);
+        }
+      });
+    });
   }
 }
