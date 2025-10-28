@@ -123,6 +123,10 @@
         <artifactId>geohash</artifactId>
         <version>${geohash.version}</version>
       </dependency>
+      <dependency>
+        <groupId>org.mapstruct</groupId>
+        <artifactId>mapstruct</artifactId>
+      </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

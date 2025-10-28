@@ -1,7 +1,9 @@
 package io.beacon.mapservice.service;
 
 import io.beacon.events.LocationEvent;
+import io.beacon.mapservice.mappers.LocationMapper;
 import io.beacon.mapservice.models.BoundingBox;
+import io.beacon.mapservice.models.UserLocation;
 import io.beacon.mapservice.router.EventRouter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,7 @@ import reactor.core.publisher.Mono;
 public class MapService {
 
   private final EventRouter router;
+  private final LocationMapper locationMapper;
 
   public Mono<Void> processLocation(LocationEvent event) {
     return router.dispatch(event)
@@ -22,7 +25,11 @@ public class MapService {
         .doOnError(e -> log.error("Failed to dispatch location event for user {}", event.userId(), e));
   }
 
-  public Flux<LocationEvent> subscribe(String clientId, BoundingBox bbox) {
-    return router.subscribe(clientId, bbox);
+  public Flux<UserLocation> subscribe(String clientId, BoundingBox bbox) {
+    return router.subscribe(clientId, bbox).map(locationMapper::toUserLocation);
+  }
+
+  public Flux<UserLocation> getCurrentLocations(BoundingBox boundingBox) {
+    return null;
   }
 }
