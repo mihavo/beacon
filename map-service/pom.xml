@@ -30,6 +30,8 @@
         <protobuf-java.version>4.31.1</protobuf-java.version>
         <spring-grpc.version>0.11.0</spring-grpc.version>
       <hibernate.spatial.version>6.3.1.Final</hibernate.spatial.version>
+      <spatial4j.version>0.8</spatial4j.version>
+      <geohash.version>1.4.0</geohash.version>
     </properties>
     <dependencies>
         <dependency>
@@ -110,6 +112,16 @@
       <dependency>
         <groupId>org.springframework.kafka</groupId>
         <artifactId>spring-kafka</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.locationtech.spatial4j</groupId>
+        <artifactId>spatial4j</artifactId>
+        <version>${spatial4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>ch.hsr</groupId>
+        <artifactId>geohash</artifactId>
+        <version>${geohash.version}</version>
       </dependency>
     </dependencies>
     <dependencyManagement>
