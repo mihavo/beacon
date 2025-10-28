@@ -18,7 +18,8 @@ message UserLocation {
 
 
 message LatestLocationsRequest {
-  BoundingBox bbox = 1;
+  string requesterUserId = 1;
+  BoundingBox bbox = 2;
 }
 
 message LatestLocationsResponse {

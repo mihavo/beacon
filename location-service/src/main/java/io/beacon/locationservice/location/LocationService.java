@@ -3,8 +3,10 @@ package io.beacon.locationservice.location;
 import io.beacon.locationservice.authz.FriendshipPermissionService;
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.location.fetch.FetchService;
+import io.beacon.locationservice.models.UserLocation;
 import io.beacon.permissions.FriendshipAction;
 import java.util.UUID;
+import locationservice.LocationServiceOuterClass;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -25,4 +27,8 @@ public class LocationService {
         return  fetchService.fetchRecent(userId); 
       });
     }
+
+  public Flux<UserLocation> getLKLFromBoundingBox(LocationServiceOuterClass.BoundingBox bbox) {
+    return null;
+  }
 }

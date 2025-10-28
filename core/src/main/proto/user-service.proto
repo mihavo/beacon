@@ -5,6 +5,7 @@ package userservice;
 service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
   rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserByUsernameResponse);
+  rpc GetUserFriends(GetUserFriendsRequest) returns (GetUserFriendsResponse);
 }
 
 
@@ -27,4 +28,19 @@ message GetUserByUsernameResponse {
   string username = 2;
   string fullName = 3;
   string passwordHash = 4;
+}
+
+message GetUserFriendsRequest {
+  string  userId = 1;
+}
+
+message GetUserFriendsResponse {
+  repeated User friends = 1;
+}
+
+message User {
+  string userId = 1;
+  string username = 2;
+  string fullName = 3;
+  int64 friendsSince = 4;
 }

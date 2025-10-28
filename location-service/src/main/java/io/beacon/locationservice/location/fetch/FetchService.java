@@ -4,6 +4,7 @@ import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.mappers.LocationMapper;
 import io.beacon.locationservice.utils.CacheUtils;
 import java.util.UUID;
+import locationservice.LocationServiceOuterClass;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.Limit;
@@ -30,6 +31,16 @@ public class FetchService {
     return redisTemplate.<String, Object>opsForStream()
         .reverseRange(key, Range.unbounded(), Limit.limit().count(RECENTS_COUNT)).map(
             LocationMapper::toLocation);
+  }
+
+  /**
+   * Fetches the last known locations for all the currently authenticated user's friends inside a bounding box
+   *
+   * @param boundingBox the bounding box in which the locations are included
+   * @return all the current user's friends' locations inside the bounding box
+   */
+  public Flux<Location> fetchLKL(LocationServiceOuterClass.BoundingBox boundingBox) {
+    
   }
 
 }
