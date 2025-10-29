@@ -47,7 +47,7 @@ public class GeospatialService {
         GeoReference.fromCoordinate(new Point(centerLon, centerLat)),
         GeoShape.byBox(widthKm, heightKm, RedisGeoCommands.DistanceUnit.KILOMETERS),
         RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs()
-    ).map(res -> LocationMapper.toLocation(res.getContent())
-    );
+    ).map(res -> LocationMapper.toUserLocation(res.getContent())
+    ).doOnNext((location) -> log.debug("Retrieved geospatial location for user {}", location.userId()));
   }
 }

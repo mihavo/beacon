@@ -19,6 +19,6 @@ public class StreamService {
 
   public Flux<Location> stream(UUID userId) {
     String key = CacheUtils.buildLocationStreamKey(userId);
-    return receiver.receive(StreamOffset.latest(key)).map(LocationMapper::toLocation);
+    return receiver.receive(StreamOffset.latest(key)).map(LocationMapper::toUserLocation);
   }
 }

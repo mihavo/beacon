@@ -9,12 +9,13 @@ import io.beacon.locationservice.utils.CacheUtils;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
+import locationservice.LocationServiceOuterClass;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.domain.geo.GeoLocation;
 
 public final class LocationMapper {
 
-  public static Location toLocation(MapRecord<String, String, Object> locationRecord) {
+  public static Location toUserLocation(MapRecord<String, String, Object> locationRecord) {
     Map<String, Object> values = locationRecord.getValue();
     return Location.builder()
         .timestamp(Instant.parse((String) values.get("capturedAt")))
@@ -35,12 +36,21 @@ public final class LocationMapper {
             "capturedAt")));
   }
 
-  public static UserLocation toLocation(GeoLocation<String> geoResult) {
+  public static UserLocation toUserLocation(GeoLocation<String> geoResult) {
     UserTimestamp userTimestamp = CacheUtils.extractGeospatialMember(geoResult.getName());
     return new UserLocation(userTimestamp.userId(), Location.builder()
         .coords(new Coordinates(geoResult.getPoint().getY(), geoResult.getPoint().getX()))
         .timestamp(userTimestamp.timestamp())
         .build());
+  }
+
+  public static LocationServiceOuterClass.UserLocation toGrpcUserLocation(UserLocation userLocation) {
+    return LocationServiceOuterClass.UserLocation.newBuilder()
+        .setUserId(userLocation.userId())
+        .setLatitude(userLocation.location().getCoords().latitude())
+        .setLongitude(userLocation.location().getCoords().longitude())
+        .setTimestamp(userLocation.location().getTimestamp().toEpochMilli())
+        .build();
   }
 
   public static Coordinates parseCoords(MapRecord<String, String, Object> location) {

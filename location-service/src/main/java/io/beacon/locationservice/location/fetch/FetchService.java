@@ -2,22 +2,23 @@ package io.beacon.locationservice.location.fetch;
 
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.grpc.clients.UserGrpcClient;
+import io.beacon.locationservice.location.geospatial.GeospatialService;
 import io.beacon.locationservice.mappers.LocationMapper;
 import io.beacon.locationservice.models.UserInfo;
+import io.beacon.locationservice.models.UserLocation;
 import io.beacon.locationservice.utils.CacheUtils;
-import io.beacon.security.utils.AuthUtils;
 import java.util.List;
 import java.util.UUID;
 import locationservice.LocationServiceOuterClass;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Range;
 import org.springframework.data.redis.connection.Limit;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-@Service
+@Slf4j @Service
 @RequiredArgsConstructor
 public class FetchService {
 
@@ -25,6 +26,7 @@ public class FetchService {
 
   private static final Integer RECENTS_COUNT = 10;
   private final UserGrpcClient userGrpcClient;
+  private final GeospatialService geospatialService;
 
   /**
    * Fetches recents events from the redis stream of the userId. Does not evaluate permissions.
@@ -36,22 +38,22 @@ public class FetchService {
     String key = CacheUtils.buildLocationStreamKey(userId);
     return redisTemplate.<String, Object>opsForStream()
         .reverseRange(key, Range.unbounded(), Limit.limit().count(RECENTS_COUNT)).map(
-            LocationMapper::toLocation);
+            LocationMapper::toUserLocation);
   }
 
   /**
    * Fetches the last known locations for all the currently authenticated user's friends inside a bounding box
    *
    * @param boundingBox the bounding box in which the locations are included
+   * @param userId the user id of the requester (owner of friends' relations) 
    * @return all the current user's friends' locations inside the bounding box
    */
-  public Flux<Location> fetchLKL(LocationServiceOuterClass.BoundingBox boundingBox) {
-    Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
-    return futureUserId.flatMapMany(userId ->
-     Flux.fromIterable(userGrpcClient.getUserFriends(userId.toString()))
-    ).collectList().flatMap(friends -> {
+  public Flux<UserLocation> fetchLKL(LocationServiceOuterClass.BoundingBox boundingBox, UUID userId) {
+    return Flux.fromIterable(userGrpcClient.getUserFriends(userId.toString())
+    ).collectList().flatMapMany(friends -> {
       List<String> friendIds = friends.stream().map(UserInfo::userId).toList();
-    });
+      return geospatialService.searchInBoundingBox(boundingBox).filter(location -> friendIds.contains(location.userId()));
+    }).doOnComplete(() -> log.debug("Fetched last known locations for bounding box {}", boundingBox));
   }
 
 }
