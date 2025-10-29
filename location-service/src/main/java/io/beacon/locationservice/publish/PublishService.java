@@ -59,7 +59,7 @@ public class PublishService {
       Mono<Long> geoUpdate = redisTemplate.opsForGeo()
           .add(CacheUtils.getLocationGeospatialKey(),
               new Point(lastLocation.coords().longitude(), lastLocation.coords().latitude()),
-              userId.toString());
+              CacheUtils.buildGeospatialMember(userId, lastLocation.capturedAt()));
 
       return streamRecords.collectList()
           .flatMapMany(records -> geoUpdate.thenMany(Flux.fromIterable(records)));

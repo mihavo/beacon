@@ -1,4 +1,4 @@
-package io.beacon.locationservice.location;
+package io.beacon.locationservice.location.service;
 
 import io.beacon.locationservice.authz.FriendshipPermissionService;
 import io.beacon.locationservice.entity.Location;

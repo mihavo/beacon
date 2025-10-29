@@ -1,5 +1,6 @@
 package io.beacon.locationservice.utils;
 
+import io.beacon.locationservice.models.UserTimestamp;
 import java.time.Instant;
 import java.util.UUID;
 import lombok.experimental.UtilityClass;
@@ -13,6 +14,19 @@ public class CacheUtils {
 
   public String getLocationGeospatialKey() {
     return "user:locations";
+  }
+
+  public String buildGeospatialMember(UUID userId, Instant capturedAt) {
+    return String.format("{%s}:{%s}", userId.toString(), capturedAt.toString());
+  }
+
+  public UserTimestamp extractGeospatialMember(String member) {
+    String[] parts = member.split(":");
+    if (parts.length != 2) {
+      throw new IllegalArgumentException("Invalid member format: " + member);
+    }
+    Instant timestamp = Instant.ofEpochMilli(Long.parseLong(parts[1]));
+    return new UserTimestamp(parts[0], timestamp);
   }
 
   public UUID extractUserId(String recordKey) {

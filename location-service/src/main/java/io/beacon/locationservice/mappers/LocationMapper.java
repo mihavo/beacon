@@ -3,10 +3,14 @@ package io.beacon.locationservice.mappers;
 import io.beacon.events.LocationEvent;
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.models.Coordinates;
+import io.beacon.locationservice.models.UserLocation;
+import io.beacon.locationservice.models.UserTimestamp;
+import io.beacon.locationservice.utils.CacheUtils;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.data.redis.connection.stream.MapRecord;
+import org.springframework.data.redis.domain.geo.GeoLocation;
 
 public final class LocationMapper {
 
@@ -29,6 +33,14 @@ public final class LocationMapper {
     return new LocationEvent(userId.toString(), coords.latitude(), coords.longitude(),
         Instant.parse((String) record.getValue().get(
             "capturedAt")));
+  }
+
+  public static UserLocation toLocation(GeoLocation<String> geoResult) {
+    UserTimestamp userTimestamp = CacheUtils.extractGeospatialMember(geoResult.getName());
+    return new UserLocation(userTimestamp.userId(), Location.builder()
+        .coords(new Coordinates(geoResult.getPoint().getY(), geoResult.getPoint().getX()))
+        .timestamp(userTimestamp.timestamp())
+        .build());
   }
 
   public static Coordinates parseCoords(MapRecord<String, String, Object> location) {

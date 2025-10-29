@@ -50,9 +50,8 @@ public class FetchService {
     return futureUserId.flatMapMany(userId ->
      Flux.fromIterable(userGrpcClient.getUserFriends(userId.toString()))
     ).collectList().flatMap(friends -> {
-      List<String> friendKeys = friends.stream().map(friend -> CacheUtils.getFriendshipListKey(friend.userId())).toList();
-      
-    })
+      List<String> friendIds = friends.stream().map(UserInfo::userId).toList();
+    });
   }
 
 }

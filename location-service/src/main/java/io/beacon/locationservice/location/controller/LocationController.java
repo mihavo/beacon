@@ -1,6 +1,7 @@
-package io.beacon.locationservice.location;
+package io.beacon.locationservice.location.controller;
 
 import io.beacon.locationservice.entity.Location;
+import io.beacon.locationservice.location.service.LocationService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

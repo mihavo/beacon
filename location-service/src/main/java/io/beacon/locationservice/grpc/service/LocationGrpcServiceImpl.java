@@ -1,6 +1,6 @@
 package io.beacon.locationservice.grpc.service;
 
-import io.beacon.locationservice.location.LocationService;
+import io.beacon.locationservice.location.service.LocationService;
 import io.grpc.stub.StreamObserver;
 import locationservice.LocationServiceGrpc;
 import locationservice.LocationServiceOuterClass;
