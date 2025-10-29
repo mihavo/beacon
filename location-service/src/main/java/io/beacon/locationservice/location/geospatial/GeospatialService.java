@@ -1,18 +1,15 @@
 package io.beacon.locationservice.location.geospatial;
 
-import io.beacon.locationservice.entity.Location;
-import io.beacon.locationservice.models.Coordinates;
+import io.beacon.locationservice.mappers.LocationMapper;
+import io.beacon.locationservice.models.UserLocation;
 import io.beacon.locationservice.utils.CacheUtils;
 import locationservice.LocationServiceOuterClass;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.locationtech.spatial4j.context.SpatialContext;
 import org.locationtech.spatial4j.distance.DistanceUtils;
-import org.springframework.data.geo.GeoResults;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.RedisGeoCommands;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
-import org.springframework.data.redis.domain.geo.GeoLocation;
 import org.springframework.data.redis.domain.geo.GeoReference;
 import org.springframework.data.redis.domain.geo.GeoShape;
 import org.springframework.stereotype.Service;
@@ -23,10 +20,15 @@ import reactor.core.publisher.Flux;
 @Slf4j
 public class GeospatialService {
 
-  private final ReactiveRedisTemplate<String, Object> redisTemplate;
+  private final ReactiveRedisTemplate<String, String> redisTemplate;
 
-  public Flux<Location> searchInBoundingBox(LocationServiceOuterClass.BoundingBox boundingBox,
-      Coordinates coords) {
+  /**
+   * Searches in redis geospatial index restricted by a bounding box for users' last location
+   *
+   * @param boundingBox
+   * @return any user's last location inside the bounding box
+   */
+  public Flux<UserLocation> searchInBoundingBox(LocationServiceOuterClass.BoundingBox boundingBox) {
     double minLat = boundingBox.getMinLat();
     double maxLat = boundingBox.getMaxLat();
     double minLon = boundingBox.getMinLon();
@@ -45,8 +47,7 @@ public class GeospatialService {
         GeoReference.fromCoordinate(new Point(centerLon, centerLat)),
         GeoShape.byBox(widthKm, heightKm, RedisGeoCommands.DistanceUnit.KILOMETERS),
         RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs()
-    ).flatMap(res -> {
-      res.getContent().get
-    });
+    ).map(res -> LocationMapper.toLocation(res.getContent())
+    );
   }
 }
