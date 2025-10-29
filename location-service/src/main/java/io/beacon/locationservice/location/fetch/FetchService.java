@@ -1,8 +1,12 @@
 package io.beacon.locationservice.location.fetch;
 
 import io.beacon.locationservice.entity.Location;
+import io.beacon.locationservice.grpc.clients.UserGrpcClient;
 import io.beacon.locationservice.mappers.LocationMapper;
+import io.beacon.locationservice.models.UserInfo;
 import io.beacon.locationservice.utils.CacheUtils;
+import io.beacon.security.utils.AuthUtils;
+import java.util.List;
 import java.util.UUID;
 import locationservice.LocationServiceOuterClass;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +15,7 @@ import org.springframework.data.redis.connection.Limit;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -19,6 +24,7 @@ public class FetchService {
   private final ReactiveRedisTemplate<String, Object> redisTemplate;
 
   private static final Integer RECENTS_COUNT = 10;
+  private final UserGrpcClient userGrpcClient;
 
   /**
    * Fetches recents events from the redis stream of the userId. Does not evaluate permissions.
@@ -40,7 +46,13 @@ public class FetchService {
    * @return all the current user's friends' locations inside the bounding box
    */
   public Flux<Location> fetchLKL(LocationServiceOuterClass.BoundingBox boundingBox) {
-    
+    Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
+    return futureUserId.flatMapMany(userId ->
+     Flux.fromIterable(userGrpcClient.getUserFriends(userId.toString()))
+    ).collectList().flatMap(friends -> {
+      List<String> friendKeys = friends.stream().map(friend -> CacheUtils.getFriendshipListKey(friend.userId())).toList();
+      
+    })
   }
 
 }
