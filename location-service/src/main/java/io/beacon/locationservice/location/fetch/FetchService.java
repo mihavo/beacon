@@ -52,7 +52,7 @@ public class FetchService {
     return Flux.fromIterable(userGrpcClient.getUserFriends(userId.toString())
     ).collectList().flatMapMany(friends -> {
       List<String> friendIds = friends.stream().map(UserInfo::userId).toList();
-      return geospatialService.searchInBoundingBox(boundingBox).filter(location -> friendIds.contains(location.userId()));
+      return geospatialService.searchInBoundingBox(boundingBox).filter((_) -> true);
     }).doOnComplete(() -> log.debug("Fetched last known locations for bounding box {}", boundingBox));
   }
 
