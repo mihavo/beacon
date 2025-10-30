@@ -18,7 +18,7 @@ public class GatewayConfig {
           .route(
               r -> r.path("/locations/**").filters(getDefaultFilters())
                   .uri("lb://location-service"))
-          .route(r -> r.path("/maps/**").filters(getDefaultFilters()).uri("lb://maps-service"))
+          .route(r -> r.path("/maps/**").filters(getDefaultFilters()).uri("lb://map-service"))
           .route(r -> r.path("/users/**").filters(getDefaultFilters()).uri("lb://user-service"))
           .route(
               r -> r.path("/history/**").filters(getDefaultFilters()).uri("lb://history-service"))
