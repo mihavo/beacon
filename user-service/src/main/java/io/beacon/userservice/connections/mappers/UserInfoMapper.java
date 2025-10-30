@@ -12,7 +12,7 @@ public interface UserInfoMapper {
   @Mapping(source = "lastConnectionTimestamp", target = "friendsSince")
   UserServiceOuterClass.User toGrpcUser(UserInfo userInfo);
 
-  default Instant map(long value) {
-    return Instant.ofEpochMilli(value);
+  default long map(Instant instant) {
+    return instant != null ? instant.toEpochMilli() : 0L;
   }
 }
