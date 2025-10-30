@@ -17,7 +17,7 @@ public class CacheUtils {
   }
 
   public String buildGeospatialMember(UUID userId, Instant capturedAt) {
-    return String.format("{%s}:{%s}", userId.toString(), capturedAt.toString());
+    return String.format("%s:%s", userId.toString(), capturedAt.toString());
   }
 
   public UserTimestamp extractGeospatialMember(String member) {
