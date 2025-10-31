@@ -4,6 +4,7 @@ import io.beacon.events.LocationEvent;
 import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.LocationSubscription;
 import io.beacon.mapservice.utils.GeohashUtils;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -20,13 +21,16 @@ public class EventRouter {
   private final Map<String, Set<LocationSubscription>> geohashSubscriptions = new ConcurrentHashMap<>();
   private final Map<String, LocationSubscription> clientSubscriptions = new ConcurrentHashMap<>();
 
+  //TODO: move it in config
+  private final int GEOHASH_PRECISION = 6;
+
   public Flux<LocationEvent> subscribe(String clientId, BoundingBox boundingBox) {
     Sinks.Many<LocationEvent> sink = Sinks.many().multicast().directBestEffort();
     LocationSubscription subscription = new LocationSubscription(boundingBox, sink);
     clientSubscriptions.put(clientId, subscription);
     log.debug("Subscribed client {} to to bounding box {}", clientId, boundingBox);
 
-    Set<String> geohashes = GeohashUtils.computeGeohashesForBoundingBox(boundingBox);
+    Set<String> geohashes = GeohashUtils.computeGeohashesForBoundingBox(boundingBox, GEOHASH_PRECISION);
     geohashes.forEach(
         geohash -> geohashSubscriptions.computeIfAbsent(geohash, k -> ConcurrentHashMap.newKeySet()).add(subscription));
     log.debug("Generated geohash subscriptions for client {}", clientId);
@@ -43,8 +47,9 @@ public class EventRouter {
 
   public Mono<Void> dispatch(LocationEvent event) {
     return Mono.fromRunnable(() -> {
-      String geohash = org.locationtech.spatial4j.io.GeohashUtils.encodeLatLon(event.longitude(), event.latitude());
-      Set<LocationSubscription> subscriptions = geohashSubscriptions.get(geohash);
+      String geohash =
+          org.locationtech.spatial4j.io.GeohashUtils.encodeLatLon(event.latitude(), event.longitude(), GEOHASH_PRECISION);
+      Set<LocationSubscription> subscriptions = geohashSubscriptions.getOrDefault(geohash, Collections.emptySet());
       subscriptions.forEach(sub -> {
         if (sub.bbox().contains(event.longitude(), event.latitude())) {
           sub.sink().tryEmitNext(event);
