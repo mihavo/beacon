@@ -34,7 +34,7 @@ public class MapController {
       @RequestParam double maxLat,
       @RequestParam double minLon,
       @RequestParam double maxLon) {
-    BoundingBox boundingBox = new BoundingBox(minLat, maxLat, minLon, maxLon);
+    BoundingBox boundingBox = new BoundingBox(minLon, minLat, maxLon, maxLat);
     return mapService.getCurrentLocations(boundingBox);
   }
 }

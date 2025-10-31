@@ -17,15 +17,15 @@ public class CacheUtils {
   }
 
   public String buildGeospatialMember(UUID userId, Instant capturedAt) {
-    return String.format("%s:%s", userId.toString(), capturedAt.toString());
+    return String.format("%s_%s", userId.toString(), capturedAt.toString());
   }
 
   public UserTimestamp extractGeospatialMember(String member) {
-    String[] parts = member.split(":");
+    String[] parts = member.replace("\"", "").split("_");
     if (parts.length != 2) {
       throw new IllegalArgumentException("Invalid member format: " + member);
     }
-    Instant timestamp = Instant.ofEpochMilli(Long.parseLong(parts[1]));
+    Instant timestamp = Instant.parse(parts[1]);
     return new UserTimestamp(parts[0], timestamp);
   }
 
