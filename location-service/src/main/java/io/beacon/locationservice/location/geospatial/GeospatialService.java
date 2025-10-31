@@ -46,7 +46,7 @@ public class GeospatialService {
         CacheUtils.getLocationGeospatialKey(),
         GeoReference.fromCoordinate(new Point(centerLon, centerLat)),
         GeoShape.byBox(widthKm, heightKm, RedisGeoCommands.DistanceUnit.KILOMETERS),
-        RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs()
+        RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeCoordinates()
     ).map(res -> LocationMapper.toUserLocation(res.getContent())
     ).doOnNext((location) -> log.debug("Retrieved geospatial location for user {}", location.userId()));
   }
