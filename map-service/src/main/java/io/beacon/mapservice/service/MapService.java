@@ -5,6 +5,7 @@ import io.beacon.mapservice.mappers.LocationMapper;
 import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.UserLocation;
 import io.beacon.mapservice.router.EventRouter;
+import io.beacon.security.utils.AuthUtils;
 import locationservice.LocationServiceGrpc;
 import locationservice.LocationServiceOuterClass;
 import locationservice.LocationServiceOuterClass.LatestLocationsRequest;
@@ -43,8 +44,11 @@ public class MapService {
                 boundingBox.minLon())
             .setMaxLon(boundingBox.maxLon())
             .build();
-    LatestLocationsRequest req = LatestLocationsRequest.newBuilder().setBbox(bbox).build();
+    return AuthUtils.getCurrentUserId().flatMapMany(userId -> {
+      LatestLocationsRequest req =
+          LatestLocationsRequest.newBuilder().setRequesterUserId(userId.toString()).setBbox(bbox).build();
     LocationServiceOuterClass.LatestLocationsResponse response = locationServiceStub.getLatestLocations(req);
     return Flux.fromIterable(response.getLocationsList()).map(locationMapper::toUserLocation);
+    });
   }
 }
