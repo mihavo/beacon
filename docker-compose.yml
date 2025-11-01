@@ -65,6 +65,7 @@ services:
       - "9191:9090"
     volumes:
       - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    profiles: [ orchestration ]
   grafana:
     image: grafana/grafana
     container_name: beacon-grafana
@@ -72,6 +73,7 @@ services:
       - grafana-data:/var/lib/grafana
     ports:
       - "3000:3000"
+    profiles: [ orchestration ]
   loki:
     image: grafana/loki:latest
     container_name: beacon-loki
@@ -81,6 +83,7 @@ services:
     volumes:
       - ./docker/loki/config.yml:/etc/loki/local-config.yml
       - loki-data:/loki
+    profiles: [ orchestration ]
 
 volumes:
   neo4j_data:
