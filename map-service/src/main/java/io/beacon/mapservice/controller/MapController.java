@@ -3,7 +3,6 @@ package io.beacon.mapservice.controller;
 import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.UserLocation;
 import io.beacon.mapservice.service.MapService;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.codec.ServerSentEvent;
@@ -24,7 +23,7 @@ public class MapController {
   public Flux<ServerSentEvent<UserLocation>> stream(@RequestParam("minLat") double minLat, @RequestParam("maxLat") double maxLat,
       @RequestParam("minLon") double minLon, @RequestParam("maxLon") double maxLon) {
     BoundingBox boundingBox = new BoundingBox(minLon, minLat, maxLon, maxLat);
-    return mapService.subscribe(UUID.randomUUID().toString(), boundingBox)
+    return mapService.subscribeSelf(boundingBox)
         .map(location -> ServerSentEvent.<UserLocation>builder().data(location).build());
   }
 

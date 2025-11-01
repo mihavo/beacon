@@ -35,6 +35,12 @@ public class MapService {
     return router.subscribe(clientId, bbox).map(locationMapper::toUserLocation);
   }
 
+  public Flux<UserLocation> subscribeSelf(BoundingBox bbox) {
+    return AuthUtils.getCurrentUserId().flatMapMany(userId ->
+        router.subscribe(userId.toString(), bbox).map(locationMapper::toUserLocation)
+    );
+  }
+
   public Flux<UserLocation> getCurrentLocations(BoundingBox boundingBox) {
     LocationServiceOuterClass.BoundingBox bbox =
         LocationServiceOuterClass.BoundingBox.newBuilder()
