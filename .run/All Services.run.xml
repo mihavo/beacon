@@ -1,11 +1,11 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="All Services" type="CompoundRunConfigurationType">
+    <toRun name="ApiGatewayApplication" type="SpringBootApplicationConfigurationType" />
     <toRun name="AuthServiceApplication" type="SpringBootApplicationConfigurationType" />
-    <toRun name="GeofenceServiceApplication" type="SpringBootApplicationConfigurationType" />
     <toRun name="HistoryServiceApplication" type="SpringBootApplicationConfigurationType" />
     <toRun name="LocationServiceApplication" type="SpringBootApplicationConfigurationType" />
     <toRun name="MapServiceApplication" type="SpringBootApplicationConfigurationType" />
-    <toRun name="NotificationServiceApplication" type="SpringBootApplicationConfigurationType" />
+    <toRun name="ServiceRegistryApplication" type="SpringBootApplicationConfigurationType" />
     <toRun name="UserServiceApplication" type="SpringBootApplicationConfigurationType" />
     <method v="2" />
   </configuration>
