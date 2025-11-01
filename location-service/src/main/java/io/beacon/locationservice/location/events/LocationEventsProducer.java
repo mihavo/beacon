@@ -14,10 +14,15 @@ public class LocationEventsProducer {
 
   private final KafkaTemplate<String, LocationEvent> template;
 
-  public Mono<Void> send(LocationEvent event) {
+  public Mono<Void> sendAsHistoryEvent(LocationEvent event) {
     return Mono.fromFuture(
-        () -> template.send("user-location-events", event.userId(), event)).doOnSuccess(
-        result -> log.info("Sent location event for user {} at: {}",
+        () -> template.send("location-history-events", event.userId(), event)).doOnSuccess(
+        result -> log.debug("Sent location event at history topic for user {} at: {}",
             event.userId(), result.getRecordMetadata().timestamp())).then();
+  }
+
+  public Mono<Void> sendAsStreamEvent(LocationEvent event) {
+    return Mono.fromFuture(() -> template.send("location-stream-events", event.userId(), event)).doOnSuccess(result -> log.debug(
+        "Sent location event to stream topic for user {} at {}", event.userId(), result.getRecordMetadata().timestamp())).then();
   }
 }

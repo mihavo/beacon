@@ -74,7 +74,7 @@ public class EvictionService {
         .flatMapMany(Flux::fromIterable)
         .concatMap(location -> {
           LocationEvent event = LocationMapper.toLocationEvent(userId, location);
-          return locationEventsProducer.send(event).timeout(Duration.ofSeconds(5)).onErrorResume(ex -> {
+          return locationEventsProducer.sendAsHistoryEvent(event).timeout(Duration.ofSeconds(5)).onErrorResume(ex -> {
             log.error("Send timed out", ex);
             return Mono.empty();
           }).then(flushFromCache(location));

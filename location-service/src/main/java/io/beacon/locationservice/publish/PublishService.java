@@ -1,5 +1,7 @@
 package io.beacon.locationservice.publish;
 
+import io.beacon.events.LocationEvent;
+import io.beacon.locationservice.location.events.LocationEventsProducer;
 import io.beacon.locationservice.location.eviction.EvictionService;
 import io.beacon.locationservice.request.PublishLocationRequest;
 import io.beacon.locationservice.utils.CacheUtils;
@@ -26,6 +28,7 @@ public class PublishService {
 
   private final ReactiveRedisTemplate<String, Object> redisTemplate;
   private final EvictionService evictionService;
+  private final LocationEventsProducer locationEventsProducer;
 
   public Flux<RecordId> publish(Set<PublishLocationRequest> input) {
     Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
@@ -61,8 +64,13 @@ public class PublishService {
               new Point(lastLocation.coords().longitude(), lastLocation.coords().latitude()),
               CacheUtils.buildGeospatialMember(userId, lastLocation.capturedAt()));
 
+      Mono<Void> streamEvent =
+          locationEventsProducer.sendAsStreamEvent(new LocationEvent(userId.toString(), lastLocation.coords().latitude(),
+              lastLocation.coords().longitude(), lastLocation.capturedAt()));
+
       return streamRecords.collectList()
-          .flatMapMany(records -> geoUpdate.thenMany(Flux.fromIterable(records)));
+          .flatMapMany(records -> Mono.when(geoUpdate, streamEvent)
+              .thenMany(Flux.fromIterable(records)));
     });
   }
 }

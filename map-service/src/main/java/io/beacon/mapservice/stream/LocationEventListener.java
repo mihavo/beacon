@@ -15,7 +15,7 @@ public class LocationEventListener {
 
   private final MapService mapService;
 
-  @KafkaListener(topics = "user-location-events", containerFactory = "locationsKafkaListenerContainerFactory")
+  @KafkaListener(topics = "location-history-events", containerFactory = "locationsKafkaListenerContainerFactory")
   public Mono<Void> listen(LocationEvent event) {
     log.debug("Received location event: {}", event);
     return mapService.processLocation(event);
