@@ -5,6 +5,7 @@ import java.util.Set;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
+@Deprecated
 public class GeohashUtils {
 
   public Set<String> computeGeohashesForBoundingBox(BoundingBox bbox, int precision) {

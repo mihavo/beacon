@@ -3,12 +3,13 @@ package io.beacon.mapservice.router;
 import io.beacon.events.LocationEvent;
 import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.LocationSubscription;
-import io.beacon.mapservice.utils.GeohashUtils;
-import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import lombok.extern.slf4j.Slf4j;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.Envelope;
+import org.locationtech.jts.index.quadtree.Quadtree;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -18,11 +19,8 @@ import reactor.core.publisher.Sinks;
 @Slf4j
 public class EventRouter {
 
-  private final Map<String, Set<LocationSubscription>> geohashSubscriptions = new ConcurrentHashMap<>();
+  private final Quadtree subsTree = new Quadtree();
   private final Map<String, LocationSubscription> clientSubscriptions = new ConcurrentHashMap<>();
-
-  //TODO: move it in config
-  private final int GEOHASH_PRECISION = 6;
 
   public Flux<LocationEvent> subscribe(String clientId, BoundingBox boundingBox) {
     Sinks.Many<LocationEvent> sink = Sinks.many().multicast().directBestEffort();
@@ -30,26 +28,22 @@ public class EventRouter {
     clientSubscriptions.put(clientId, subscription);
     log.debug("Subscribed client {} to to bounding box {}", clientId, boundingBox);
 
-    Set<String> geohashes = GeohashUtils.computeGeohashesForBoundingBox(boundingBox, GEOHASH_PRECISION);
-    geohashes.forEach(
-        geohash -> geohashSubscriptions.computeIfAbsent(geohash, k -> ConcurrentHashMap.newKeySet()).add(subscription));
-    log.debug("Generated geohash subscriptions for client {}", clientId);
+    Envelope envelope = new Envelope(boundingBox.minLon(), boundingBox.maxLon(), boundingBox.minLat(), boundingBox.maxLat());
+    subsTree.insert(envelope, subscription);
     return sink.asFlux().doFinally(signal -> unsubscribe(clientId));
   }
 
   public void unsubscribe(String clientId) {
-    LocationSubscription subscription = clientSubscriptions.remove(clientId);
-    if (subscription != null) {
-      geohashSubscriptions.values().forEach(set -> set.remove(subscription));
-    }
-    log.debug("Unsubscribed client {} from location events", clientId);
+    //TODO: figure out how to unsubscribe in quad trees 
+    //LocationSubscription subscription = clientSubscriptions.remove(clientId);
+    //log.debug("Unsubscribed client {} from location events", clientId);
   }
 
+  @SuppressWarnings("unchecked")
   public Mono<Void> dispatch(LocationEvent event) {
     return Mono.fromRunnable(() -> {
-      String geohash =
-          org.locationtech.spatial4j.io.GeohashUtils.encodeLatLon(event.latitude(), event.longitude(), GEOHASH_PRECISION);
-      Set<LocationSubscription> subscriptions = geohashSubscriptions.getOrDefault(geohash, Collections.emptySet());
+      List<LocationSubscription> subscriptions =
+          subsTree.query(new Envelope(new Coordinate(event.longitude(), event.latitude())));
       subscriptions.forEach(sub -> {
         if (sub.bbox().contains(event.longitude(), event.latitude())) {
           sub.sink().tryEmitNext(event);
