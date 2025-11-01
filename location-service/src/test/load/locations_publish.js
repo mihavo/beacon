@@ -1,8 +1,8 @@
 import http from "k6/http";
-import { sleep } from "k6";
-import { vu } from "k6/execution";
+import {sleep} from "k6";
+import {vu} from "k6/execution";
 import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
-import { SharedArray } from "k6/data";
+import {SharedArray} from "k6/data";
 
 const baseUrl = "http://localhost:8080";
 const testUrl = baseUrl + "/locations";
@@ -20,11 +20,10 @@ const users = new SharedArray("Logins", function () {
   return papaparse.parse(open("./data/creds.csv"), { header: true }).data;
 });
 
-const clusters = [
-  { lat: 23.285, lon: -159.244 }, // Hawaii
+const clusters = [// { lat: 23.285, lon: -159.244 }, // Hawaii
   { lat: 48.8566, lon: 2.3522 }, // Europe (Paris)
-  { lat: 34.0479, lon: 100.6197 }, // Asia (China center)
-  { lat: -72.215, lon: -4.094 }, // South America
+  // { lat: 34.0479, lon: 100.6197 }, // Asia (China center)
+  // { lat: -72.215, lon: -4.094 }, // South America
 ];
 
 export const options = {
@@ -54,8 +53,7 @@ export function setup() {
     }
     console.log(`Authenticated User:  ${user.username}`);
     return {
-      ...user,
-      token: res.json("token"),
+      ...user, token: res.json("token"), baseCoords: getRandomClusterCoordinates()
     };
   });
 }
@@ -74,11 +72,11 @@ export default function (data) {
     },
   };
 
-  const baseCoords = getRandomClusterCoordinates();
+  let coords = user.baseCoords;
   const captures = [];
   const baseTimestamp = new Date(new Date().getTime() - 24 * 60 * 60 * 1000); //yesterday, same time
   for (let i = 0; i < 15; i++) {
-    const coords = getCloseCoordinates(baseCoords);
+    coords = moveInDirection(coords);
     const timestamp = new Date(baseTimestamp.getTime() + i * 5000);
     captures.push({
       coords,
@@ -102,4 +100,34 @@ function getCloseCoordinates(baseCoords) {
   const latitude = baseCoords.latitude + (Math.random() - 0.5) * 0.5; // ± ~0.5 km
   const longitude = baseCoords.longitude + (Math.random() - 0.5) * 0.5; // ± ~0.5 km
   return { latitude, longitude };
+}
+
+let currentBearing = Math.random() * 360;
+
+function moveInDirection(baseCoords, distanceMeters = 5) {
+  const earthRadius = 6371000; // meters
+  const bearingRad = (currentBearing * Math.PI) / 180;
+  const lat1 = (baseCoords.latitude * Math.PI) / 180;
+  const lon1 = (baseCoords.longitude * Math.PI) / 180;
+
+  // Calculate new lat/lon using the haversine formula
+  const lat2 = Math.asin(Math.sin(lat1)
+      * Math.cos(distanceMeters / earthRadius)
+      + Math.cos(lat1)
+      * Math.sin(distanceMeters / earthRadius)
+      * Math.cos(bearingRad));
+  const lon2 = lon1 + Math.atan2(Math.sin(bearingRad)
+      * Math.sin(distanceMeters / earthRadius)
+      * Math.cos(lat1), Math.cos(distanceMeters / earthRadius) - Math.sin(lat1) * Math.sin(lat2));
+
+  // Convert back to degrees
+  const newLat = (lat2 * 180) / Math.PI;
+  const newLon = (lon2 * 180) / Math.PI;
+
+  // Slightly change the bearing to make it look more natural (curves)
+  currentBearing += (Math.random() - 0.5) * 10; // small turn up to ±5°
+  if (currentBearing < 0) currentBearing += 360;
+  if (currentBearing >= 360) currentBearing -= 360;
+
+  return {latitude: newLat, longitude: newLon};
 }
