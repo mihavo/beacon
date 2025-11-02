@@ -29,6 +29,7 @@ public class PublishService {
   private final ReactiveRedisTemplate<String, Object> redisTemplate;
   private final EvictionService evictionService;
   private final LocationEventsProducer locationEventsProducer;
+  private final ReactiveRedisTemplate<String, String> valueRedisTemplate;
 
   public Flux<RecordId> publish(Set<PublishLocationRequest> input) {
     Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
@@ -59,13 +60,13 @@ public class PublishService {
           .max(Comparator.comparing(PublishLocationRequest::capturedAt))
           .orElseThrow();
 
-      Mono<Long> geoUpdate = redisTemplate.opsForGeo()
+      Mono<Long> geoUpdate = valueRedisTemplate.opsForGeo()
           .add(CacheUtils.getLocationGeospatialKey(),
               new Point(lastLocation.coords().longitude(), lastLocation.coords().latitude()),
               CacheUtils.buildGeospatialMember(userId));
 
       Mono<Boolean> timestampUpdate =
-          redisTemplate.opsForValue().set(CacheUtils.buildTimestampKey(userId), lastLocation.capturedAt().toString());
+          valueRedisTemplate.opsForValue().set(CacheUtils.buildTimestampKey(userId), lastLocation.capturedAt().toString());
 
       Mono<Void> streamEvent =
           locationEventsProducer.sendAsStreamEvent(new LocationEvent(userId.toString(), lastLocation.coords().latitude(),

@@ -31,7 +31,7 @@ public class RedisConfig {
 
   @Bean
   @Primary
-  public ReactiveStringRedisTemplate defaultRedisTemplate(ReactiveRedisConnectionFactory factory) {
+  public ReactiveStringRedisTemplate valueRedisTemplate(ReactiveRedisConnectionFactory factory) {
     RedisSerializationContext<String, String> context = RedisSerializationContext.<String, String>newSerializationContext(
             new StringRedisSerializer())
         .value(SerializationPair.fromSerializer(RedisSerializer.string()))
