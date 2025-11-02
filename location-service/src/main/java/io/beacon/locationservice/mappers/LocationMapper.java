@@ -4,8 +4,6 @@ import io.beacon.events.LocationEvent;
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.models.Coordinates;
 import io.beacon.locationservice.models.UserLocation;
-import io.beacon.locationservice.models.UserTimestamp;
-import io.beacon.locationservice.utils.CacheUtils;
 import java.time.Instant;
 import java.util.Map;
 import java.util.UUID;
@@ -36,11 +34,11 @@ public final class LocationMapper {
             "capturedAt")));
   }
 
-  public static UserLocation toUserLocation(GeoLocation<String> geoResult) {
-    UserTimestamp userTimestamp = CacheUtils.extractGeospatialMember(geoResult.getName());
-    return new UserLocation(userTimestamp.userId(), Location.builder()
+  public static UserLocation toUserLocation(GeoLocation<String> geoResult, Instant timestamp) {
+    String userId = geoResult.getName();
+    return new UserLocation(userId, Location.builder()
         .coords(new Coordinates(geoResult.getPoint().getY(), geoResult.getPoint().getX()))
-        .timestamp(userTimestamp.timestamp())
+        .timestamp(timestamp)
         .build());
   }
 

@@ -62,14 +62,17 @@ public class PublishService {
       Mono<Long> geoUpdate = redisTemplate.opsForGeo()
           .add(CacheUtils.getLocationGeospatialKey(),
               new Point(lastLocation.coords().longitude(), lastLocation.coords().latitude()),
-              CacheUtils.buildGeospatialMember(userId, lastLocation.capturedAt()));
+              CacheUtils.buildGeospatialMember(userId));
+
+      Mono<Boolean> timestampUpdate =
+          redisTemplate.opsForValue().set(CacheUtils.buildTimestampKey(userId), lastLocation.capturedAt().toString());
 
       Mono<Void> streamEvent =
           locationEventsProducer.sendAsStreamEvent(new LocationEvent(userId.toString(), lastLocation.coords().latitude(),
               lastLocation.coords().longitude(), lastLocation.capturedAt()));
 
       return streamRecords.collectList()
-          .flatMapMany(records -> Mono.when(geoUpdate, streamEvent)
+          .flatMapMany(records -> Mono.when(geoUpdate, timestampUpdate, streamEvent)
               .thenMany(Flux.fromIterable(records)));
     });
   }

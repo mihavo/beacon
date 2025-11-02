@@ -3,6 +3,8 @@ package io.beacon.locationservice.location.geospatial;
 import io.beacon.locationservice.mappers.LocationMapper;
 import io.beacon.locationservice.models.UserLocation;
 import io.beacon.locationservice.utils.CacheUtils;
+import java.time.Instant;
+import java.util.UUID;
 import locationservice.LocationServiceOuterClass;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.data.redis.domain.geo.GeoReference;
 import org.springframework.data.redis.domain.geo.GeoShape;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 @RequiredArgsConstructor
@@ -47,7 +50,12 @@ public class GeospatialService {
         GeoReference.fromCoordinate(new Point(centerLon, centerLat)),
         GeoShape.byBox(widthKm, heightKm, RedisGeoCommands.DistanceUnit.KILOMETERS),
         RedisGeoCommands.GeoSearchCommandArgs.newGeoSearchArgs().includeCoordinates()
-    ).map(res -> LocationMapper.toUserLocation(res.getContent())
-    ).doOnNext((location) -> log.debug("Retrieved geospatial location for user {}", location.userId()));
+        ).flatMap(res -> {
+          RedisGeoCommands.GeoLocation<String> geoContent = res.getContent();
+          Mono<String> last_seen =
+              redisTemplate.opsForValue().get(CacheUtils.buildTimestampKey(UUID.fromString(geoContent.getName())));
+          return last_seen.map(timestamp -> LocationMapper.toUserLocation(geoContent, Instant.parse(timestamp)));
+        })
+        .doOnNext((location) -> log.debug("Retrieved geospatial location for user {}", location.userId()));
   }
 }
