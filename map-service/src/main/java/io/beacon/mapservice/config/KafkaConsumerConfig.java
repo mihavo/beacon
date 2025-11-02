@@ -1,5 +1,6 @@
 package io.beacon.mapservice.config;
 
+import io.beacon.events.FriendshipEvent;
 import io.beacon.events.LocationEvent;
 import java.util.HashMap;
 import java.util.Map;
@@ -33,10 +34,28 @@ public class KafkaConsumerConfig {
   }
 
   @Bean
+  public ConsumerFactory<String, FriendshipEvent> friendshipEventsConsumerFactory() {
+    Map<String, Object> props = new HashMap<>();
+    props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapAddress);
+    JsonDeserializer<FriendshipEvent> deserializer = new JsonDeserializer<>(FriendshipEvent.class);
+    deserializer.addTrustedPackages("io.beacon.events.*");
+    return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(),
+        deserializer);
+  }
+
+  @Bean
   public ConcurrentKafkaListenerContainerFactory<String, LocationEvent> locationsKafkaListenerContainerFactory() {
     ConcurrentKafkaListenerContainerFactory<String, LocationEvent> factory =
         new ConcurrentKafkaListenerContainerFactory<>();
     factory.setConsumerFactory(locationEventsConsumerFactory());
+    return factory;
+  }
+
+  @Bean
+  public ConcurrentKafkaListenerContainerFactory<String, FriendshipEvent> friendshipKafkaListenerContainerFactory() {
+    ConcurrentKafkaListenerContainerFactory<String, FriendshipEvent> factory = new ConcurrentKafkaListenerContainerFactory<>();
+    factory.setConsumerFactory(friendshipEventsConsumerFactory());
     return factory;
   }
 }
