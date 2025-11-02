@@ -1,5 +1,4 @@
 import http from "k6/http";
-import {sleep} from "k6";
 import {vu} from "k6/execution";
 import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
 import {SharedArray} from "k6/data";
@@ -17,7 +16,7 @@ const authUrl = baseUrl + "/auth/login";
 
 //AUTH Method 2: Multiple Users with creds from file in data/creds.csv
 const users = new SharedArray("Logins", function () {
-  return papaparse.parse(open("./data/creds.csv"), { header: true }).data;
+  return papaparse.parse(open("./data/multicreds.csv"), {header: true}).data;
 });
 
 const clusters = [// { lat: 23.285, lon: -159.244 }, // Hawaii
@@ -88,12 +87,19 @@ export default function (data) {
 
   console.log(`Status: ${res.status} Body: ${res.body}`);
 
-  sleep(2 + Math.random() * 5);
+  // sleep(2 + Math.random() * 5);
+  sleep(.5);
 }
 
 function getRandomClusterCoordinates() {
   const cluster = clusters[Math.floor(Math.random() * clusters.length)];
-  return { latitude: cluster.lat, longitude: cluster.lon };
+
+  const maxOffset = 0.05; // ~5 km radius
+
+  const randomLat = cluster.lat + (Math.random() * 2 - 1) * maxOffset;
+  const randomLon = cluster.lon + (Math.random() * 2 - 1) * maxOffset;
+
+  return {latitude: randomLat, longitude: randomLon};
 }
 
 function getCloseCoordinates(baseCoords) {
