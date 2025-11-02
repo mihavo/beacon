@@ -15,9 +15,12 @@ const authUrl = baseUrl + "/auth/login";
 //   throw new Error("AUTH_TOKEN environment variable is not set!");
 // }
 
+const users_limit = 100;
+
 //AUTH Method 2: Multiple Users with creds from file in data/creds.csv
+const filePath = './data/maxcreds.csv'
 const users = new SharedArray("Logins", function () {
-  return papaparse.parse(open("./data/multicreds.csv"), {header: true}).data;
+  return papaparse.parse(open(filePath), {header: true}).data.slice(0, users_limit);
 });
 
 const clusters = [// { lat: 23.285, lon: -159.244 }, // Hawaii
@@ -37,6 +40,7 @@ export function setup() {
       "Authenticating VU" + vu.idInTest + " / username: ",
       user.username,
     );
+
     const res = http.post(
       authUrl,
       JSON.stringify({
@@ -89,7 +93,7 @@ export default function (data) {
   console.log(`Status: ${res.status} Body: ${res.body}`);
 
   // sleep(2 + Math.random() * 5);
-  sleep(.5);
+  sleep(2);
 }
 
 function getRandomClusterCoordinates() {
