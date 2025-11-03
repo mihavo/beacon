@@ -6,6 +6,7 @@ service UserService {
   rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
   rpc GetUserByUsername(GetUserByUsernameRequest) returns (GetUserByUsernameResponse);
   rpc GetUserFriends(GetUserFriendsRequest) returns (GetUserFriendsResponse);
+  rpc GetAllFriendships(GetAllFriendshipsRequest) returns (GetAllFriendshipsResponse);
 }
 
 
@@ -38,9 +39,22 @@ message GetUserFriendsResponse {
   repeated User friends = 1;
 }
 
+message GetAllFriendshipsRequest {
+}
+
+message GetAllFriendshipsResponse {
+  repeated Friendship friendship = 1;
+}
+
 message User {
   string userId = 1;
   string username = 2;
   string fullName = 3;
   int64 friendsSince = 4;
+}
+
+message Friendship {
+  string firstUserId = 1;
+  string secondUserId = 2;
+  int64 since = 3;
 }

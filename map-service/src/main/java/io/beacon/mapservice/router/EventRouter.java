@@ -36,13 +36,13 @@ public class EventRouter {
 
     Envelope envelope = new Envelope(boundingBox.minLon(), boundingBox.maxLon(), boundingBox.minLat(), boundingBox.maxLat());
     subsTree.insert(envelope, subscription);
-    return sink.asFlux().doFinally(signal -> unsubscribe(clientId));
+    return sink.asFlux().doFinally(signal -> unsubscribe(envelope, clientId));
   }
 
-  public void unsubscribe(String clientId) {
-    //TODO: figure out how to unsubscribe in quad trees 
-    //LocationSubscription subscription = clientSubscriptions.remove(clientId);
-    //log.debug("Unsubscribed client {} from location events", clientId);
+  public void unsubscribe(Envelope envelope, String clientId) {
+    LocationSubscription subscription = clientSubscriptions.remove(clientId);
+    subsTree.remove(envelope, subscription);
+    log.debug("Unsubscribed client {} from location events", clientId);
   }
 
   @SuppressWarnings("unchecked")
