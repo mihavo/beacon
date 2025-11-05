@@ -7,6 +7,7 @@ import io.beacon.authservice.dto.RegisterRequest;
 import io.beacon.authservice.dto.RegisterResponse;
 import io.beacon.authservice.grpc.clients.UserGrpcClient;
 import io.beacon.authservice.utils.JWTUtility;
+import io.grpc.StatusRuntimeException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -38,12 +39,17 @@ public class AuthService {
   public Mono<LoginResponse> login(LoginRequest request) {
     return Mono.fromCallable(() -> {
       GetUserByUsernameResponse user = userGrpcClient.getUser(request.username());
-      if (user == null || !passwordEncoder.matches(request.password(), user.getPasswordHash())) {
+      if (!passwordEncoder.matches(request.password(), user.getPasswordHash())) {
         throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
       }
       String token = jwtUtility.generateToken(user.getId());
       return new LoginResponse("Logged in.", token);
-    }).subscribeOn(Schedulers.boundedElastic());
+    }).subscribeOn(Schedulers.boundedElastic()).onErrorMap(StatusRuntimeException.class, e -> {
+      if (e.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND);
+      }
+      return new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, e.getMessage(), e);
+    });
   }
 
 }
