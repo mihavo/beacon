@@ -30,8 +30,8 @@ const clusters = [// { lat: 23.285, lon: -159.244 }, // Hawaii
 ];
 
 export const options = {
-  vus: users.length,
-  iterations: 20, // 10 iterations per VU
+  vus: users.length, // iterations: 20, // 10 iterations per VU
+  duration: '1m'
 };
 
 export function setup() {
