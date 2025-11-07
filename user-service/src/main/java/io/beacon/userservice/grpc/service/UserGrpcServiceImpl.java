@@ -72,5 +72,27 @@ public class UserGrpcServiceImpl extends UserServiceGrpc.UserServiceImplBase {
           }
         }, responseObserver::onCompleted);
   }
+
+  @Override public void getAllFriendships(UserServiceOuterClass.GetAllFriendshipsRequest request,
+      StreamObserver<UserServiceOuterClass.GetAllFriendshipsResponse> responseObserver) {
+    userRepository.getAllFriends()
+        .collectList().map(friendships ->
+            friendships.stream()
+                .map(friendship -> UserServiceOuterClass.Friendship.newBuilder()
+                    .setFirstUserId(friendship.userId())
+                    .setSecondUserId(friendship.friendId())
+                    .build())
+                .toList()
+        )
+        .map(friendships -> UserServiceOuterClass.GetAllFriendshipsResponse.newBuilder().addAllFriendship(friendships).build())
+        .subscribe(responseObserver::onNext, error -> {
+          if (error instanceof StatusRuntimeException) {
+            responseObserver.onError(error);
+          } else {
+            responseObserver.onError(
+                Status.INTERNAL.withDescription(error.getMessage()).asRuntimeException());
+          }
+        }, responseObserver::onCompleted);
+  }
 }
 

@@ -15,7 +15,7 @@ const authUrl = baseUrl + "/auth/login";
 //   throw new Error("AUTH_TOKEN environment variable is not set!");
 // }
 
-//AUTH Method 2: 10k Users with creds from file in data/maxcreds.csv
+//AUTH Method 2: 10k Users with creds from file in data/multicreds.csv
 
 const users_limit = 100;
 
@@ -23,7 +23,7 @@ const bbox = {
   minLon: '1.5', maxLon: '2.8', minLat: '45.3', maxLat: '50.3'
 }
 
-const filePath = './data/maxcreds.csv'
+const filePath = './data/multicreds.csv'
 
 const users = new SharedArray("Logins", function () {
   return papaparse.parse(open(filePath), {header: true}).data.slice(0, users_limit);

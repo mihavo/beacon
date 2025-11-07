@@ -2,6 +2,7 @@ package io.beacon.userservice.user.repository;
 
 import io.beacon.userservice.connections.dto.UserInfo;
 import io.beacon.userservice.user.entity.User;
+import io.beacon.userservice.user.model.UserFriendship;
 import java.util.UUID;
 import org.springframework.data.neo4j.repository.ReactiveNeo4jRepository;
 import org.springframework.data.neo4j.repository.query.Query;
@@ -98,4 +99,12 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
   Flux<UserInfo> getFriends(UUID userId);
 
   Mono<User> findUserByUsername(String username);
+
+  @Query("""
+      MATCH (a:User)-[r:FRIENDS_WITH]-(b:User)
+      RETURN
+            a.id AS userId,
+            b.id AS friendId
+      """)
+  Flux<UserFriendship> getAllFriends();
 }

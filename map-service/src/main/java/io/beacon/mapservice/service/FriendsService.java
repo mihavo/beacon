@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass;
@@ -64,8 +65,14 @@ public class FriendsService {
     List<UserServiceOuterClass.Friendship> allFriendships =
         userStub.getAllFriendships(UserServiceOuterClass.GetAllFriendshipsRequest.newBuilder().build()).getFriendshipList();
 
-    allFriendships.forEach((friendship) -> {
-      String key = CacheUtils.getFriendshipListKey(friendship.getFirstUserId());
-    });
+    Flux.fromIterable(allFriendships)
+        .flatMap(friendship -> {
+          String key = CacheUtils.getFriendshipListKey(friendship.getFirstUserId());
+          return stringRedisTemplate
+              .opsForSet()
+              .add(key, friendship.getSecondUserId());
+        })
+        .then()
+        .subscribe();
   }
 }
