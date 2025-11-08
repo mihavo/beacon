@@ -48,7 +48,7 @@ public class FetchService {
    * @param userId the user id of the requester (owner of friends' relations) 
    * @return all the current user's friends' locations inside the bounding box
    */
-  public Flux<UserLocation> fetchLKL(LocationServiceOuterClass.BoundingBox boundingBox, UUID userId) {
+  public Flux<UserLocation> fetchFriendsLKL(LocationServiceOuterClass.BoundingBox boundingBox, UUID userId) {
     return Flux.fromIterable(userGrpcClient.getUserFriends(userId.toString())
     ).collectList().flatMapMany(friends -> {
       List<String> friendIds = friends.stream().map(UserInfo::userId).toList();

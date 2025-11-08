@@ -1,6 +1,7 @@
 package io.beacon.locationservice.stream;
 
 import io.beacon.locationservice.entity.Location;
+import io.beacon.locationservice.location.service.LocationService;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -14,12 +15,11 @@ import reactor.core.publisher.Flux;
 @RequiredArgsConstructor
 public class StreamController {
 
-  private final StreamService streamService;
+  private final LocationService locationService;
 
   @GetMapping(value = "/{userId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
   public Flux<ServerSentEvent<Location>> stream(@PathVariable UUID userId) {
-    //TODO: communicate with user service for permissions to view location
-    Flux<Location> stream = streamService.stream(userId);
+    Flux<Location> stream = locationService.streamLocations(userId);
     return stream.map(location -> ServerSentEvent.<Location>builder().data(location).build());
   }
 

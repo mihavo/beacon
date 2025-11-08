@@ -30,7 +30,7 @@ public class LocationGrpcServiceImpl extends LocationServiceGrpc.LocationService
       return;
     }
 
-    locationService.fetchLKL(request.getBbox(), requesterId).collectList().map(locations -> {
+    locationService.fetchFriendsLKL(request.getBbox(), requesterId).collectList().map(locations -> {
       List<LocationServiceOuterClass.UserLocation> grpcLocations =
           locations.stream().map(LocationMapper::toGrpcUserLocation).toList();
       return LocationServiceOuterClass.LatestLocationsResponse.newBuilder().addAllLocations(grpcLocations).build();
