@@ -10,6 +10,9 @@ import io.beacon.security.utils.AuthUtils;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.CoordinateXY;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
@@ -20,12 +23,15 @@ public class GeofenceService {
 
   private final GeofenceRepository geofenceRepository;
   private final GeofenceMapper geofenceMapper;
+  private static final GeometryFactory GEO = new GeometryFactory();
 
   public Mono<CreateGeofenceResponse> createGeofence(CreateGeofenceRequest request) {
     return AuthUtils.getCurrentUserId()
         .flatMap(userId -> Mono.fromCallable(() -> {
+          Point point = GEO.createPoint(new CoordinateXY(request.centerLongitude(), request.centerLatitude()));
+          point.setSRID(4326);
           Geofence geofence = Geofence.builder()
-              .center(request.center())
+              .center(point)
               .radius_meters(request.radius_meters())
               .userId(userId)
               .targetId(UUID.fromString(request.userId()))

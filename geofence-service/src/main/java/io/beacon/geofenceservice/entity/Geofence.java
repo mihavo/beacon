@@ -31,7 +31,7 @@ public class Geofence {
   @Column(name = "target_id", updatable = false)
   private UUID targetId;
 
-  @Column(name = "center", columnDefinition = "geography(Point,4326", updatable = false)
+  @Column(name = "center", columnDefinition = "geometry(Point,4326)", updatable = false)
   private Point center;
 
   @Column(name = "radius_meters", updatable = false)

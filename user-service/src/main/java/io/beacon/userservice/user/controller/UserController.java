@@ -23,6 +23,12 @@ public class UserController {
     return user.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
+  @GetMapping("/me")
+  public Mono<ResponseEntity<UserResponse>> getSelf() {
+    Mono<UserResponse> self = userService.getSelf();
+    return self.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
+  }
+
   @DeleteMapping("/{userId}")
   public Mono<ResponseEntity<Void>> deleteUser(@PathVariable UUID userId) {
     return userService.deleteUser(userId).thenReturn(ResponseEntity.ok().build());

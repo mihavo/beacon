@@ -1,10 +1,15 @@
 package io.beacon.geofenceservice.dto;
 
-import org.locationtech.jts.geom.Point;
+import jakarta.validation.constraints.NotNull;
 
 public record CreateGeofenceRequest(
+    @NotNull(message = "User ID is required")
     String userId,
-    Point center,
+    @NotNull(message = "Center point longitude is required")
+    double centerLongitude,
+    @NotNull(message = "Center point latitude is required")
+    double centerLatitude,
+    @NotNull(message = "Center point radius is required")
     Double radius_meters
 ) {
 }
