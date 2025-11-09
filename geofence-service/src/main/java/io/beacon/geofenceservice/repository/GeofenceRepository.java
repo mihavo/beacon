@@ -17,4 +17,21 @@ public interface GeofenceRepository extends JpaRepository<Geofence, UUID> {
   @Transactional
   @Query("UPDATE Geofence g SET g.isActive = :isActive WHERE g.id = :id")
   int updateIsActive(@Param("id") UUID id, @Param("isActive") boolean isActive);
+
+  @Query(value = """
+      SELECT *
+      FROM geofences
+      WHERE ST_DWithin(
+          ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography,
+          ST_SetSRID(center, 4326)::geography,
+          radius_meters)
+      OR ST_DWithin(
+              ST_SetSRID(ST_MakePoint(:lon, :lat), 4326)::geography,
+              ST_SetSRID(center, 4326)::geography,
+              radius_meters + :near_meters
+      );
+      """,
+      nativeQuery = true)
+  List<Geofence> findRelatedGeofences(@Param("lon") double centerLongitude, @Param("lat") double centerLatitude, @Param(
+      "near_meters") double nearMeters);
 }
