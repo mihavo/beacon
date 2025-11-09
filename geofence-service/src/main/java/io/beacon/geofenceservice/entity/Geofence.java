@@ -28,6 +28,9 @@ public class Geofence {
   @Column(name = "user_id", updatable = false)
   private UUID user_id;
 
+  @Column(name = "target_id", updatable = false)
+  private UUID target_id;
+
   @Column(name = "center", columnDefinition = "geography(Point,4326", updatable = false)
   private Point center;
 

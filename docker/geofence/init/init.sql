@@ -5,6 +5,7 @@ CREATE EXTENSION IF NOT EXISTS postgis;
 create table geofences (
     id UUID PRIMARY KEY,
     user_id UUID NOT NULL,
+    target_id UUID NOT NULL,
     center GEOMETRY(POINT, 4326) NOT NULL,
     radius_meters DOUBLE PRECISION NOT NULL
 );
