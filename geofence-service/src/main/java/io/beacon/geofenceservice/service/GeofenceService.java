@@ -63,16 +63,21 @@ public class GeofenceService {
     return updateActiveStatus(geofenceId, true);
   }
 
+  public Mono<Void> deleteGeofence(UUID geofenceId) {
+    return checkOwnership(geofenceId).then(Mono.fromRunnable(() -> geofenceRepository.deleteById(geofenceId))
+        .subscribeOn(Schedulers.boundedElastic())).then();
+  }
+
   private Mono<Void> updateActiveStatus(UUID geofenceId, boolean isActive) {
-    Geofence geofence = geofenceRepository.findById(geofenceId)
-        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Geofence " + geofenceId + " not found."));
-    return checkOwnership(geofence)
+    return checkOwnership(geofenceId)
         .then(Mono.fromCallable(() -> geofenceRepository.updateIsActive(geofenceId, isActive))
             .subscribeOn(Schedulers.boundedElastic()))
         .then();
   }
 
-  private Mono<Void> checkOwnership(Geofence geofence) {
+  private Mono<Void> checkOwnership(UUID geofenceId) {
+    Geofence geofence = geofenceRepository.findById(geofenceId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Geofence " + geofenceId + " not found."));
     return AuthUtils.getCurrentUserId().flatMap(userId -> {
       if (!userId.equals(geofence.getUserId())) {
         return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));

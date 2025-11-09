@@ -9,6 +9,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,5 +45,11 @@ public class GeofenceController {
   public Mono<ResponseEntity<Void>> reactivateGeofence(@PathVariable UUID geofenceId) {
     return geofenceService.reactivateGeofence(geofenceId)
         .then(Mono.just(ResponseEntity.status(HttpStatus.OK).build()));
+  }
+
+  @DeleteMapping("/{geofenceId}")
+  public Mono<ResponseEntity<Void>> deleteGeofence(@PathVariable UUID geofenceId) {
+    return geofenceService.deleteGeofence(geofenceId)
+        .then(Mono.just(ResponseEntity.status(HttpStatus.NO_CONTENT).build()));
   }
 }
