@@ -25,7 +25,7 @@ public class Geofence {
   @GeneratedValue(strategy = GenerationType.UUID)
   private UUID id;
 
-  @Column(name = "user_id", updatable = false)
+  @Column(name = "userId", updatable = false)
   private UUID userId;
 
   @Column(name = "target_id", updatable = false)
