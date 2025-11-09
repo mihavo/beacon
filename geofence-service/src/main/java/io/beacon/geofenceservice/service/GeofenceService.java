@@ -31,11 +31,16 @@ public class GeofenceService {
               .target_id(UUID.fromString(request.userId()))
               .build();
 
-          return geofenceMapper.toResponse(geofenceRepository.save(geofence));
+          return geofenceMapper.toCreateResponse(geofenceRepository.save(geofence));
         }).subscribeOn(Schedulers.boundedElastic()));
   }
 
   public Mono<List<GeofenceResponse>> getAllGeofences() {
-    return Mono.empty();
+    return AuthUtils.getCurrentUserId().flatMap(userId ->
+        Mono.fromCallable(() -> geofenceRepository.getGeofencesByUser_id(userId)
+            .stream()
+            .map(geofenceMapper::toResponse)
+            .toList()).subscribeOn(Schedulers.boundedElastic())
+    );
   }
 }
