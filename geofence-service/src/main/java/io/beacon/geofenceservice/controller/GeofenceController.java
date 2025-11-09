@@ -5,10 +5,13 @@ import io.beacon.geofenceservice.dto.GeofenceResponse;
 import io.beacon.geofenceservice.service.GeofenceService;
 import jakarta.validation.Valid;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -29,5 +32,17 @@ public class GeofenceController {
   public Mono<ResponseEntity<List<GeofenceResponse>>> getAllGeofences() {
     return geofenceService.getAllGeofences()
         .map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
+  }
+
+  @PatchMapping("/{geofenceId}/deactivate")
+  public Mono<ResponseEntity<Void>> deactivateGeofence(@PathVariable UUID geofenceId) {
+    return geofenceService.deactivateGeofence(geofenceId)
+        .then(Mono.just(ResponseEntity.status(HttpStatus.OK).build()));
+  }
+
+  @PatchMapping("/{geofenceId}/reactivate")
+  public Mono<ResponseEntity<Void>> reactivateGeofence(@PathVariable UUID geofenceId) {
+    return geofenceService.reactivateGeofence(geofenceId)
+        .then(Mono.just(ResponseEntity.status(HttpStatus.OK).build()));
   }
 }

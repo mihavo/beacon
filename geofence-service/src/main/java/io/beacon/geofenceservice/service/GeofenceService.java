@@ -15,7 +15,9 @@ import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.CoordinateXY;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -51,5 +53,31 @@ public class GeofenceService {
             .map(geofenceMapper::toResponse)
             .toList()).subscribeOn(Schedulers.boundedElastic())
     );
+  }
+
+  public Mono<Void> deactivateGeofence(UUID geofenceId) {
+    return updateActiveStatus(geofenceId, false);
+  }
+
+  public Mono<Void> reactivateGeofence(UUID geofenceId) {
+    return updateActiveStatus(geofenceId, true);
+  }
+
+  private Mono<Void> updateActiveStatus(UUID geofenceId, boolean isActive) {
+    Geofence geofence = geofenceRepository.findById(geofenceId)
+        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Geofence " + geofenceId + " not found."));
+    return checkOwnership(geofence)
+        .then(Mono.fromCallable(() -> geofenceRepository.updateIsActive(geofenceId, isActive))
+            .subscribeOn(Schedulers.boundedElastic()))
+        .then();
+  }
+
+  private Mono<Void> checkOwnership(Geofence geofence) {
+    return AuthUtils.getCurrentUserId().flatMap(userId -> {
+      if (!userId.equals(geofence.getUserId())) {
+        return Mono.error(new ResponseStatusException(HttpStatus.FORBIDDEN));
+      }
+      return Mono.empty();
+    });
   }
 }
