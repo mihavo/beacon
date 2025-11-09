@@ -4,10 +4,12 @@ import io.beacon.geofenceservice.dto.CreateGeofenceRequest;
 import io.beacon.geofenceservice.dto.CreateGeofenceResponse;
 import io.beacon.geofenceservice.dto.GeofenceResponse;
 import io.beacon.geofenceservice.entity.Geofence;
+import io.beacon.geofenceservice.enums.TriggerType;
 import io.beacon.geofenceservice.mappers.GeofenceMapper;
 import io.beacon.geofenceservice.repository.GeofenceRepository;
 import io.beacon.security.utils.AuthUtils;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.locationtech.jts.geom.CoordinateXY;
@@ -35,6 +37,7 @@ public class GeofenceService {
               .radius_meters(request.radius_meters())
               .userId(userId)
               .targetId(UUID.fromString(request.userId()))
+              .triggerType(Optional.ofNullable(request.triggerType()).orElse(TriggerType.ENTER))
               .build();
 
           return geofenceMapper.toCreateResponse(geofenceRepository.save(geofence));

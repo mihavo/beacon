@@ -1,5 +1,6 @@
 package io.beacon.geofenceservice.entity;
 
+import io.beacon.geofenceservice.enums.TriggerType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -36,4 +37,11 @@ public class Geofence {
 
   @Column(name = "radius_meters", updatable = false)
   private Double radius_meters;
+
+  @Column(name = "trigger_type")
+  private TriggerType triggerType;
+
+  @Column(name = "isActive")
+  @Builder.Default
+  private Boolean isActive = Boolean.TRUE;
 }

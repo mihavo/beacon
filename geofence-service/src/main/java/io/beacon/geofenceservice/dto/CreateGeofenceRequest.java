@@ -1,5 +1,6 @@
 package io.beacon.geofenceservice.dto;
 
+import io.beacon.geofenceservice.enums.TriggerType;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateGeofenceRequest(
@@ -10,6 +11,7 @@ public record CreateGeofenceRequest(
     @NotNull(message = "Center point latitude is required")
     double centerLatitude,
     @NotNull(message = "Center point radius is required")
-    Double radius_meters
+    Double radius_meters,
+    TriggerType triggerType
 ) {
 }
