@@ -20,6 +20,17 @@ services:
     volumes:
       - postgres_history_data:/pgdata
       - ./docker/history/init:/docker-entrypoint-initdb.d
+  geofence-db:
+    image: nickblah/postgis
+    container_name: beacon-geofence-db
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_DB=geofence_db
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-beacon_geofence_db}
+    volumes:
+      - postgres_geofence_data:/pgdata
+      - ./docker/geofence/init:/docker-entrypoint-initdb.d
   location-redis:
     image: redis
     container_name: beacon-location-redis
@@ -95,6 +106,7 @@ services:
 volumes:
   neo4j_data:
   postgres_history_data:
+  postgres_geofence_data:
   location_redis_data:
   map_redis_data:
   grafana-data:

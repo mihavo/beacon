@@ -1,5 +1,3 @@
-CREATE DATABASE history_db;
-
 \connect history_db
 
 CREATE EXTENSION IF NOT EXISTS postgis;
