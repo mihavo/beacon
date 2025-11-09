@@ -27,8 +27,8 @@ public class GeofenceService {
           Geofence geofence = Geofence.builder()
               .center(request.center())
               .radius_meters(request.radius_meters())
-              .user_id(userId)
-              .target_id(UUID.fromString(request.userId()))
+              .userId(userId)
+              .targetId(UUID.fromString(request.userId()))
               .build();
 
           return geofenceMapper.toCreateResponse(geofenceRepository.save(geofence));
@@ -37,7 +37,7 @@ public class GeofenceService {
 
   public Mono<List<GeofenceResponse>> getAllGeofences() {
     return AuthUtils.getCurrentUserId().flatMap(userId ->
-        Mono.fromCallable(() -> geofenceRepository.getGeofencesByUser_id(userId)
+        Mono.fromCallable(() -> geofenceRepository.findByUserId(userId)
             .stream()
             .map(geofenceMapper::toResponse)
             .toList()).subscribeOn(Schedulers.boundedElastic())

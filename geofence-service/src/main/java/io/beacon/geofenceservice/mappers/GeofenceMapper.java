@@ -13,6 +13,6 @@ public interface GeofenceMapper {
   @Mapping(target = "geofence_id", source = "id")
   CreateGeofenceResponse toCreateResponse(Geofence geofence);
 
-  @Mapping(target = "user_id", source = "target_id")
+  @Mapping(target = "user_id", source = "targetId")
   GeofenceResponse toResponse(Geofence geofence);
 }

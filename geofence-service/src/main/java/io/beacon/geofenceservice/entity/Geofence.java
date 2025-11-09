@@ -26,10 +26,10 @@ public class Geofence {
   private UUID id;
 
   @Column(name = "user_id", updatable = false)
-  private UUID user_id;
+  private UUID userId;
 
   @Column(name = "target_id", updatable = false)
-  private UUID target_id;
+  private UUID targetId;
 
   @Column(name = "center", columnDefinition = "geography(Point,4326", updatable = false)
   private Point center;

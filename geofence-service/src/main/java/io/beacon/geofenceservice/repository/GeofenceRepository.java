@@ -7,5 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface GeofenceRepository extends JpaRepository<Geofence, UUID> {
 
-  List<Geofence> getGeofencesByUser_id(UUID userId);
+  List<Geofence> findByUserId(UUID user_id);
 }
