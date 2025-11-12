@@ -15,7 +15,7 @@ public class GeofenceNotificationEventProducer {
   private final KafkaTemplate<String, GeofenceNotificationEvent> template;
 
   public Mono<Void> send(GeofenceNotificationEvent event) {
-    return Mono.fromFuture(() -> template.send(event.geofenceId(), event)).doOnSuccess(
+    return Mono.fromFuture(() -> template.send("geofence-alerts", event.geofenceId(), event)).doOnSuccess(
         result -> log.info("Sent geofence notification event of trigger type {} , producer user {}, target user {} at {}",
             event.triggerType(), event.producerUserId(), event.targetUserId(), result.getRecordMetadata().timestamp())).then();
   }
