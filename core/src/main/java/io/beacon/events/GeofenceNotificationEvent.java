@@ -1,6 +1,6 @@
 package io.beacon.events;
 
-import io.beacon.geofenceservice.enums.TriggerType;
+import io.beacon.events.enums.TriggerType;
 
 public record GeofenceNotificationEvent(
     String producerUserId,

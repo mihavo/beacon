@@ -1,10 +1,10 @@
 package io.beacon.geofenceservice.service;
 
+import io.beacon.events.enums.TriggerType;
 import io.beacon.geofenceservice.dto.CreateGeofenceRequest;
 import io.beacon.geofenceservice.dto.CreateGeofenceResponse;
 import io.beacon.geofenceservice.dto.GeofenceResponse;
 import io.beacon.geofenceservice.entity.Geofence;
-import io.beacon.geofenceservice.enums.TriggerType;
 import io.beacon.geofenceservice.mappers.GeofenceMapper;
 import io.beacon.geofenceservice.repository.GeofenceRepository;
 import io.beacon.security.utils.AuthUtils;

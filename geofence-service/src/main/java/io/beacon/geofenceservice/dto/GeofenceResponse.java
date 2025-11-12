@@ -1,6 +1,6 @@
 package io.beacon.geofenceservice.dto;
 
-import io.beacon.geofenceservice.enums.TriggerType;
+import io.beacon.events.enums.TriggerType;
 
 public record GeofenceResponse(
     String id,

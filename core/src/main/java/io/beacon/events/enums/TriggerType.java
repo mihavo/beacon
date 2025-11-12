@@ -1,4 +1,4 @@
-package io.beacon.geofenceservice.enums;
+package io.beacon.events.enums;
 
 public enum TriggerType {
   ENTER,

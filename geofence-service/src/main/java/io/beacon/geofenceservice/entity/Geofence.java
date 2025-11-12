@@ -1,6 +1,6 @@
 package io.beacon.geofenceservice.entity;
 
-import io.beacon.geofenceservice.enums.TriggerType;
+import io.beacon.events.enums.TriggerType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
