@@ -29,16 +29,18 @@ public class EventsService {
                 EVENT_TRIGGER_TYPE_NEAR_METERS))
         .subscribeOn(Schedulers.boundedElastic())
         .flatMapMany(Flux::fromIterable)
-        .flatMap(this::handleRelatedGeofenceEvent)
+        .flatMap(geofence -> handleRelatedGeofenceEvent(geofence, event))
         .then();
   }
 
-  private Mono<Void> handleRelatedGeofenceEvent(Geofence geofence) {
+  private Mono<Void> handleRelatedGeofenceEvent(Geofence geofence, LocationEvent event) {
     GeofenceNotificationEvent notification = new GeofenceNotificationEvent(
         geofence.getUserId().toString(),
         geofence.getTargetId().toString(),
         geofence.getTriggerType(),
-        geofence.getId().toString()
+        geofence.getId().toString(),
+        event.timestamp()
+
     );
     return notificationEventProducer.send(notification);
   }
