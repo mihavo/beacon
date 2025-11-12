@@ -31,6 +31,17 @@ services:
     volumes:
       - postgres_geofence_data:/pgdata
       - ./docker/geofence/init:/docker-entrypoint-initdb.d
+  notification-db:
+    image: postgres
+    container_name: beacon-notification-db
+    ports:
+      - "5434:5432"
+    environment:
+      - POSTGRES_DB=notification_db
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-beacon_notification_db}
+    volumes:
+      - postgres_notification_data:/pgdata
+      - ./docker/notification/init:/docker-entrypoint-initdb.d
   location-redis:
     image: redis
     container_name: beacon-location-redis
@@ -107,6 +118,7 @@ volumes:
   neo4j_data:
   postgres_history_data:
   postgres_geofence_data:
+  postgres_notification_data:
   location_redis_data:
   map_redis_data:
   grafana-data:
