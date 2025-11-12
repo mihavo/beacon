@@ -55,4 +55,10 @@ public class SubscriptionService {
         }).subscribeOn(Schedulers.boundedElastic())
     );
   }
+
+  public Mono<String> findUserRegistrationToken(UUID userId) {
+    return Mono.fromCallable(() -> subscriptionRepository.findUserRegistrationTokens(userId))
+        .map(List::getFirst)
+        .subscribeOn(Schedulers.boundedElastic());
+  }
 }
