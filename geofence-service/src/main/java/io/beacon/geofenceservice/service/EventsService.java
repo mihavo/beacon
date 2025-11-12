@@ -1,8 +1,8 @@
 package io.beacon.geofenceservice.service;
 
+import io.beacon.events.GeofenceNotificationEvent;
 import io.beacon.events.LocationEvent;
 import io.beacon.geofenceservice.entity.Geofence;
-import io.beacon.geofenceservice.events.GeofenceNotificationEvent;
 import io.beacon.geofenceservice.events.GeofenceNotificationEventProducer;
 import io.beacon.geofenceservice.repository.GeofenceRepository;
 import lombok.RequiredArgsConstructor;

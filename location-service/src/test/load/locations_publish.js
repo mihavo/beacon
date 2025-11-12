@@ -1,6 +1,5 @@
 import http from "k6/http";
 import {vu} from "k6/execution";
-import {sleep} from "k6";
 import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
 import {SharedArray} from "k6/data";
 
@@ -93,7 +92,7 @@ export default function (data) {
   console.log(`Status: ${res.status} Body: ${res.body}`);
 
   // sleep(2 + Math.random() * 5);
-  sleep(.5);
+  // sleep(.5);
 }
 
 function getRandomClusterCoordinates() {

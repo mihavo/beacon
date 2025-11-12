@@ -1,6 +1,6 @@
 package io.beacon.geofenceservice.config;
 
-import io.beacon.geofenceservice.events.GeofenceNotificationEvent;
+import io.beacon.events.GeofenceNotificationEvent;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.clients.producer.ProducerConfig;

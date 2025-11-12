@@ -1,4 +1,4 @@
-package io.beacon.geofenceservice.events;
+package io.beacon.events;
 
 import io.beacon.geofenceservice.enums.TriggerType;
 
