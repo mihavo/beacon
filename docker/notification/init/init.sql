@@ -5,6 +5,8 @@ CREATE TABLE subscriptions (
     token varchar(256) not null unique,
     user_id uuid not null unique,
     device_id uuid not null unique,
+    created_at TIMESTAMP(6) WITH TIME ZONE NOT NULL,
+    updated_at TIMESTAMP(6) WITH TIME ZONE NOT NULL,
     primary key (id)
 );
 
