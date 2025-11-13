@@ -12,7 +12,10 @@ import io.beacon.security.utils.AuthUtils;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -23,6 +26,7 @@ public class SubscriptionService {
   private final SubscriptionRepository subscriptionRepository;
   private final SubscriptionMapper subscriptionMapper;
 
+  @Transactional
   public Mono<SubscribeResponse> subscribe(SubscriptionRequest request) {
     //TODO: get real device id
     return AuthUtils.getCurrentUserId().flatMap(userId ->
@@ -50,7 +54,10 @@ public class SubscriptionService {
   public Mono<UnsubscribeResponse> unsubscribe() {
     return AuthUtils.getCurrentUserId().flatMap(userId ->
         Mono.fromCallable(() -> {
-          int unsubscribeCount = subscriptionRepository.deleteSubscriptionsByUserId(userId);
+          long unsubscribeCount = subscriptionRepository.deleteSubscriptionsByUserId(userId);
+          if (unsubscribeCount == 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "No subscriptions active to unsubscribe from.");
+          }
           return new UnsubscribeResponse("Unsubscribed " + unsubscribeCount + " devices");
         }).subscribeOn(Schedulers.boundedElastic())
     );

@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,7 +34,7 @@ public class SubscriptionController {
     return subscriptionService.getSubscriptions().map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
 
-  @PostMapping("/unsubscribe")
+  @DeleteMapping("/unsubscribe")
   public Mono<ResponseEntity<UnsubscribeResponse>> unsubscribe() {
     return subscriptionService.unsubscribe().map(response -> ResponseEntity.status(HttpStatus.OK).body(response));
   }
