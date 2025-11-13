@@ -1,3 +1,11 @@
+#Healthcecks
+x-healthcheck: &spring-healthcheck
+  test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
+  interval: 5s
+  timeout: 3s
+  retries: 5
+
+
 services:
   # Main Services
   api-gateway:
@@ -11,6 +19,7 @@ services:
       - "8080:8080"
     environment:
       JAVA_OPTS: ""
+    healthcheck: *spring-healthcheck
 
   service-registry:
     build:
@@ -23,7 +32,8 @@ services:
       - "8081:8080"
     environment:
       JAVA_OPTS: ""
-
+    healthcheck: *spring-healthcheck
+  
   auth-service:
     build:
       context: .
@@ -35,7 +45,11 @@ services:
       - "8082:8080"
     environment:
       JAVA_OPTS: ""
-  
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    healthcheck: *spring-healthcheck
+
   location-service:
     build:
       context: .
@@ -47,6 +61,16 @@ services:
       - "8083:8080"
     environment:
       JAVA_OPTS: ""
+    depends_on:
+      service-registry:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      location-redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck: *spring-healthcheck
   
   map-service:
     build:
@@ -59,7 +83,17 @@ services:
       - "8084:8080"
     environment:
       JAVA_OPTS: ""
-  
+    depends_on:
+      service-registry:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      map-redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck: *spring-healthcheck
+
   user-service:
     build:
       context: .
@@ -71,6 +105,16 @@ services:
       - "8085:8080"
     environment:
       JAVA_OPTS: ""
+    depends_on:
+      service-registry:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      user-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck: *spring-healthcheck
 
   history-service:
     build:
@@ -83,6 +127,18 @@ services:
       - "8086:8080"
     environment:
       JAVA_OPTS: ""
+    depends_on:
+      service-registry:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      location-service:
+        condition: service_healthy
+      history-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck: *spring-healthcheck
 
   geofence-service:
     build:
@@ -95,6 +151,18 @@ services:
       - "8087:8080"
     environment:
       JAVA_OPTS: ""
+    depends_on:
+      service-registry:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      location-service:
+        condition: service_healthy
+      geofence-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck: *spring-healthcheck
 
   notification-service:
     build:
@@ -107,7 +175,21 @@ services:
       - "8088:8080"
     environment:
       JAVA_OPTS: ""
-  
+    depends_on:
+      service-registry:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      geofence-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      notification-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    healthcheck: *spring-healthcheck
+
   # Databases & Caching
   user-db:
     image: neo4j
