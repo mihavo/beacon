@@ -19,4 +19,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription, UUID
 
   @Query("SELECT fcmToken FROM Subscription WHERE userId = :userId")
   List<String> findUserRegistrationTokens(@Param("userId") UUID userId);
+
+  boolean existsSubscriptionsByUserId(UUID userId);
 }

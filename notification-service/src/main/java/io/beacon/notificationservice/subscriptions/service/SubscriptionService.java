@@ -30,7 +30,7 @@ public class SubscriptionService {
   public Mono<SubscribeResponse> subscribe(SubscriptionRequest request) {
     //TODO: get real device id
     return AuthUtils.getCurrentUserId().flatMap(userId ->
-        Mono.fromCallable(() -> {
+        ensureSubscriptionExistence(userId).then(Mono.fromCallable(() -> {
           Subscription subscription = Subscription.builder()
               .userId(userId)
               .fcmToken(request.registration_token())
@@ -38,7 +38,7 @@ public class SubscriptionService {
               .build();
           subscriptionRepository.save(subscription);
           return new SubscribeResponse("Subscribed.");
-        }).subscribeOn(Schedulers.boundedElastic()));
+        }).subscribeOn(Schedulers.boundedElastic())));
   }
 
   public Mono<GetSubscriptionsResponse> getSubscriptions() {
@@ -67,5 +67,13 @@ public class SubscriptionService {
     return Mono.fromCallable(() -> subscriptionRepository.findUserRegistrationTokens(userId))
         .map(List::getFirst)
         .subscribeOn(Schedulers.boundedElastic());
+  }
+
+  private Mono<Void> ensureSubscriptionExistence(UUID userId) {
+    return Mono.fromCallable(() -> subscriptionRepository.existsSubscriptionsByUserId(userId))
+        .subscribeOn(Schedulers.boundedElastic())
+        .filter(exists -> !exists)
+        .switchIfEmpty(Mono.error(new ResponseStatusException(HttpStatus.BAD_REQUEST,
+            "Subscriptions already exist for the current user."))).then();
   }
 }
