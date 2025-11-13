@@ -1,4 +1,113 @@
 services:
+  # Main Services
+  api-gateway:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: api-gateway
+    image: api-gateway:latest
+    container_name: beacon-api-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      JAVA_OPTS: ""
+
+  service-registry:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: service-registry
+    image: service-registry:latest
+    container_name: beacon-service-registry
+    ports:
+      - "8081:8080"
+    environment:
+      JAVA_OPTS: ""
+
+  auth-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: auth-service
+    image: auth-service:latest
+    container_name: beacon-auth-service
+    ports:
+      - "8082:8080"
+    environment:
+      JAVA_OPTS: ""
+  
+  location-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: location-service
+    image: location-service:latest
+    container_name: beacon-location-service
+    ports:
+      - "8083:8080"
+    environment:
+      JAVA_OPTS: ""
+  
+  map-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: map-service
+    image: map-service:latest
+    container_name: beacon-map-service
+    ports:
+      - "8084:8080"
+    environment:
+      JAVA_OPTS: ""
+  
+  user-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: user-service
+    image: user-service:latest
+    container_name: beacon-user-service
+    ports:
+      - "8085:8080"
+    environment:
+      JAVA_OPTS: ""
+
+  history-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: history-service
+    image: history-service:latest
+    container_name: beacon-history-service
+    ports:
+      - "8086:8080"
+    environment:
+      JAVA_OPTS: ""
+
+  geofence-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: geofence-service
+    image: geofence-service:latest
+    container_name: beacon-geofence-service
+    ports:
+      - "8087:8080"
+    environment:
+      JAVA_OPTS: ""
+
+  notification-service:
+    build:
+      context: .
+      args:
+        SERVICE_NAME: notification-service
+    image: notification-service:latest
+    container_name: beacon-notification-service
+    ports:
+      - "8088:8080"
+    environment:
+      JAVA_OPTS: ""
+  
   # Databases & Caching
   user-db:
     image: neo4j
