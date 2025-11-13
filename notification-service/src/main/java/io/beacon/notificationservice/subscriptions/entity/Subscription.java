@@ -7,10 +7,14 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "subscriptions")
 public class Subscription {
   @Id
@@ -21,8 +25,8 @@ public class Subscription {
   String fcmToken;
 
   @Column(name = "user_id", nullable = false, unique = true)
-  UUID user_id;
+  UUID userId;
 
   @Column(name = "device_id", nullable = false, unique = true)
-  UUID device_id;
+  UUID deviceId;
 }

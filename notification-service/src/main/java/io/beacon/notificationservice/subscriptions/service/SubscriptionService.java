@@ -28,9 +28,9 @@ public class SubscriptionService {
     return AuthUtils.getCurrentUserId().flatMap(userId ->
         Mono.fromCallable(() -> {
           Subscription subscription = Subscription.builder()
-              .user_id(userId)
+              .userId(userId)
               .fcmToken(request.registration_token())
-              .device_id(UUID.randomUUID())
+              .deviceId(UUID.randomUUID())
               .build();
           subscriptionRepository.save(subscription);
           return new SubscribeResponse("Subscribed.");
@@ -40,7 +40,7 @@ public class SubscriptionService {
   public Mono<GetSubscriptionsResponse> getSubscriptions() {
     return AuthUtils.getCurrentUserId().flatMap(userId ->
         Mono.fromCallable(() -> {
-          List<Subscription> subscriptions = subscriptionRepository.getSubscriptionsByUser_id(userId);
+          List<Subscription> subscriptions = subscriptionRepository.getSubscriptionsByUserId(userId);
           List<SubscriptionResponse> responses = subscriptions.stream().map(subscriptionMapper::toSubscriptionResponse).toList();
           return new GetSubscriptionsResponse(responses, responses.size());
         }).subscribeOn(Schedulers.boundedElastic())
@@ -50,7 +50,7 @@ public class SubscriptionService {
   public Mono<UnsubscribeResponse> unsubscribe() {
     return AuthUtils.getCurrentUserId().flatMap(userId ->
         Mono.fromCallable(() -> {
-          int unsubscribeCount = subscriptionRepository.deleteSubscriptionsByUser_id(userId);
+          int unsubscribeCount = subscriptionRepository.deleteSubscriptionsByUserId(userId);
           return new UnsubscribeResponse("Unsubscribed " + unsubscribeCount + " devices");
         }).subscribeOn(Schedulers.boundedElastic())
     );

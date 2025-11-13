@@ -10,10 +10,11 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, UUID> {
-  List<Subscription> getSubscriptionsByUser_id(UUID userId);
 
-  int deleteSubscriptionsByUser_id(UUID userId);
+  List<Subscription> getSubscriptionsByUserId(UUID userId);
 
-  @Query("SELECT fcmToken FROM Subscription WHERE user_id = :userId")
+  int deleteSubscriptionsByUserId(UUID userId);
+
+  @Query("SELECT fcmToken FROM Subscription WHERE userId = :userId")
   List<String> findUserRegistrationTokens(@Param("userId") UUID userId);
 }
