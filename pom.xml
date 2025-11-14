@@ -23,6 +23,8 @@
   </properties>
 
   <modules>
+    <module>api-gateway</module>
+    <module>service-registry</module>
     <module>location-service</module>
     <module>geofence-service</module>
     <module>map-service</module>

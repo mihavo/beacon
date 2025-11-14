@@ -21,7 +21,10 @@ RUN --mount=type=cache,target=/root/.m2  mvn -f ${SERVICE_NAME}/pom.xml clean pa
 FROM eclipse-temurin:25-jdk
 ARG SERVICE_NAME
 WORKDIR /app
-COPY --from=build /app/${SERVICE_NAME}/target/*.jar app.jar
+
+RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /app/${SERVICE_NAME}/target/*-SNAPSHOT.jar app.jar
 ENV SERVER_PORT=8080
 ENV JAVA_OPTS=""
 EXPOSE 8080
