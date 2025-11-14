@@ -7,7 +7,6 @@
         <artifactId>beacon-parent</artifactId>
         <version>0.1-SNAPSHOT</version>
     </parent>
-    <groupId>io.beacon</groupId>
     <artifactId>service-registry</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>service-registry</name>
@@ -62,6 +61,13 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+              <executions>
+                <execution>
+                  <goals>
+                    <goal>repackage</goal>
+                  </goals>
+                </execution>
+              </executions>
             </plugin>
         </plugins>
     </build>
