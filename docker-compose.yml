@@ -1,10 +1,20 @@
 #Healthcecks
-x-healthcheck: &spring-healthcheck
+x-spring-healthcheck: &spring-healthcheck
   test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
   interval: 5s
   timeout: 3s
   retries: 5
-
+x-redis-healthcheck: &redis-healthcheck
+  test: [ "CMD", "redis-cli", "ping" ]
+  interval: 10s
+  timeout: 5s
+  retries: 5
+x-neo4j-healthcheck: &neo4j-healthcheck
+  test:
+    wget http://localhost:7474 || exit 1
+  interval: 10s
+  timeout: 5s
+  retries: 5
 
 services:
   # Main Services
@@ -201,6 +211,7 @@ services:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-beacon_user_db}
     volumes:
       - neo4j_data:/data
+    healthcheck: *neo4j-healthcheck
   history-db:
     image: timescale/timescaledb-ha:pg17
     container_name: beacon-history-db
@@ -243,7 +254,9 @@ services:
     volumes:
       - location_redis_data:/data
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    healthcheck: *redis-healthcheck
     command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
+
   map-redis:
     image: redis
     container_name: beacon-map-redis
@@ -251,6 +264,7 @@ services:
       - "6380:6379"
     volumes:
       - map_redis_data:/data
+    healthcheck: *redis-healthcheck
 
   # Event Brokers
   kafka:
@@ -276,7 +290,13 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
       - KAFKA_NUM_PARTITIONS=3
       - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
-
+    healthcheck:
+      test: [ "CMD", "bash", "-c", "cub kafka-ready -b localhost:9092 1 20" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+  
   # Orchestration
   prometheus:
     image: prom/prometheus
