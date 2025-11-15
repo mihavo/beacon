@@ -15,6 +15,13 @@ x-neo4j-healthcheck: &neo4j-healthcheck
   interval: 10s
   timeout: 5s
   retries: 5
+x-pg-healthcheck: &pg-healthcheck
+  test: [ "CMD-SHELL", "pg_isready" ]
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 15s
+
 
 services:
   # Main Services
@@ -28,7 +35,9 @@ services:
     ports:
       - "8080:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
     healthcheck: *spring-healthcheck
 
   service-registry:
@@ -36,13 +45,18 @@ services:
       context: .
       args:
         SERVICE_NAME: service-registry
+        SERVICE_PORT: 8761
     image: service-registry:latest
     container_name: beacon-service-registry
     ports:
-      - "8081:8080"
+      - "8761:8761"
     environment:
-      JAVA_OPTS: ""
-    healthcheck: *spring-healthcheck
+      JAVA_OPTS:
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8761/actuator/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
   
   auth-service:
     build:
@@ -54,7 +68,11 @@ services:
     ports:
       - "8082:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      GRPC_PORT: 9090
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
+      GRPC_USER_CHANNEL_URL: user-service:9090
     depends_on:
       service-registry:
         condition: service_healthy
@@ -70,7 +88,15 @@ services:
     ports:
       - "8083:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
+      KAFKA_URL: kafka:9093
+      REDIS_HOST: location-redis
+      REDIS_PORT: 6379
+      GRPC_PORT: 9090
+      GRPC_USER_CHANNEL_URL: user-service:9090
+      GRPC_AUTH_CHANNEL_URL: auth-service:9090
     depends_on:
       service-registry:
         condition: service_healthy
@@ -92,7 +118,15 @@ services:
     ports:
       - "8084:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
+      KAFKA_URL: kafka:9093
+      REDIS_HOST: map-redis
+      REDIS_PORT: 6379
+      GRPC_USER_CHANNEL_URL: user-service:9090
+      GRPC_LOCATION_CHANNEL_URL: location-service:9090
+      GRPC_AUTH_CHANNEL_URL: auth-service:9090
     depends_on:
       service-registry:
         condition: service_healthy
@@ -114,7 +148,13 @@ services:
     ports:
       - "8085:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
+      NEO4J_URI: bolt://user-db:7687
+      KAFKA_URL: kafka:9093
+      GRPC_PORT: 9090
+      GRPC_AUTH_CHANNEL_URL: auth-service:9090
     depends_on:
       service-registry:
         condition: service_healthy
@@ -136,7 +176,12 @@ services:
     ports:
       - "8086:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
+      DB_URL: jdbc:postgresql://history-db:5432/history_db
+      KAFKA_URL: kafka:9093
+      GRPC_AUTH_CHANNEL_URL: auth-service:9090
     depends_on:
       service-registry:
         condition: service_healthy
@@ -160,7 +205,13 @@ services:
     ports:
       - "8087:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
+      DB_URL: jdbc:postgresql://geofence-db:5432/geofence_db
+      KAFKA_URL: kafka:9093
+      GRPC_USER_CHANNEL_URL: user-service:9090
+      GRPC_AUTH_CHANNEL_URL: auth-service:9090
     depends_on:
       service-registry:
         condition: service_healthy
@@ -184,7 +235,13 @@ services:
     ports:
       - "8088:8080"
     environment:
-      JAVA_OPTS: ""
+      JAVA_OPTS:
+      SERVER_PORT: 8080
+      EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
+      DB_URL: jdbc:postgresql://notification-db:5432/notification_db
+      KAFKA_URL: kafka:9093
+      GRPC_USER_CHANNEL_URL: user-service:9090
+      GRPC_AUTH_CHANNEL_URL: auth-service:9090
     depends_on:
       service-registry:
         condition: service_healthy
@@ -212,6 +269,7 @@ services:
     volumes:
       - neo4j_data:/data
     healthcheck: *neo4j-healthcheck
+  
   history-db:
     image: timescale/timescaledb-ha:pg17
     container_name: beacon-history-db
@@ -222,6 +280,8 @@ services:
     volumes:
       - postgres_history_data:/pgdata
       - ./docker/history/init:/docker-entrypoint-initdb.d
+    healthcheck: *pg-healthcheck
+
   geofence-db:
     image: nickblah/postgis
     container_name: beacon-geofence-db
@@ -233,6 +293,8 @@ services:
     volumes:
       - postgres_geofence_data:/pgdata
       - ./docker/geofence/init:/docker-entrypoint-initdb.d
+    healthcheck: *pg-healthcheck
+  
   notification-db:
     image: postgres
     container_name: beacon-notification-db
@@ -244,6 +306,8 @@ services:
     volumes:
       - postgres_notification_data:/pgdata
       - ./docker/notification/init:/docker-entrypoint-initdb.d
+    healthcheck: *pg-healthcheck
+  
   location-redis:
     image: redis
     container_name: beacon-location-redis
@@ -279,12 +343,13 @@ services:
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_PROCESS_ROLES=broker,controller
       - KAFKA_CONTROLLER_LISTENER_NAMES=CONTROLLER
-      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_LISTENERS=HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093,CONTROLLER://0.0.0.0:9094
+      - KAFKA_ADVERTISED_LISTENERS=HOST://localhost:9092,DOCKER://kafka:9093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=DOCKER:PLAINTEXT,HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=DOCKER
       - KAFKA_BROKER_ID=1
       - CLUSTER_ID=EmptNWtoR4GGWx-BH6nGLQ
-      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9093
+      - KAFKA_CONTROLLER_QUORUM_VOTERS=1@kafka:9094
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_NODE_ID=1
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true

@@ -1,5 +1,6 @@
 FROM maven:3.9.11-eclipse-temurin-25 AS build
 ARG SERVICE_NAME
+ARG SERVICE_PORT=8080
 WORKDIR /app
 
 COPY pom.xml ./
@@ -28,7 +29,6 @@ COPY --from=build /app/${SERVICE_NAME}/target/*-SNAPSHOT.jar app.jar
 COPY ${SERVICE_NAME}/.env*.properties ./
 COPY ${SERVICE_NAME}/*.pem ./
 
-ENV SERVER_PORT=8080
 ENV JAVA_OPTS=""
-EXPOSE 8080
+EXPOSE ${SERVICE_PORT} 9090
 ENTRYPOINT ["sh" ,"-c", "java $JAVA_OPTS -jar app.jar"]
