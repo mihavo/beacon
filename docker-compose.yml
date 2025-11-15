@@ -276,6 +276,7 @@ services:
     ports:
       - "5432:5432"
     environment:
+      - POSTGRES_DB=history_db
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-beacon_history_db}
     volumes:
       - postgres_history_data:/pgdata
