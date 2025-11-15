@@ -6,40 +6,52 @@ scrape_configs:
     scrape_interval: 5s
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:9292' ]
+      - targets: [ 'api-gateway:9292' ]
 
   - job_name: 'auth-service'
     scrape_interval: 5s
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:8081' ]
+      - targets: [ 'auth-service:8080' ]
 
   - job_name: 'location-service'
     scrape_interval: 5s
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:8083' ]
+      - targets: [ 'location-service:8080' ]
 
   - job_name: 'user-service'
     scrape_interval: 5s
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:8084' ]
+      - targets: [ 'user-service:8080' ]
 
   - job_name: 'history-service'
     scrape_interval: 5s
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:8085' ]
+      - targets: [ 'history-service:8080' ]
 
   - job_name: 'map-service'
     scrape_interval: 5s
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:8086' ]
+      - targets: [ 'map-service:8080' ]
+
+  - job_name: 'geofence-service'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: [ 'geofence-service:8080' ]
+
+  - job_name: 'notification-service'
+    scrape_interval: 5s
+    metrics_path: "/actuator/prometheus"
+    static_configs:
+      - targets: [ 'notification-service:8080' ]
 
   - job_name: 'service-registry'
     scrape_interval: 5s
     metrics_path: "/actuator/prometheus"
     static_configs:
-      - targets: [ 'host.docker.internal:8761' ]
+      - targets: [ 'service-registry:8761' ]
