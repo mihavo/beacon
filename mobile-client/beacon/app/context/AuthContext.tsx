@@ -52,3 +52,12 @@ export function useAuth() {
     if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
     return ctx;
 }
+
+export async function getToken() {
+    try {
+        return await SecureStore.getItemAsync("token");
+    } catch (error) {
+        console.error(`Error returning token: ${error}`);
+        return null;
+    }
+}
