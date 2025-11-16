@@ -8,7 +8,8 @@ import {
     DeclineFriendResponse,
     DeleteFriendResponse,
     GetConnectionsResponse,
-    GetFriendsResponse
+    GetFriendsResponse,
+    GetUserResponse
 } from "@/types/Connections";
 import {Alert} from "react-native";
 import {BoundingBox, MapSnapshotResponse} from "@/types/Map";
