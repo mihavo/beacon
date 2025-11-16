@@ -1,0 +1,18 @@
+import {Stack} from "expo-router";
+import {useAuth} from "@/app/context/AuthContext";
+
+export default function RootNavigator() {
+    const {isLoggedIn} = useAuth();
+
+    return (
+        <Stack screenOptions={{headerShown: false}}>
+            <Stack.Protected guard={!isLoggedIn}>
+                <Stack.Screen name="auth/login"/>
+            </Stack.Protected>
+
+            <Stack.Protected guard={isLoggedIn}>
+                <Stack.Screen name="private/maps"/>
+            </Stack.Protected>
+        </Stack>
+    )
+}

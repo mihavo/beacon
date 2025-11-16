@@ -1,19 +1,13 @@
-import * as SecureStore from "expo-secure-store";
+const BASE = process.env.EXPO_PUBLIC_API_URL;
 
-const BASE = "https://your-beacon-api";
+export async function login(username: string, password: string) {
 
-export async function login(email: string, password: string) {
-  const res = await fetch(`${BASE}/auth/login`, {
+    const res = await fetch(`${BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+        body: JSON.stringify({username, password}),
   });
-
-  if (!res.ok) return false;
-
-  const data = await res.json();
-  await SecureStore.setItemAsync("token", data.token);
-  return true;
+    return await res.json();
 }
 
 export async function registerUser(dto: any) {
@@ -22,5 +16,5 @@ export async function registerUser(dto: any) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(dto),
   });
-  return res.ok;
+    return await res.json();
 }

@@ -67,7 +67,7 @@ export default function Register() {
 
     const onSubmit = async (data: FormData) => {
         // const ok = await registerUser(data.username, data.fullName, data.password);
-        // if (ok) router.replace("/(protected)/maps");
+        // if (ok) router.replace("/private/maps");
     };
 
     return (

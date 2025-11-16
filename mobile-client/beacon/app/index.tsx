@@ -1,13 +1,12 @@
 import React, {useEffect, useRef} from "react";
-import {Animated, StyleSheet, View} from "react-native";
+import {ActivityIndicator, Animated, StyleSheet, View} from "react-native";
 import {useRouter} from "expo-router";
 import {Ionicons} from "@expo/vector-icons";
+import {useAuth} from "@/app/context/AuthContext";
 
 export default function Index() {
     const router = useRouter();
-
-    // Replace with real login check
-    const isLoggedIn = false;
+    const {isLoggedIn, isReady} = useAuth();
 
     // Animation values
     const scale = useRef(new Animated.Value(0)).current;
@@ -28,12 +27,15 @@ export default function Index() {
                     useNativeDriver: true,
                 }),
             ]),
-            Animated.delay(1000), // show splash a bit longer
+            Animated.delay(800), // show splash a bit longer
         ]).start(() => {
-            // Navigate after animation
-            router.replace(isLoggedIn ? "/maps" : "/auth/login");
+            console.log(`Loading ${isReady}`)
+            if (isReady) {
+                console.log(`From index: logged in ` + isLoggedIn + " ready: " + isReady);
+                router.replace(isLoggedIn ? "/private/maps" : "/auth/login");
+            }
         });
-    }, []);
+    }, [isReady, isLoggedIn]);
 
     return (
         <View style={styles.container}>
@@ -43,6 +45,12 @@ export default function Index() {
             <Animated.Text style={[styles.title, { opacity }]}>
                 Beacon
             </Animated.Text>
+
+            {isReady && (
+                <View style={{marginTop: 30}}>
+                    <ActivityIndicator size="large" color="#007aff"/>
+                </View>
+            )}
         </View>
     );
 }

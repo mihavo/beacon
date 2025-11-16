@@ -1,28 +1,21 @@
 import {DarkTheme, DefaultTheme, ThemeProvider,} from "@react-navigation/native";
-import {Stack} from "expo-router";
 import {StatusBar} from "expo-status-bar";
 import "react-native-reanimated";
 
 import {useColorScheme} from "@/hooks/use-color-scheme";
-
-export const unstable_settings = {
-  anchor: "(tabs)",
-};
+import AuthProvider from "@/app/context/AuthContext";
+import RootNavigator from "@/app/RootNavigator";
+import SplashController from "@/app/splash";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
-    const isLoggedIn = false;
 
-  return (
+    return (
     <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="auth/login" />
-              <Stack.Screen name="auth/register" />
-
-              <Stack.Protected guard={isLoggedIn}>
-                  <Stack.Screen name="maps" />
-              </Stack.Protected>
-          </Stack>
+        <AuthProvider>
+            <SplashController/>
+            <RootNavigator/>
+        </AuthProvider>
       <StatusBar style="auto" />
     </ThemeProvider>
   );
