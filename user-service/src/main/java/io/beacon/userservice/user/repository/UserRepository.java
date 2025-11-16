@@ -74,7 +74,8 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
       MATCH (a:User {id: $userId})-[r:FRIENDS_WITH|SENT_REQUEST]-(b:User)
       RETURN
       b.fullName AS fullName,
-       b.username as username,
+       b.id AS userId,
+      b.username as username,
              CASE 
                WHEN type(r) = 'FRIENDS_WITH' THEN 'FRIENDS_WITH'
                WHEN type(r) = 'SENT_REQUEST' AND startNode(r).id = $userId THEN 'SENT_REQUEST'
