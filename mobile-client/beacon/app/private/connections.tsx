@@ -1,5 +1,5 @@
 import {
-    Image,
+    Alert,
     ScrollView,
     StyleSheet,
     Text,
@@ -8,8 +8,17 @@ import {
     useColorScheme,
     View,
 } from 'react-native';
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import {ProfileMenu} from "@/components/profile-menu";
+import {Connection} from "@/types/Connections";
+import {
+    acceptFriendRequest,
+    connect,
+    declineFriendRequest,
+    getConnections,
+    removeFriend
+} from "@/lib/api";
+import {Ionicons} from "@expo/vector-icons";
 
 export default function Connections() {
     const isDark = useColorScheme() == 'dark';
@@ -99,8 +108,8 @@ export default function Connections() {
     ];
 
     const [searchQuery, setSearchQuery] = useState('');
-    const [pendingRequests, setPendingRequests] = useState(mockPendingRequests);
-    const [friends, setFriends] = useState(mockFriends);
+    const [pendingRequests, setPendingRequests] = useState<Connection[]>([]);
+    const [friends, setFriends] = useState<Connection[]>([]);
     const [searchResults, setSearchResults] = useState([]);
     const [sentRequests, setSentRequests] = useState(new Set());
 
@@ -116,24 +125,38 @@ export default function Connections() {
         }
     };
 
-    const handleAcceptRequest = (id) => {
-        const request = pendingRequests.find(r => r.id === id);
-        if (request) {
-            setFriends([...friends, {...request, status: 'online'}]);
-            setPendingRequests(pendingRequests.filter(r => r.id !== id));
-        }
+    useEffect(() => {
+        (async () => {
+            const response = await getConnections();
+            const friends = response.connections.filter(conn => conn.status === 'FRIENDS_WITH');
+            const pending = response.connections.filter(conn => conn.status === 'PENDING');
+            setFriends(friends);
+            setPendingRequests(pending);
+        })()
+    }, []);
+
+    const handleAcceptRequest = async (id: string) => {
+        const response = await acceptFriendRequest({targetUserId: id})
+        console.log(response);
+        Alert.alert('Accepted Friend Request', JSON.stringify(response));
+    }
+
+    const handleDeclineRequest = async (id: string) => {
+        const response = await declineFriendRequest({targetUserId: id})
+        console.log(response);
+        Alert.alert('Declined Friend Request', JSON.stringify(response));
     };
 
-    const handleDeclineRequest = (id) => {
-        setPendingRequests(pendingRequests.filter(r => r.id !== id));
+    const handleSendRequest = async (id: string) => {
+        const response = await connect(id);
+        console.log(response);
+        Alert.alert('Friend Request Sent', JSON.stringify(response.message));
     };
 
-    const handleSendRequest = (userId) => {
-        setSentRequests(new Set([...sentRequests, userId]));
-    };
-
-    const handleRemoveFriend = (id) => {
-        setFriends(friends.filter(f => f.id !== id));
+    const handleRemoveFriend = async (id: string) => {
+        const response = await removeFriend(id);
+        console.log(response);
+        Alert.alert('Removed connection with friend');
     };
 
     return (
@@ -191,22 +214,22 @@ export default function Connections() {
                             Pending Requests ({pendingRequests.length})
                         </Text>
                         {pendingRequests.map(request => (
-                            <View key={request.id} style={styles.userCard}>
-                                <Image source={{uri: request.avatar}} style={styles.avatar}/>
+                            <View key={request.userId} style={styles.userCard}>
+                                <Ionicons name={'person.circle'} style={styles.avatar}/>
                                 <View style={styles.userInfo}>
-                                    <Text style={styles.userName}>{request.name}</Text>
+                                    <Text style={styles.userName}>{request.fullName}</Text>
                                     <Text style={styles.userUsername}>{request.username}</Text>
                                 </View>
                                 <View style={styles.requestActions}>
                                     <TouchableOpacity
                                         style={styles.acceptButton}
-                                        onPress={() => handleAcceptRequest(request.id)}
+                                        onPress={() => handleAcceptRequest(request.userId)}
                                     >
                                         <Text style={styles.acceptButtonText}>Accept</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
                                         style={styles.declineButton}
-                                        onPress={() => handleDeclineRequest(request.id)}
+                                        onPress={() => handleDeclineRequest(request.userId)}
                                     >
                                         <Text style={styles.declineButtonText}>Decline</Text>
                                     </TouchableOpacity>
@@ -222,19 +245,17 @@ export default function Connections() {
                         Friends ({friends.length})
                     </Text>
                     {friends.map(friend => (
-                        <View key={friend.id} style={styles.userCard}>
+                        <View key={friend.userId} style={styles.userCard}>
                             <View style={styles.avatarContainer}>
-                                <Image source={{uri: friend.avatar}} style={styles.avatar}/>
-                                {friend.status === 'online' && <View
-                                    style={styles.onlineIndicator}/>}
+                                <Ionicons name={'person.circle'} style={styles.avatar}/>
                             </View>
                             <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{friend.name}</Text>
+                                <Text style={styles.userName}>{friend.fullName}</Text>
                                 <Text style={styles.userUsername}>{friend.username}</Text>
                             </View>
                             <TouchableOpacity
                                 style={styles.removeButton}
-                                onPress={() => handleRemoveFriend(friend.id)}
+                                onPress={() => handleRemoveFriend(friend.userId)}
                             >
                                 <Text style={styles.removeButtonText}>Remove</Text>
                             </TouchableOpacity>
@@ -321,17 +342,6 @@ const styles = StyleSheet.create({
         height: 50,
         borderRadius: 25,
         backgroundColor: '#e0e0e0',
-    },
-    onlineIndicator: {
-        position: 'absolute',
-        bottom: 2,
-        right: 2,
-        width: 12,
-        height: 12,
-        borderRadius: 6,
-        backgroundColor: '#4caf50',
-        borderWidth: 2,
-        borderColor: '#fff',
     },
     userInfo: {
         flex: 1,

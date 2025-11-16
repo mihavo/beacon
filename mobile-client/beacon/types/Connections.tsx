@@ -1,4 +1,4 @@
-export type FriendConnection = {
+export type Connection = {
     userId: string;
     fullName: string;
     username: string;
@@ -7,17 +7,20 @@ export type FriendConnection = {
 };
 
 export type GetFriendsResponse = {
-    connections: FriendConnection[];
+    connections: Connection[];
     numOfConnections: number;
 };
 export type GetConnectionsResponse = {
-    connections: FriendConnection[];
+    connections: Connection[];
     numOfConnections: number;
 };
 
 export type ConnectResponse = {
     message: string;
     timestamp: string;
+};
+
+export type DeleteFriendResponse = {
 };
 
 export type AcceptFriendRequest = {

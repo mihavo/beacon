@@ -6,6 +6,7 @@ import {
     ConnectResponse,
     DeclineFriendRequest,
     DeclineFriendResponse,
+    DeleteFriendResponse,
     GetConnectionsResponse,
     GetFriendsResponse
 } from "@/types/Connections";
@@ -60,6 +61,11 @@ export async function getConnections() {
 
 export async function connect(id: string) {
     const res = await axios.post<ConnectResponse>(`users/connections/${id}`);
+    return res.data;
+}
+
+export async function removeFriend(id: string) {
+    const res = await axios.delete<DeleteFriendResponse>(`users/connections/${id}`);
     return res.data;
 }
 
