@@ -9,14 +9,14 @@ export function ProfileMenu() {
                 <ContextMenu.Items>
                     <Button
                         systemImage="person.crop.circle.badge.xmark"
-                        onPress={() => console.log('Pressed1')}>
-                        Hello
+                        onPress={() => console.log('Redirecting to Account')}>
+                        Account
                     </Button>
                     <Button
                         variant="bordered"
-                        systemImage="heart"
-                        onPress={() => console.log('Pressed2')}>
-                        Love it
+                        systemImage="arrow.right.to.line.square"
+                        onPress={() => console.log('Logging out')}>
+                        Log Out
                     </Button>
                 </ContextMenu.Items>
                 <ContextMenu.Trigger>

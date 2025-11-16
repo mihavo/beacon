@@ -10,7 +10,7 @@ export async function login(username: string, password: string) {
     return await res.json();
 }
 
-export async function registerUser(dto: any) {
+export async function register(dto: any) {
   const res = await fetch(`${BASE}/auth/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
