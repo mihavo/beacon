@@ -75,7 +75,8 @@ export default function Login() {
                 await auth.login(res.token);
                 router.replace("/private/maps");
             } else {
-                Alert.alert("Login failed", "Server Error.");
+                console.log(res)
+                Alert.alert("Login failed", res.error);
                 auth.setIsLoading(false)
             }
         } catch (err: any) {

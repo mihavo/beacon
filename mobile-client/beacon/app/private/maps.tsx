@@ -12,6 +12,7 @@ export default function Maps() {
             </View>
 
             <View style={styles.content}>
+
             </View>
         </View>
     );
@@ -36,5 +37,5 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
     },
-    content: {flex: 1},
+    content: {flex: 1, alignItems: 'center', marginTop: 40},
 });

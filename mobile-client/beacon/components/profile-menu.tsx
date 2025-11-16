@@ -1,8 +1,17 @@
 import {Button, ContextMenu, Host} from "@expo/ui/swift-ui";
 import {Ionicons} from "@expo/vector-icons";
 import React from "react";
+import {useAuth} from "@/app/context/AuthContext";
+import {router} from "expo-router";
 
 export function ProfileMenu() {
+    const auth = useAuth();
+
+    const handleLogout = async () => {
+        console.log('Logging out');
+        await auth.logout();
+        router.replace('/auth/login');
+    }
     return (
         <Host>
             <ContextMenu>
@@ -15,7 +24,7 @@ export function ProfileMenu() {
                     <Button
                         variant="bordered"
                         systemImage="arrow.right.to.line.square"
-                        onPress={() => console.log('Logging out')}>
+                        onPress={handleLogout}>
                         Log Out
                     </Button>
                 </ContextMenu.Items>
