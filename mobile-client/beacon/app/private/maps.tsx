@@ -1,23 +1,17 @@
-import {Pressable, StyleSheet, Text, View} from "react-native";
+import {StyleSheet, Text, View} from "react-native";
 import React from "react";
-import {Ionicons} from "@expo/vector-icons";
+import {ProfileMenu} from "@/components/profile-menu";
 
 export default function Maps() {
 
-    const handleLogout = () => {
-
-    }
     return (
         <View style={styles.container}>
             <View style={styles.header}>
                 <Text style={styles.title}>Maps</Text>
-                <Pressable onPress={handleLogout} style={styles.profileButton}>
-                    <Ionicons name={'person-circle'} size={36} color={'#007aff'}></Ionicons>
-                </Pressable>
+                <ProfileMenu/>
             </View>
 
             <View style={styles.content}>
-                
             </View>
         </View>
     );
