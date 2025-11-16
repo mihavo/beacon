@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "io.beacon"
+      "bundleIdentifier": "io.mihavo.beacon"
     },
     "android": {
       "adaptiveIcon": {
@@ -47,8 +47,15 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Allow Beacon to access your Face ID biometric data."
         }
+      ],
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow Beacon to use your location."
+        }
       ]
     ],
+
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true

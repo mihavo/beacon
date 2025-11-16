@@ -1,25 +1,26 @@
-import {StyleSheet, Text, View} from "react-native";
+import {StyleSheet, Text, useColorScheme, View} from "react-native";
 import React from "react";
 import {ProfileMenu} from "@/components/profile-menu";
+import MapViewer from "@/app/private/map-viewer";
 
 export default function Maps() {
-
+    const isDark = useColorScheme() == 'dark';
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Maps</Text>
+        <View style={[styles.container, isDark && styles.containerDark]}>
+            <View style={[styles.header, isDark && styles.headerDark]}>
+                <Text style={[styles.title, isDark && styles.titleDark]}>Maps</Text>
                 <ProfileMenu/>
             </View>
-
-            <View style={styles.content}>
-
-            </View>
+            <MapViewer/>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
     container: {flex: 1},
+    containerDark: {
+        backgroundColor: '#000000',
+    },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -27,6 +28,9 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingTop: 60,
         backgroundColor: '#fff',
+    },
+    headerDark: {
+        backgroundColor: '#1a1a1a',
     },
     title: {fontSize: 24, fontWeight: 'bold'},
     profileButton: {
@@ -36,6 +40,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#f0f0f0',
         justifyContent: 'center',
         alignItems: 'center',
+    }, titleDark: {
+        color: '#ffffff',
     },
-    content: {flex: 1, alignItems: 'center', marginTop: 40},
+    content: {flex: 1, alignItems: 'center'},
 });
