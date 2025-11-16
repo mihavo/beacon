@@ -10,6 +10,7 @@ import {
     GetConnectionsResponse,
     GetFriendsResponse
 } from "@/types/Connections";
+import {Alert} from "react-native";
 
 const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -30,51 +31,66 @@ api.interceptors.request.use(
     }
 );
 
-export async function login(username: string, password: string) {
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        let message = "Something went wrong.";
+        if (error.response?.data?.message) {
+            message = error.response.data.message;
+        } else if (error.message) {
+            message = error.message;
+        }
+        console.log(`The message was ${message}`);
 
-    const res = await fetch(`auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+        Alert.alert("Error", message);
+        return Promise.reject(error);
+    }
+);
+
+export async function login(username: string, password: string) {
+    const res = await fetch(`${BASE}/auth/login`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({username, password}),
-  });
+    });
     return await res.json();
 }
 
 export async function register(dto: any) {
-    const res = await fetch(`auth/register`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(dto),
-  });
+    const res = await fetch(`${BASE}/auth/register`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(dto),
+    });
     return await res.json();
 }
 
 export async function getFriends() {
-    const res = await axios.get<GetFriendsResponse>(`users/connections/friends`);
+    const res = await api.get<GetFriendsResponse>(`users/connections/friends`);
     return res.data;
 }
 
 export async function getConnections() {
-    const res = await axios.get<GetConnectionsResponse>(`users/connections`);
+    const res = await api.get<GetConnectionsResponse>(`users/connections`);
     return res.data;
 }
 
 export async function connect(id: string) {
-    const res = await axios.post<ConnectResponse>(`users/connections/${id}`);
+    const res = await api.post<ConnectResponse>(`users/connections/${id}`);
     return res.data;
 }
 
 export async function removeFriend(id: string) {
-    const res = await axios.delete<DeleteFriendResponse>(`users/connections/${id}`);
+    const res = await api.delete<DeleteFriendResponse>(`users/connections/${id}`);
     return res.data;
 }
 
 export async function acceptFriendRequest(request: AcceptFriendRequest) {
-    const res = await axios.post<AcceptFriendResponse>(`users/connections/accept`, request);
+    const res = await api.post<AcceptFriendResponse>(`users/connections/accept`, request);
     return res.data;
 }
 
 export async function declineFriendRequest(request: DeclineFriendRequest) {
-    const res = await axios.post<DeclineFriendResponse>(`users/connections/decline`, request);
+    const res = await api.post<DeclineFriendResponse>(`users/connections/decline`, request);
     return res.data;
 }

@@ -1,5 +1,6 @@
 import {
     Alert,
+    RefreshControl,
     ScrollView,
     StyleSheet,
     Text,
@@ -8,7 +9,7 @@ import {
     useColorScheme,
     View,
 } from 'react-native';
-import React, {useEffect, useState} from "react";
+import React, {useCallback, useEffect, useState} from "react";
 import {ProfileMenu} from "@/components/profile-menu";
 import {Connection} from "@/types/Connections";
 import {
@@ -16,147 +17,108 @@ import {
     connect,
     declineFriendRequest,
     getConnections,
+    getFriends,
     removeFriend
 } from "@/lib/api";
 import {Ionicons} from "@expo/vector-icons";
 
 export default function Connections() {
-    const isDark = useColorScheme() == 'dark';
-
-    // Mock data
-    const mockPendingRequests = [
-        {
-            id: '1',
-            name: 'Sarah Johnson',
-            username: '@sarahj',
-            avatar: 'https://i.pravatar.cc/150?img=1'
-        },
-        {
-            id: '2',
-            name: 'Mike Chen',
-            username: '@mikechen',
-            avatar: 'https://i.pravatar.cc/150?img=2'
-        },
-        {
-            id: '3',
-            name: 'Emily Davis',
-            username: '@emilyd',
-            avatar: 'https://i.pravatar.cc/150?img=3'
-        },
-    ];
-
-    const mockFriends = [
-        {
-            id: '4',
-            name: 'Alex Thompson',
-            username: '@alexthom',
-            avatar: 'https://i.pravatar.cc/150?img=4',
-            status: 'online'
-        },
-        {
-            id: '5',
-            name: 'Jessica Lee',
-            username: '@jesslee',
-            avatar: 'https://i.pravatar.cc/150?img=5',
-            status: 'offline'
-        },
-        {
-            id: '6',
-            name: 'David Wilson',
-            username: '@davidw',
-            avatar: 'https://i.pravatar.cc/150?img=6',
-            status: 'online'
-        },
-        {
-            id: '7',
-            name: 'Rachel Green',
-            username: '@rachelg',
-            avatar: 'https://i.pravatar.cc/150?img=7',
-            status: 'offline'
-        },
-        {
-            id: '8',
-            name: 'Tom Anderson',
-            username: '@tomand',
-            avatar: 'https://i.pravatar.cc/150?img=8',
-            status: 'online'
-        },
-    ];
-
-    const mockSearchResults = [
-        {
-            id: '9',
-            name: 'Chris Martin',
-            username: '@chrism',
-            avatar: 'https://i.pravatar.cc/150?img=9',
-            connected: false
-        },
-        {
-            id: '10',
-            name: 'Linda Park',
-            username: '@lindap',
-            avatar: 'https://i.pravatar.cc/150?img=10',
-            connected: false
-        },
-        {
-            id: '11',
-            name: 'James Brown',
-            username: '@jamesb',
-            avatar: 'https://i.pravatar.cc/150?img=11',
-            connected: true
-        },
-    ];
+    const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
 
     const [searchQuery, setSearchQuery] = useState('');
     const [pendingRequests, setPendingRequests] = useState<Connection[]>([]);
     const [friends, setFriends] = useState<Connection[]>([]);
     const [searchResults, setSearchResults] = useState([]);
     const [sentRequests, setSentRequests] = useState(new Set());
+    const [refreshing, setRefreshing] = useState(false);
+
+    // Extract the fetch logic into a separate function
+    const fetchPendingConnections = useCallback(async () => {
+        try {
+            const response = await getConnections();
+            const pending = response.connections.filter(conn => conn.status === 'RECEIVED_REQUEST');
+            setPendingRequests(pending);
+        } catch (error) {
+            console.error('Error fetching connections:', error);
+        }
+    }, []);
+
+    const fetchFriends = useCallback(async () => {
+        try {
+            const response = await getFriends();
+            setFriends(response.connections);
+        } catch (error) {
+            console.error('Error fetching connections:', error);
+        }
+    }, []);
+
+    // Initial load
+    useEffect(() => {
+        fetchPendingConnections();
+        fetchFriends();
+    }, [fetchPendingConnections, fetchFriends]);
+
+    // Pull to refresh handler
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        await fetchPendingConnections();
+        setRefreshing(false);
+    }, [fetchPendingConnections]);
 
     const handleSearch = (text) => {
         setSearchQuery(text);
         if (text.trim().length > 0) {
-            setSearchResults(mockSearchResults.filter(user =>
-                user.name.toLowerCase().includes(text.toLowerCase()) ||
-                user.username.toLowerCase().includes(text.toLowerCase())
-            ));
+            // In real app, this would be an API call
+            setSearchResults([]);
         } else {
             setSearchResults([]);
         }
     };
 
-    useEffect(() => {
-        (async () => {
-            const response = await getConnections();
-            const friends = response.connections.filter(conn => conn.status === 'FRIENDS_WITH');
-            const pending = response.connections.filter(conn => conn.status === 'PENDING');
-            setFriends(friends);
-            setPendingRequests(pending);
-        })()
-    }, []);
-
     const handleAcceptRequest = async (id: string) => {
-        const response = await acceptFriendRequest({targetUserId: id})
-        console.log(response);
-        Alert.alert('Accepted Friend Request', JSON.stringify(response));
-    }
+        try {
+            const response = await acceptFriendRequest({targetUserId: id});
+            console.log(response);
+            Alert.alert('Success', 'Friend request accepted');
+            await fetchPendingConnections();
+        } catch (error) {
+            console.error('Error accepting request:', error);
+        }
+    };
 
     const handleDeclineRequest = async (id: string) => {
-        const response = await declineFriendRequest({targetUserId: id})
-        console.log(response);
-        Alert.alert('Declined Friend Request', JSON.stringify(response));
+        try {
+            const response = await declineFriendRequest({targetUserId: id});
+            console.log(response);
+            Alert.alert('Success', 'Friend request declined');
+            await fetchPendingConnections();
+        } catch (error) {
+            console.error('Error declining request:', error);
+        }
     };
 
     const handleSendRequest = async (id: string) => {
-        const response = await connect(id);
-        console.log(response);
-        Alert.alert('Friend Request Sent', JSON.stringify(response.message));
+        try {
+            const response = await connect(id);
+            console.log(response);
+            Alert.alert('Success', 'Friend request sent');
+            setSentRequests(new Set([...sentRequests, id]));
+            await fetchPendingConnections();
+        } catch (error) {
+            console.error('Error sending request:', error);
+        }
     };
 
     const handleRemoveFriend = async (id: string) => {
-        const response = await removeFriend(id);
-        console.log(response);
-        Alert.alert('Removed connection with friend');
+        try {
+            const response = await removeFriend(id);
+            console.log(response);
+            Alert.alert('Success', 'Connection removed');
+            await fetchPendingConnections();
+        } catch (error) {
+            console.error('Error removing friend:', error);
+        }
     };
 
     return (
@@ -165,32 +127,52 @@ export default function Connections() {
                 <Text style={[styles.title, isDark && styles.titleDark]}>Connections</Text>
                 <ProfileMenu/>
             </View>
-            <View style={styles.searchContainer}>
+            <View style={[styles.searchContainer, isDark && styles.searchContainerDark]}>
                 <TextInput
-                    style={styles.searchInput}
+                    style={[styles.searchInput, isDark && styles.searchInputDark]}
                     placeholder="Search users..."
                     value={searchQuery}
                     onChangeText={handleSearch}
-                    placeholderTextColor="#999"
+                    placeholderTextColor={isDark ? '#666' : '#999'}
                 />
             </View>
 
-            <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            <ScrollView
+                style={styles.scrollView}
+                showsVerticalScrollIndicator={false}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={refreshing}
+                        onRefresh={onRefresh}
+                        tintColor={isDark ? '#fff' : '#000'}
+                    />
+                }
+            >
                 {/* Search Results */}
                 {searchQuery.trim().length > 0 && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>Search Results</Text>
+                        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Search
+                            Results</Text>
                         {searchResults.length > 0 ? (
                             searchResults.map(user => (
-                                <View key={user.id} style={styles.userCard}>
+                                <View key={user.id}
+                                      style={[styles.userCard, isDark && styles.userCardDark]}>
+                                    <Ionicons
+                                        name={'person-circle'}
+                                        size={42}
+                                        color={isDark ? '#4a4a4a' : '#e0e0e0'}
+                                    />
                                     <View style={styles.userInfo}>
-                                        <Text style={styles.userName}>{user.name}</Text>
-                                        <Text style={styles.userUsername}>{user.username}</Text>
+                                        <Text style={[styles.userName,
+                                            isDark && styles.userNameDark]}>{user.name}</Text>
+                                        <Text style={[styles.userUsername, isDark
+                                        && styles.userUsernameDark]}>{user.username}</Text>
                                     </View>
                                     {user.connected ? (
                                         <Text style={styles.connectedBadge}>Connected</Text>
                                     ) : sentRequests.has(user.id) ? (
-                                        <Text style={styles.sentBadge}>Sent</Text>
+                                        <Text style={[styles.sentBadge,
+                                            isDark && styles.sentBadgeDark]}>Sent</Text>
                                     ) : (
                                         <TouchableOpacity
                                             style={styles.addButton}
@@ -202,7 +184,8 @@ export default function Connections() {
                                 </View>
                             ))
                         ) : (
-                            <Text style={styles.emptyText}>No users found</Text>
+                            <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>No
+                                users found</Text>
                         )}
                     </View>
                 )}
@@ -210,15 +193,22 @@ export default function Connections() {
                 {/* Pending Requests */}
                 {pendingRequests.length > 0 && (
                     <View style={styles.section}>
-                        <Text style={styles.sectionTitle}>
+                        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
                             Pending Requests ({pendingRequests.length})
                         </Text>
                         {pendingRequests.map(request => (
-                            <View key={request.userId} style={styles.userCard}>
-                                <Ionicons name={'person.circle'} style={styles.avatar}/>
+                            <View key={request.userId}
+                                  style={[styles.userCard, isDark && styles.userCardDark]}>
+                                <Ionicons
+                                    name={'person-circle'}
+                                    size={42}
+                                    color={isDark ? '#4a4a4a' : '#e0e0e0'}
+                                />
                                 <View style={styles.userInfo}>
-                                    <Text style={styles.userName}>{request.fullName}</Text>
-                                    <Text style={styles.userUsername}>{request.username}</Text>
+                                    <Text style={[styles.userName,
+                                        isDark && styles.userNameDark]}>{request.fullName}</Text>
+                                    <Text style={[styles.userUsername, isDark
+                                    && styles.userUsernameDark]}>{request.username}</Text>
                                 </View>
                                 <View style={styles.requestActions}>
                                     <TouchableOpacity
@@ -228,10 +218,12 @@ export default function Connections() {
                                         <Text style={styles.acceptButtonText}>Accept</Text>
                                     </TouchableOpacity>
                                     <TouchableOpacity
-                                        style={styles.declineButton}
+                                        style={[styles.declineButton,
+                                            isDark && styles.declineButtonDark]}
                                         onPress={() => handleDeclineRequest(request.userId)}
                                     >
-                                        <Text style={styles.declineButtonText}>Decline</Text>
+                                        <Text style={[styles.declineButtonText,
+                                            isDark && styles.declineButtonTextDark]}>Decline</Text>
                                     </TouchableOpacity>
                                 </View>
                             </View>
@@ -241,26 +233,38 @@ export default function Connections() {
 
                 {/* Friends List */}
                 <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>
+                    <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
                         Friends ({friends.length})
                     </Text>
-                    {friends.map(friend => (
-                        <View key={friend.userId} style={styles.userCard}>
-                            <View style={styles.avatarContainer}>
-                                <Ionicons name={'person.circle'} style={styles.avatar}/>
+                    {friends.length > 0 ? (
+                        friends.map(friend => (
+                            <View key={friend.userId}
+                                  style={[styles.userCard, isDark && styles.userCardDark]}>
+                                <View style={styles.avatarContainer}>
+                                    <Ionicons
+                                        name={'person-circle'}
+                                        size={42}
+                                        color={isDark ? '#4a4a4a' : '#e0e0e0'}
+                                    />
+                                </View>
+                                <View style={styles.userInfo}>
+                                    <Text style={[styles.userName,
+                                        isDark && styles.userNameDark]}>{friend.fullName}</Text>
+                                    <Text style={[styles.userUsername,
+                                        isDark && styles.userUsernameDark]}>{friend.username}</Text>
+                                </View>
+                                <TouchableOpacity
+                                    style={[styles.removeButton, isDark && styles.removeButtonDark]}
+                                    onPress={() => handleRemoveFriend(friend.userId)}
+                                >
+                                    <Text style={styles.removeButtonText}>Remove</Text>
+                                </TouchableOpacity>
                             </View>
-                            <View style={styles.userInfo}>
-                                <Text style={styles.userName}>{friend.fullName}</Text>
-                                <Text style={styles.userUsername}>{friend.username}</Text>
-                            </View>
-                            <TouchableOpacity
-                                style={styles.removeButton}
-                                onPress={() => handleRemoveFriend(friend.userId)}
-                            >
-                                <Text style={styles.removeButtonText}>Remove</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ))}
+                        ))
+                    ) : (
+                        <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>No friends
+                            yet</Text>
+                    )}
                 </View>
             </ScrollView>
         </View>
@@ -268,7 +272,10 @@ export default function Connections() {
 };
 
 const styles = StyleSheet.create({
-    container: {flex: 1},
+    container: {
+        flex: 1,
+        backgroundColor: '#f8f9fa',
+    },
     containerDark: {
         backgroundColor: '#000000',
     },
@@ -279,27 +286,30 @@ const styles = StyleSheet.create({
         padding: 16,
         paddingTop: 60,
         backgroundColor: '#fff',
+        borderBottomWidth: 1,
+        borderBottomColor: '#e0e0e0',
     },
     headerDark: {
         backgroundColor: '#1a1a1a',
+        borderBottomColor: '#333',
     },
-    title: {fontSize: 24, fontWeight: 'bold'},
-    profileButton: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        backgroundColor: '#f0f0f0',
-        justifyContent: 'center',
-        alignItems: 'center',
-    }, titleDark: {
+    title: {
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#000',
+    },
+    titleDark: {
         color: '#ffffff',
     },
-    content: {flex: 1, alignItems: 'center'},
     searchContainer: {
         padding: 16,
         backgroundColor: '#fff',
         borderBottomWidth: 1,
         borderBottomColor: '#e0e0e0',
+    },
+    searchContainerDark: {
+        backgroundColor: '#1a1a1a',
+        borderBottomColor: '#333',
     },
     searchInput: {
         backgroundColor: '#f0f0f0',
@@ -308,18 +318,26 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: '#000',
     },
+    searchInputDark: {
+        backgroundColor: '#2a2a2a',
+        color: '#ffffff',
+    },
     scrollView: {
         flex: 1,
     },
     section: {
         marginTop: 20,
         paddingHorizontal: 16,
+        marginBottom: 20,
     },
     sectionTitle: {
         fontSize: 18,
         fontWeight: '600',
         color: '#333',
         marginBottom: 12,
+    },
+    sectionTitleDark: {
+        color: '#ffffff',
     },
     userCard: {
         flexDirection: 'row',
@@ -334,14 +352,13 @@ const styles = StyleSheet.create({
         shadowRadius: 3,
         elevation: 2,
     },
+    userCardDark: {
+        backgroundColor: '#1a1a1a',
+        shadowColor: '#fff',
+        shadowOpacity: 0.1,
+    },
     avatarContainer: {
         position: 'relative',
-    },
-    avatar: {
-        width: 50,
-        height: 50,
-        borderRadius: 25,
-        backgroundColor: '#e0e0e0',
     },
     userInfo: {
         flex: 1,
@@ -353,9 +370,15 @@ const styles = StyleSheet.create({
         color: '#000',
         marginBottom: 2,
     },
+    userNameDark: {
+        color: '#ffffff',
+    },
     userUsername: {
         fontSize: 14,
         color: '#666',
+    },
+    userUsernameDark: {
+        color: '#999',
     },
     requestActions: {
         flexDirection: 'row',
@@ -378,10 +401,16 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 6,
     },
+    declineButtonDark: {
+        backgroundColor: '#2a2a2a',
+    },
     declineButtonText: {
         color: '#666',
         fontWeight: '600',
         fontSize: 14,
+    },
+    declineButtonTextDark: {
+        color: '#999',
     },
     addButton: {
         backgroundColor: '#007bff',
@@ -400,6 +429,9 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         borderRadius: 6,
     },
+    removeButtonDark: {
+        backgroundColor: '#2a2a2a',
+    },
     removeButtonText: {
         color: '#dc3545',
         fontWeight: '600',
@@ -415,10 +447,16 @@ const styles = StyleSheet.create({
         fontWeight: '600',
         fontSize: 14,
     },
+    sentBadgeDark: {
+        color: '#999',
+    },
     emptyText: {
         textAlign: 'center',
         color: '#999',
         fontSize: 14,
         paddingVertical: 20,
+    },
+    emptyTextDark: {
+        color: '#666',
     },
 });
