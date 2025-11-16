@@ -11,6 +11,7 @@ import {
     GetFriendsResponse
 } from "@/types/Connections";
 import {Alert} from "react-native";
+import {BoundingBox, MapSnapshotResponse} from "@/types/Map";
 
 const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -48,25 +49,25 @@ api.interceptors.response.use(
 );
 
 export async function login(username: string, password: string) {
-    const res = await fetch(`${BASE}/auth/login`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify({username, password}),
+    const res = await api.post<any>('auth/login', {
+        username,
+        password
     });
-    return await res.json();
+    return res.data;
 }
 
 export async function register(dto: any) {
-    const res = await fetch(`${BASE}/auth/register`, {
-        method: "POST",
-        headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(dto),
-    });
-    return await res.json();
+    const res = await api.post<any>('auth/register', dto);
+    return res.data;
 }
 
 export async function getFriends() {
     const res = await api.get<GetFriendsResponse>(`users/connections/friends`);
+    return res.data;
+}
+
+export async function getUser(id: string) {
+    const res = await api.get<GetUserResponse>(`users/${id}`);
     return res.data;
 }
 
@@ -92,5 +93,11 @@ export async function acceptFriendRequest(request: AcceptFriendRequest) {
 
 export async function declineFriendRequest(request: DeclineFriendRequest) {
     const res = await api.post<DeclineFriendResponse>(`users/connections/decline`, request);
+    return res.data;
+}
+
+export async function getInitialSnapshot(request: BoundingBox) {
+    const res = await api.get<MapSnapshotResponse>(
+        `maps/snapshot?minLon=${request.minLon}&maxLon=${request.maxLon}&minLat=${request.minLat}&maxLat=${request.maxLat}`);
     return res.data;
 }

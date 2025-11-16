@@ -14,6 +14,11 @@ export type GetConnectionsResponse = {
     connections: Connection[];
     numOfConnections: number;
 };
+export type GetUserResponse = {
+    id: string;
+    username: string;
+    fullName: string;
+};
 
 export type ConnectResponse = {
     message: string;
