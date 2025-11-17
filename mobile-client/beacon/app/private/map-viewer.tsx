@@ -4,8 +4,10 @@ import * as Location from 'expo-location';
 import {PermissionStatus} from 'expo-location';
 import MapView, {Callout, Marker, Region} from "react-native-maps";
 import {Ionicons} from '@expo/vector-icons';
-import {getInitialSnapshot, getUser} from '@/lib/api';
+import {BASE, getInitialSnapshot, getUser} from '@/lib/api';
+import EventSource from "react-native-sse";
 import {BoundingBox, MapSnapshotResponse} from "@/types/Map";
+import {getToken} from "@/app/context/AuthContext";
 
 type EnrichedSnapshot = MapSnapshotResponse[0] & {
     userData?: any;
@@ -14,6 +16,8 @@ type EnrichedSnapshot = MapSnapshotResponse[0] & {
 export default function MapViewer() {
     const [region, setRegion] = useState<Region | null>(null);
     const [snapshots, setSnapshots] = useState<EnrichedSnapshot[]>([]);
+    const [snapshotLoaded, setSnapshotLoaded] = useState(false);
+    const [authToken, setAuthToken] = useState<string | null>(null);
     const mapRef = useRef<MapView>(null);
     const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -34,6 +38,7 @@ export default function MapViewer() {
             const boundingBox = regionToBoundingBox(currentRegion);
             const data = await getInitialSnapshot(boundingBox);
             setSnapshots(data);
+            setSnapshotLoaded(true);
         } catch (error) {
             console.error('Error fetching snapshots:', error);
         }
@@ -47,6 +52,14 @@ export default function MapViewer() {
         debounceTimer.current = setTimeout(() => {
             fetchSnapshots(newRegion);
         }, 1200);
+    }, []);
+
+    useEffect(() => {
+        (async () => {
+            const token = await getToken();
+            if (!token) throw new Error("Token is missing. User must login.");
+            setAuthToken(token);
+        })()
     }, []);
 
     useEffect(() => {
@@ -70,7 +83,39 @@ export default function MapViewer() {
                 clearTimeout(debounceTimer.current);
             }
         };
-    }, []);
+    }, [fetchSnapshots]);
+
+    useEffect(() => {
+        if (authToken && region) {
+            const bbox = regionToBoundingBox(region);
+            const es = new EventSource(
+                `${BASE}/maps/subscribe?minLon=${bbox.minLon}&maxLon=${bbox.maxLon}&minLat=${bbox.minLat}&maxLat=${bbox.maxLat}`,
+                {
+                    headers: {
+                        Authorization: {
+                            toString: function () {
+                                return `Bearer ${authToken}`;
+                            },
+                        },
+                    },
+                });
+            es.addEventListener("open", () => {
+                console.log("Maps SSE connection opened");
+            });
+            if (snapshotLoaded) {
+                es.addEventListener("message", (e) => {
+                    console.log("New map stream message:", e.data);
+                });
+
+                es.addEventListener("error", (e) => {
+                    console.log("SSE error:", e);
+                });
+            }
+            return () => {
+                es.close();
+            };
+        }
+    }, [authToken, region, snapshotLoaded]);
 
     const handleRegionChangeComplete = (newRegion: Region) => {
         setRegion(newRegion);

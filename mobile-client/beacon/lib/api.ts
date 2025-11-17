@@ -14,7 +14,7 @@ import {
 import {Alert} from "react-native";
 import {BoundingBox, MapSnapshotResponse} from "@/types/Map";
 
-const BASE = process.env.EXPO_PUBLIC_API_URL;
+export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
 const api = axios.create({
     baseURL: BASE,
@@ -42,8 +42,6 @@ api.interceptors.response.use(
         } else if (error.message) {
             message = error.message;
         }
-        console.log(`The message was ${message}`);
-
         Alert.alert("Error", message);
         return Promise.reject(error);
     }
