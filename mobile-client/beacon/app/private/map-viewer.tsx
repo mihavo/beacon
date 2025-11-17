@@ -4,7 +4,7 @@ import * as Location from 'expo-location';
 import {PermissionStatus} from 'expo-location';
 import MapView, {Callout, Marker, Region} from "react-native-maps";
 import {Ionicons} from '@expo/vector-icons';
-import {BASE, getInitialSnapshot, getUser} from '@/lib/api';
+import {BASE, getInitialSnapshot, getUser, sendBatchedLocations} from '@/lib/api';
 import EventSource from "react-native-sse";
 import {BoundingBox, MapSnapshotResponse} from "@/types/Map";
 import {getToken} from "@/app/context/AuthContext";
@@ -13,12 +13,22 @@ type EnrichedSnapshot = MapSnapshotResponse[0] & {
     userData?: any;
 };
 
+interface BatchedLocation {
+    latitude: number;
+    longitude: number;
+    timestamp: number;
+}
+
 export default function MapViewer() {
+    const LOCATION_BATCH_INTERVAL = 5000;
     const [region, setRegion] = useState<Region | null>(null);
     const [snapshots, setSnapshots] = useState<EnrichedSnapshot[]>([]);
     const [snapshotLoaded, setSnapshotLoaded] = useState(false);
     const [authToken, setAuthToken] = useState<string | null>(null);
     const mapRef = useRef<MapView>(null);
+    const [batch, setBatch] = useState<BatchedLocation[]>([]);
+    const locationBuffer = useRef<BatchedLocation[]>([]);
+    const [permission, requestPermission] = Location.useForegroundPermissions();
     const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const regionToBoundingBox = (region: Region): BoundingBox => {
@@ -61,6 +71,55 @@ export default function MapViewer() {
             setAuthToken(token);
         })()
     }, []);
+
+    useEffect(() => {
+        let subscription: Location.LocationSubscription | null = null;
+
+        (async () => {
+            if (permission?.granted) {
+                const res = await requestPermission();
+                if (!res.granted) return;
+            }
+
+            subscription = await Location.watchPositionAsync(
+                {
+                    accuracy: Location.Accuracy.High,
+                    timeInterval: 1000,
+                    distanceInterval: 1,
+                },
+                (loc) => {
+                    const newPoint: BatchedLocation = {
+                        latitude: loc.coords.latitude,
+                        longitude: loc.coords.longitude,
+                        timestamp: loc.timestamp,
+                    };
+                    locationBuffer.current.push(newPoint);
+                }
+            );
+        })();
+
+        const intervalId = setInterval(() => {
+            (async () => {
+                if (locationBuffer.current.length > 0) {
+                    setBatch((prev) => [...prev, ...locationBuffer.current]);
+                    console.log(`About to send ${batch.length} batched.`);
+                    const request = batch.map(loc => ({
+                        coords: {
+                            latitude: loc.latitude,
+                            longitude: loc.longitude,
+                        },
+                        capturedAt: new Date(loc.timestamp).toISOString(),
+                    }));
+                    await sendBatchedLocations(request);
+                    locationBuffer.current = [];
+                }
+            })();
+        }, LOCATION_BATCH_INTERVAL);
+
+        return () => {
+            subscription?.remove();
+        };
+    }, [permission, requestPermission, batch]);
 
     useEffect(() => {
         (async () => {

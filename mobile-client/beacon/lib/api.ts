@@ -12,7 +12,7 @@ import {
     GetUserResponse
 } from "@/types/Connections";
 import {Alert} from "react-native";
-import {BoundingBox, MapSnapshotResponse} from "@/types/Map";
+import {BoundingBox, MapSnapshotResponse, SendBatchedLocationsRequest} from "@/types/Map";
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -98,5 +98,10 @@ export async function declineFriendRequest(request: DeclineFriendRequest) {
 export async function getInitialSnapshot(request: BoundingBox) {
     const res = await api.get<MapSnapshotResponse>(
         `maps/snapshot?minLon=${request.minLon}&maxLon=${request.maxLon}&minLat=${request.minLat}&maxLat=${request.maxLat}`);
+    return res.data;
+}
+
+export async function sendBatchedLocations(request: SendBatchedLocationsRequest) {
+    const res = await api.get(`locations/`);
     return res.data;
 }

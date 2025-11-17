@@ -12,3 +12,8 @@ export type MapSnapshotResponse = {
     userId: string,
     coords: Coords,
 }[];
+
+export type SendBatchedLocationsRequest = {
+    coords: Coords;
+    capturedAt: string;
+}[]
