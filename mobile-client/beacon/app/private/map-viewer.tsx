@@ -104,7 +104,12 @@ export default function MapViewer() {
             });
             if (snapshotLoaded) {
                 es.addEventListener("message", (e) => {
-                    console.log("New map stream message:", e.data);
+                    const snapshot: MapSnapshotResponse[0] = JSON.parse(e.data!);
+                    setSnapshots(prev =>
+                        prev.some(sn => sn.userId === snapshot.userId)
+                            ? prev.map(sn => sn.userId === snapshot.userId ? snapshot : sn)
+                            : [...prev, snapshot]
+                    );
                 });
 
                 es.addEventListener("error", (e) => {
