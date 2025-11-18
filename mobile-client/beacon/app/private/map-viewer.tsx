@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import * as Location from 'expo-location';
 import {PermissionStatus} from 'expo-location';
@@ -21,12 +21,11 @@ interface BatchedLocation {
 
 export default function MapViewer() {
     const LOCATION_BATCH_INTERVAL = 10000;
-    const ZOOM_THRESHOLD = 1.0; // Adjust based on your needs
-    const MAX_SNAPSHOTS = 100; // Limit number of markers
+    const ZOOM_THRESHOLD = 1.0;
+    const MAX_SNAPSHOTS = 100;
 
     const [region, setRegion] = useState<Region | null>(null);
     const [snapshots, setSnapshots] = useState<EnrichedSnapshot[]>([]);
-    const [snapshotLoaded, setSnapshotLoaded] = useState(false);
     const [authToken, setAuthToken] = useState<string | null>(null);
     const [isLoadingSnapshots, setIsLoadingSnapshots] = useState(false);
     const [isZoomedOut, setIsZoomedOut] = useState(false);
@@ -57,7 +56,6 @@ export default function MapViewer() {
                 currentRegion.longitudeDelta > ZOOM_THRESHOLD) {
                 setIsZoomedOut(true);
                 setSnapshots([]);
-                setSnapshotLoaded(false);
                 return;
             }
 
@@ -67,7 +65,6 @@ export default function MapViewer() {
 
             const limitedData = data.slice(0, MAX_SNAPSHOTS);
             setSnapshots(limitedData);
-            setSnapshotLoaded(true);
         } catch (error) {
             console.error('Error fetching snapshots:', error);
             setSnapshots([]);
@@ -93,22 +90,35 @@ export default function MapViewer() {
         })()
     }, []);
 
+    // Location tracking and batching
     useEffect(() => {
         let subscription: Location.LocationSubscription | null = null;
+        let intervalId: number;
 
         (async () => {
-            if (permission?.granted) {
+            if (!permission?.granted) {
                 const res = await requestPermission();
-                if (!res.granted) return;
+                if (!res.granted) {
+                    console.debug('Location permission denied');
+                    return;
+                }
             }
+
+            console.debug('Starting location tracking...');
 
             subscription = await Location.watchPositionAsync(
                 {
                     accuracy: Location.Accuracy.High,
-                    timeInterval: 1000,
-                    distanceInterval: 1,
+                    timeInterval: 5000,
+                    distanceInterval: 10,
                 },
                 (loc) => {
+                    if (locationBuffer.current.length > 500) {
+                        console.error('Buffer overflow protection triggered');
+                        locationBuffer.current = [];
+                        return;
+                    }
+
                     const newPoint: BatchedLocation = {
                         latitude: loc.coords.latitude,
                         longitude: loc.coords.longitude,
@@ -117,14 +127,21 @@ export default function MapViewer() {
                     locationBuffer.current.push(newPoint);
                 }
             );
+
+            console.debug('Location tracking started');
         })();
 
-        const intervalId = setInterval(() => {
+        intervalId = setInterval(() => {
             (async () => {
                 if (locationBuffer.current.length > 0) {
+                    if (locationBuffer.current.length > 500) {
+                        console.warn('Location buffer overflow! Dropping old data.');
+                        locationBuffer.current = locationBuffer.current.slice(-100);
+                        return;
+                    }
+
                     console.debug(`About to send ${locationBuffer.current.length} batched.`);
                     const locationsToSend = [...locationBuffer.current];
-                    locationBuffer.current = [];
 
                     const request = locationsToSend.map(loc => ({
                         coords: {
@@ -134,17 +151,36 @@ export default function MapViewer() {
                         capturedAt: new Date(loc.timestamp).toISOString(),
                     }));
 
-                    await sendBatchedLocations(request);
+                    try {
+                        await sendBatchedLocations(request);
+                        locationBuffer.current = locationBuffer.current.filter(
+                            loc => !locationsToSend.includes(loc)
+                        );
+                        console.debug('Successfully sent locations, buffer now:',
+                            locationBuffer.current.length);
+                    } catch (error) {
+                        console.error('Failed to send locations:', error);
+                        if (locationBuffer.current.length > 200) {
+                            console.warn('Trimming buffer due to send failure');
+                            locationBuffer.current = locationBuffer.current.slice(-100);
+                        }
+                    }
                 }
-            })();
+            })().catch(err => {
+                console.error('Interval error:', err);
+            });
         }, LOCATION_BATCH_INTERVAL);
 
         return () => {
+            console.debug('Cleaning up location tracking and interval');
             subscription?.remove();
-            clearInterval(intervalId);
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
         };
     }, [permission, requestPermission]);
 
+    // Initial region setup
     useEffect(() => {
         (async () => {
             const {status} = await Location.requestForegroundPermissionsAsync();
@@ -168,8 +204,9 @@ export default function MapViewer() {
         };
     }, [fetchSnapshots]);
 
+    // SSE connection for real-time updates
     useEffect(() => {
-        if (!authToken || !region || !snapshotLoaded) return;
+        if (!authToken || !region) return;
 
         if (region.latitudeDelta > ZOOM_THRESHOLD ||
             region.longitudeDelta > ZOOM_THRESHOLD) {
@@ -203,7 +240,7 @@ export default function MapViewer() {
             console.debug("Maps SSE connection opened");
         });
 
-        es.addEventListener("message", (e) => {
+        const handleMessage = (e: any) => {
             const snapshot: MapSnapshotResponse[0] = JSON.parse(e.data!);
             setSnapshots(prev => {
                 const updated = prev.some(sn => sn.userId === snapshot.userId)
@@ -212,26 +249,51 @@ export default function MapViewer() {
 
                 return updated.slice(0, MAX_SNAPSHOTS);
             });
-        });
+        };
+
+        es.addEventListener("message", handleMessage);
 
         es.addEventListener("error", (e) => {
-            console.log("SSE error:", e);
+            console.error("SSE error:", e);
         });
 
         return () => {
             if (eventSourceRef.current) {
+                es.removeEventListener("message", handleMessage);
                 eventSourceRef.current.close();
                 eventSourceRef.current = null;
             }
         };
-    }, [authToken, region, snapshotLoaded]);
+    }, [authToken, region]);
+
+    useEffect(() => {
+        const cleanupInterval = setInterval(() => {
+            setSnapshots(prev => {
+                const now = Date.now();
+                const fiveMinutesAgo = now - (5 * 60 * 1000);
+
+                const filtered = prev.filter(s => {
+                    const snapshotTime = new Date(s.timestamp).getTime();
+                    return snapshotTime > fiveMinutesAgo;
+                });
+
+                if (filtered.length !== prev.length) {
+                    console.debug(`Cleaned up ${prev.length - filtered.length} old snapshots`);
+                }
+
+                return filtered;
+            });
+        }, 60000);
+
+        return () => clearInterval(cleanupInterval);
+    }, []);
 
     const handleRegionChangeComplete = (newRegion: Region) => {
         setRegion(newRegion);
         debouncedFetchSnapshots(newRegion);
     };
 
-    const handleMarkerPress = async (snapshot: EnrichedSnapshot) => {
+    const handleMarkerPress = useCallback(async (snapshot: EnrichedSnapshot) => {
         try {
             const user = await getUser(snapshot.userId);
             setSnapshots(prevSnapshots =>
@@ -244,7 +306,72 @@ export default function MapViewer() {
         } catch (error) {
             console.error('Error fetching user:', error);
         }
-    };
+    }, []);
+
+    // Memoize markers to prevent unnecessary re-renders
+    const markerComponents = useMemo(() => {
+        return snapshots.map((snapshot) => (
+            <Marker
+                key={snapshot.userId}
+                coordinate={{
+                    latitude: snapshot.coords.latitude,
+                    longitude: snapshot.coords.longitude,
+                }}
+                onPress={() => handleMarkerPress(snapshot)}
+            >
+                <View style={styles.markerContainer}>
+                    <View style={[
+                        styles.markerCircle,
+                        snapshot.userData && styles.markerCircleEnriched
+                    ]}>
+                        <Ionicons
+                            name="person"
+                            size={20}
+                            color="#fff"
+                        />
+                    </View>
+                </View>
+
+                <Callout tooltip>
+                    <View style={styles.calloutContainer}>
+                        {snapshot.userData ? (
+                            <>
+                                <View style={styles.calloutHeader}>
+                                    <Ionicons name="person-circle" size={32}
+                                              color="#007bff"/>
+                                    <View>
+                                        <Text style={styles.calloutTitle}>
+                                            {snapshot.userData.fullName
+                                                || snapshot.userData.username
+                                                || 'User'}
+                                        </Text>
+                                        {snapshot.userData.username && (
+                                            <Text style={styles.calloutUsername}>
+                                                @{snapshot.userData.username}
+                                            </Text>
+                                        )}
+                                    </View>
+                                </View>
+                                <Text style={styles.calloutText}>
+                                    Last seen: {new Date(
+                                    snapshot.timestamp).toLocaleString()}
+                                </Text>
+                                {snapshot.userData.email && (
+                                    <Text style={styles.calloutSubtext}>
+                                        {snapshot.userData.email}
+                                    </Text>
+                                )}
+                            </>
+                        ) : (
+                            <View style={styles.calloutLoading}>
+                                <Text style={styles.calloutLoadingText}>Loading...</Text>
+                            </View>
+                        )}
+                    </View>
+                </Callout>
+            </Marker>
+        ));
+    }, [snapshots, handleMarkerPress]);
 
     if (!region) return null;
 
@@ -257,67 +384,7 @@ export default function MapViewer() {
                 showsUserLocation={true}
                 onRegionChangeComplete={handleRegionChangeComplete}
             >
-                {snapshots.map((snapshot) => (
-                    <Marker
-                        key={snapshot.userId}
-                        coordinate={{
-                            latitude: snapshot.coords.latitude,
-                            longitude: snapshot.coords.longitude,
-                        }}
-                        onPress={() => handleMarkerPress(snapshot)}
-                    >
-                        <View style={styles.markerContainer}>
-                            <View style={[
-                                styles.markerCircle,
-                                snapshot.userData && styles.markerCircleEnriched
-                            ]}>
-                                <Ionicons
-                                    name="person"
-                                    size={20}
-                                    color="#fff"
-                                />
-                            </View>
-                        </View>
-
-                        <Callout tooltip>
-                            <View style={styles.calloutContainer}>
-                                {snapshot.userData ? (
-                                    <>
-                                        <View style={styles.calloutHeader}>
-                                            <Ionicons name="person-circle" size={32}
-                                                      color="#007bff"/>
-                                            <View>
-                                                <Text style={styles.calloutTitle}>
-                                                    {snapshot.userData.fullName
-                                                        || snapshot.userData.username
-                                                        || 'User'}
-                                                </Text>
-                                                {snapshot.userData.username && (
-                                                    <Text style={styles.calloutUsername}>
-                                                        @{snapshot.userData.username}
-                                                    </Text>
-                                                )}
-                                            </View>
-                                        </View>
-                                        <Text style={styles.calloutText}>
-                                            Last seen: {new Date(
-                                            snapshot.timestamp).toLocaleString()}
-                                        </Text>
-                                        {snapshot.userData.email && (
-                                            <Text style={styles.calloutSubtext}>
-                                                {snapshot.userData.email}
-                                            </Text>
-                                        )}
-                                    </>
-                                ) : (
-                                    <View style={styles.calloutLoading}>
-                                        <Text style={styles.calloutLoadingText}>Loading...</Text>
-                                    </View>
-                                )}
-                            </View>
-                        </Callout>
-                    </Marker>
-                ))}
+                {markerComponents}
             </MapView>
 
             {isZoomedOut && (
