@@ -8,7 +8,6 @@ export function ProfileMenu() {
     const auth = useAuth();
 
     const handleLogout = async () => {
-        console.log('Logging out');
         await auth.logout();
         router.replace('/auth/login');
     }
@@ -18,7 +17,7 @@ export function ProfileMenu() {
                 <ContextMenu.Items>
                     <Button
                         systemImage="person.crop.circle.badge.xmark"
-                        onPress={() => console.log('Redirecting to Account')}>
+                        onPress={() => console.debug('Redirecting to Account')}>
                         Account
                     </Button>
                     <Button

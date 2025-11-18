@@ -94,7 +94,6 @@ export default function Register() {
         auth.setIsLoading(true);
 
         try {
-            console.log("Creating account...");
             const res = await register(data);
 
             if (res?.token) {

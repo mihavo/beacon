@@ -91,7 +91,6 @@ export default function Login() {
         auth.setIsLoading(true);
 
         try {
-            console.log("Logging in...");
             const res = await login(data.username, data.password);
 
             if (res?.token) {

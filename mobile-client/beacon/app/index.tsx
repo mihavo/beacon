@@ -29,9 +29,7 @@ export default function Index() {
             ]),
             Animated.delay(800), // show splash a bit longer
         ]).start(() => {
-            console.log(`Loading ${isReady}`)
             if (isReady) {
-                console.log(`From index: logged in ` + isLoggedIn + " ready: " + isReady);
                 router.replace(isLoggedIn ? "/private/maps" : "/auth/login");
             }
         });

@@ -20,13 +20,19 @@ interface BatchedLocation {
 }
 
 export default function MapViewer() {
-    const LOCATION_BATCH_INTERVAL = 5000;
+    const LOCATION_BATCH_INTERVAL = 10000;
+    const ZOOM_THRESHOLD = 1.0; // Adjust based on your needs
+    const MAX_SNAPSHOTS = 100; // Limit number of markers
+
     const [region, setRegion] = useState<Region | null>(null);
     const [snapshots, setSnapshots] = useState<EnrichedSnapshot[]>([]);
     const [snapshotLoaded, setSnapshotLoaded] = useState(false);
     const [authToken, setAuthToken] = useState<string | null>(null);
+    const [isLoadingSnapshots, setIsLoadingSnapshots] = useState(false);
+    const [isZoomedOut, setIsZoomedOut] = useState(false);
+
     const mapRef = useRef<MapView>(null);
-    const [batch, setBatch] = useState<BatchedLocation[]>([]);
+    const eventSourceRef = useRef<EventSource | null>(null);
     const locationBuffer = useRef<BatchedLocation[]>([]);
     const [permission, requestPermission] = Location.useForegroundPermissions();
     const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -45,12 +51,29 @@ export default function MapViewer() {
 
     const fetchSnapshots = async (currentRegion: Region) => {
         try {
+            setIsLoadingSnapshots(true);
+
+            if (currentRegion.latitudeDelta > ZOOM_THRESHOLD ||
+                currentRegion.longitudeDelta > ZOOM_THRESHOLD) {
+                setIsZoomedOut(true);
+                setSnapshots([]);
+                setSnapshotLoaded(false);
+                return;
+            }
+
+            setIsZoomedOut(false);
             const boundingBox = regionToBoundingBox(currentRegion);
             const data = await getInitialSnapshot(boundingBox);
-            setSnapshots(data);
+
+            // Limit the number of snapshots
+            const limitedData = data.slice(0, MAX_SNAPSHOTS);
+            setSnapshots(limitedData);
             setSnapshotLoaded(true);
         } catch (error) {
             console.error('Error fetching snapshots:', error);
+            setSnapshots([]);
+        } finally {
+            setIsLoadingSnapshots(false);
         }
     };
 
@@ -101,25 +124,28 @@ export default function MapViewer() {
         const intervalId = setInterval(() => {
             (async () => {
                 if (locationBuffer.current.length > 0) {
-                    setBatch((prev) => [...prev, ...locationBuffer.current]);
-                    console.log(`About to send ${batch.length} batched.`);
-                    const request = batch.map(loc => ({
+                    console.debug(`About to send ${locationBuffer.current.length} batched.`);
+                    const locationsToSend = [...locationBuffer.current];
+                    locationBuffer.current = [];
+
+                    const request = locationsToSend.map(loc => ({
                         coords: {
                             latitude: loc.latitude,
                             longitude: loc.longitude,
                         },
                         capturedAt: new Date(loc.timestamp).toISOString(),
                     }));
+
                     await sendBatchedLocations(request);
-                    locationBuffer.current = [];
                 }
             })();
         }, LOCATION_BATCH_INTERVAL);
 
         return () => {
             subscription?.remove();
+            clearInterval(intervalId);
         };
-    }, [permission, requestPermission, batch]);
+    }, [permission, requestPermission]);
 
     useEffect(() => {
         (async () => {
@@ -142,43 +168,64 @@ export default function MapViewer() {
                 clearTimeout(debounceTimer.current);
             }
         };
-    }, [fetchSnapshots]);
+    }, []);
 
     useEffect(() => {
-        if (authToken && region) {
-            const bbox = regionToBoundingBox(region);
-            const es = new EventSource(
-                `${BASE}/maps/subscribe?minLon=${bbox.minLon}&maxLon=${bbox.maxLon}&minLat=${bbox.minLat}&maxLat=${bbox.maxLat}`,
-                {
-                    headers: {
-                        Authorization: {
-                            toString: function () {
-                                return `Bearer ${authToken}`;
-                            },
+        if (!authToken || !region || !snapshotLoaded) return;
+
+        if (region.latitudeDelta > ZOOM_THRESHOLD ||
+            region.longitudeDelta > ZOOM_THRESHOLD) {
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+                eventSourceRef.current = null;
+            }
+            return;
+        }
+
+        if (eventSourceRef.current) {
+            eventSourceRef.current.close();
+        }
+
+        const bbox = regionToBoundingBox(region);
+        const es = new EventSource(
+            `${BASE}/maps/subscribe?minLon=${bbox.minLon}&maxLon=${bbox.maxLon}&minLat=${bbox.minLat}&maxLat=${bbox.maxLat}`,
+            {
+                headers: {
+                    Authorization: {
+                        toString: function () {
+                            return `Bearer ${authToken}`;
                         },
                     },
-                });
-            es.addEventListener("open", () => {
-                console.log("Maps SSE connection opened");
+                },
             });
-            if (snapshotLoaded) {
-                es.addEventListener("message", (e) => {
-                    const snapshot: MapSnapshotResponse[0] = JSON.parse(e.data!);
-                    setSnapshots(prev =>
-                        prev.some(sn => sn.userId === snapshot.userId)
-                            ? prev.map(sn => sn.userId === snapshot.userId ? snapshot : sn)
-                            : [...prev, snapshot]
-                    );
-                });
 
-                es.addEventListener("error", (e) => {
-                    console.log("SSE error:", e);
-                });
+        eventSourceRef.current = es;
+
+        es.addEventListener("open", () => {
+            console.debug("Maps SSE connection opened");
+        });
+
+        es.addEventListener("message", (e) => {
+            const snapshot: MapSnapshotResponse[0] = JSON.parse(e.data!);
+            setSnapshots(prev => {
+                const updated = prev.some(sn => sn.userId === snapshot.userId)
+                    ? prev.map(sn => sn.userId === snapshot.userId ? snapshot : sn)
+                    : [...prev, snapshot];
+
+                return updated.slice(0, MAX_SNAPSHOTS);
+            });
+        });
+
+        es.addEventListener("error", (e) => {
+            console.log("SSE error:", e);
+        });
+
+        return () => {
+            if (eventSourceRef.current) {
+                eventSourceRef.current.close();
+                eventSourceRef.current = null;
             }
-            return () => {
-                es.close();
-            };
-        }
+        };
     }, [authToken, region, snapshotLoaded]);
 
     const handleRegionChangeComplete = (newRegion: Region) => {
@@ -189,8 +236,6 @@ export default function MapViewer() {
     const handleMarkerPress = async (snapshot: EnrichedSnapshot) => {
         try {
             const user = await getUser(snapshot.userId);
-            console.log('Fetched user data:', user);
-
             setSnapshots(prevSnapshots =>
                 prevSnapshots.map(s =>
                     s.userId === snapshot.userId
@@ -276,6 +321,21 @@ export default function MapViewer() {
                     </Marker>
                 ))}
             </MapView>
+
+            {isZoomedOut && (
+                <View style={styles.zoomMessage}>
+                    <Ionicons name="search" size={24} color="#007bff"/>
+                    <Text style={styles.zoomMessageText}>
+                        Zoom in to see users
+                    </Text>
+                </View>
+            )}
+
+            {isLoadingSnapshots && !isZoomedOut && (
+                <View style={styles.loadingIndicator}>
+                    <Text style={styles.loadingText}>Loading...</Text>
+                </View>
+            )}
         </View>
     );
 }
@@ -287,69 +347,114 @@ const styles = StyleSheet.create({
     map: {
         flex: 1,
     },
-        markerContainer: {
-            alignItems: 'center',
-        },
-        markerCircle: {
-            width: 36,
-            height: 36,
-            borderRadius: 18,
-            backgroundColor: '#007bff',
-            justifyContent: 'center',
-            alignItems: 'center',
-            borderWidth: 3,
-            borderColor: '#fff',
-            shadowColor: '#000',
-            shadowOffset: {width: 0, height: 2},
-            shadowOpacity: 0.3,
-            shadowRadius: 3,
-            elevation: 5,
-        },
-        markerCircleEnriched: {
-            backgroundColor: '#28a745',
-        },
-        calloutContainer: {
-            backgroundColor: 'white',
-            borderRadius: 8,
-            padding: 12,
-            minWidth: 180,
-            shadowColor: '#000',
-            shadowOffset: {width: 0, height: 2},
-            shadowOpacity: 0.25,
-            shadowRadius: 3.84,
-            elevation: 5,
-        },
-        calloutHeader: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginBottom: 8,
-            gap: 8,
-        },
-        calloutTitle: {
-            fontWeight: 'bold',
-            fontSize: 16,
-            color: '#000',
-        },
-        calloutUsername: {
-            fontSize: 12,
-            color: '#666',
-        },
-        calloutText: {
-            fontSize: 12,
-            color: '#666',
-            marginBottom: 4,
-        },
-        calloutSubtext: {
-            fontSize: 10,
-            color: '#999',
-        },
-        calloutLoading: {
-            padding: 10,
-            alignItems: 'center',
-        },
-        calloutLoadingText: {
-            fontSize: 14,
-            color: '#666',
-        }
-    }
-);
+    markerContainer: {
+        alignItems: 'center',
+    },
+    markerCircle: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#007bff',
+        justifyContent: 'center',
+        alignItems: 'center',
+        borderWidth: 3,
+        borderColor: '#fff',
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.3,
+        shadowRadius: 3,
+        elevation: 5,
+    },
+    markerCircleEnriched: {
+        backgroundColor: '#28a745',
+    },
+    calloutContainer: {
+        backgroundColor: 'white',
+        borderRadius: 8,
+        padding: 12,
+        minWidth: 180,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+    },
+    calloutHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 8,
+        gap: 8,
+    },
+    calloutTitle: {
+        fontWeight: 'bold',
+        fontSize: 16,
+        color: '#000',
+    },
+    calloutUsername: {
+        fontSize: 12,
+        color: '#666',
+    },
+    calloutText: {
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 4,
+    },
+    calloutSubtext: {
+        fontSize: 10,
+        color: '#999',
+    },
+    calloutLoading: {
+        padding: 10,
+        alignItems: 'center',
+    },
+    calloutLoadingText: {
+        fontSize: 14,
+        color: '#666',
+    },
+    zoomMessage: {
+        position: 'absolute',
+        top: 50,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        paddingVertical: 12,
+        paddingHorizontal: 20,
+        marginHorizontal: 40,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+        flexDirection: 'row',
+        gap: 8,
+    },
+    zoomMessageText: {
+        fontSize: 16,
+        color: '#007bff',
+        fontWeight: '600',
+    },
+    loadingIndicator: {
+        position: 'absolute',
+        top: 50,
+        left: 0,
+        right: 0,
+        alignItems: 'center',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        paddingVertical: 8,
+        paddingHorizontal: 16,
+        marginHorizontal: 40,
+        borderRadius: 20,
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowOpacity: 0.15,
+        shadowRadius: 2,
+        elevation: 3,
+    },
+    loadingText: {
+        fontSize: 14,
+        color: '#666',
+        fontWeight: '500',
+    },
+});

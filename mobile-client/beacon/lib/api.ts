@@ -1,5 +1,5 @@
 import axios from "axios";
-import {getToken} from "@/app/context/AuthContext";
+import {getToken, logoutRef} from "@/app/context/AuthContext";
 import {
     AcceptFriendRequest,
     AcceptFriendResponse,
@@ -13,6 +13,7 @@ import {
 } from "@/types/Connections";
 import {Alert} from "react-native";
 import {BoundingBox, MapSnapshotResponse, SendBatchedLocationsRequest} from "@/types/Map";
+import {router} from "expo-router";
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -35,7 +36,13 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
     (response) => response,
-    (error) => {
+    async (error) => {
+        if (error.response?.status === 401) {
+            console.log(error.response?.data?.message);
+            await logoutRef.current?.();
+            return router.replace('/auth/login');
+        }
+
         let message = "Something went wrong.";
         if (error.response?.data?.message) {
             message = error.response.data.message;
@@ -102,6 +109,6 @@ export async function getInitialSnapshot(request: BoundingBox) {
 }
 
 export async function sendBatchedLocations(request: SendBatchedLocationsRequest) {
-    const res = await api.get(`locations/`);
+    const res = await api.post(`locations/`, request);
     return res.data;
 }

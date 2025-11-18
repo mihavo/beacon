@@ -12,6 +12,10 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
+export const logoutRef: { current: (() => Promise<void>) | null } = {
+    current: null
+};
+
 export default function AuthProvider({children}: { children: React.ReactNode }) {
     const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
     const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +27,6 @@ export default function AuthProvider({children}: { children: React.ReactNode }) 
             const token = await SecureStore.getItemAsync("token");
             const loggedIn = !!token;
             setIsLoggedIn(loggedIn);
-            console.log("Token exists? ", loggedIn);
             setIsReady(true);
         })();
     }, []);
@@ -39,6 +42,13 @@ export default function AuthProvider({children}: { children: React.ReactNode }) 
         setIsLoading(false);
         setIsLoggedIn(false);
     }
+
+    useEffect(() => {
+        logoutRef.current = logout;
+        return () => {
+            logoutRef.current = null;
+        };
+    }, []);
 
     return (
         <AuthContext.Provider value={{isLoggedIn, isLoading, isReady, setIsLoading, login, logout}}>
