@@ -1,7 +1,8 @@
-import http from "k6/http";
-import {vu} from "k6/execution";
 import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
-import {SharedArray} from "k6/data";
+import { sleep } from "k6";
+import { SharedArray } from "k6/data";
+import { vu } from "k6/execution";
+import http from "k6/http";
 
 const baseUrl = "http://localhost:8080";
 const testUrl = baseUrl + "/locations";
@@ -17,12 +18,15 @@ const authUrl = baseUrl + "/auth/login";
 const users_limit = 50;
 
 //AUTH Method 2: Multiple Users with creds from file in data/creds.csv
-const filePath = './data/multicreds.csv'
+const filePath = "./data/multicreds.csv";
 const users = new SharedArray("Logins", function () {
-  return papaparse.parse(open(filePath), {header: true}).data.slice(0, users_limit);
+  return papaparse
+    .parse(open(filePath), { header: true })
+    .data.slice(0, users_limit);
 });
 
-const clusters = [// { lat: 23.285, lon: -159.244 }, // Hawaii
+const clusters = [
+  // { lat: 23.285, lon: -159.244 }, // Hawaii
   { lat: 48.8566, lon: 2.3522 }, // Europe (Paris)
   // { lat: 34.0479, lon: 100.6197 }, // Asia (China center)
   // { lat: -72.215, lon: -4.094 }, // South America
@@ -30,7 +34,7 @@ const clusters = [// { lat: 23.285, lon: -159.244 }, // Hawaii
 
 export const options = {
   vus: users.length, // iterations: 20, // 10 iterations per VU
-  duration: '1m'
+  duration: "1m",
 };
 
 export function setup() {
@@ -56,7 +60,9 @@ export function setup() {
     }
     console.log(`Authenticated User:  ${user.username}`);
     return {
-      ...user, token: res.json("token"), baseCoords: getRandomClusterCoordinates()
+      ...user,
+      token: res.json("token"),
+      baseCoords: getRandomClusterCoordinates(),
     };
   });
 }
@@ -92,7 +98,7 @@ export default function (data) {
   console.log(`Status: ${res.status} Body: ${res.body}`);
 
   // sleep(2 + Math.random() * 5);
-  // sleep(.5);
+  sleep(0.5);
 }
 
 function getRandomClusterCoordinates() {
@@ -103,7 +109,7 @@ function getRandomClusterCoordinates() {
   const randomLat = cluster.lat + (Math.random() * 2 - 1) * maxOffset;
   const randomLon = cluster.lon + (Math.random() * 2 - 1) * maxOffset;
 
-  return {latitude: randomLat, longitude: randomLon};
+  return { latitude: randomLat, longitude: randomLon };
 }
 
 function getCloseCoordinates(baseCoords) {
@@ -121,14 +127,20 @@ function moveInDirection(baseCoords, distanceMeters = 5) {
   const lon1 = (baseCoords.longitude * Math.PI) / 180;
 
   // Calculate new lat/lon using the haversine formula
-  const lat2 = Math.asin(Math.sin(lat1)
-      * Math.cos(distanceMeters / earthRadius)
-      + Math.cos(lat1)
-      * Math.sin(distanceMeters / earthRadius)
-      * Math.cos(bearingRad));
-  const lon2 = lon1 + Math.atan2(Math.sin(bearingRad)
-      * Math.sin(distanceMeters / earthRadius)
-      * Math.cos(lat1), Math.cos(distanceMeters / earthRadius) - Math.sin(lat1) * Math.sin(lat2));
+  const lat2 = Math.asin(
+    Math.sin(lat1) * Math.cos(distanceMeters / earthRadius) +
+      Math.cos(lat1) *
+        Math.sin(distanceMeters / earthRadius) *
+        Math.cos(bearingRad),
+  );
+  const lon2 =
+    lon1 +
+    Math.atan2(
+      Math.sin(bearingRad) *
+        Math.sin(distanceMeters / earthRadius) *
+        Math.cos(lat1),
+      Math.cos(distanceMeters / earthRadius) - Math.sin(lat1) * Math.sin(lat2),
+    );
 
   // Convert back to degrees
   const newLat = (lat2 * 180) / Math.PI;
@@ -139,5 +151,5 @@ function moveInDirection(baseCoords, distanceMeters = 5) {
   if (currentBearing < 0) currentBearing += 360;
   if (currentBearing >= 360) currentBearing -= 360;
 
-  return {latitude: newLat, longitude: newLon};
+  return { latitude: newLat, longitude: newLon };
 }
