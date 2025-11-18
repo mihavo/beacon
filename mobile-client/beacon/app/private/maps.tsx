@@ -4,7 +4,7 @@ import {ProfileMenu} from "@/components/profile-menu";
 import MapViewer from "@/app/private/map-viewer";
 
 export default function Maps() {
-    const isDark = useColorScheme() == 'dark';
+    const isDark = useColorScheme() === 'dark';
     return (
         <View style={[styles.container, isDark && styles.containerDark]}>
             <View style={[styles.header, isDark && styles.headerDark]}>

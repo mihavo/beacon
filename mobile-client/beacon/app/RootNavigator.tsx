@@ -12,11 +12,11 @@ export default function RootNavigator() {
             gestureDirection: 'horizontal',
         }}>
             <Stack.Protected guard={!isLoggedIn}>
-                <Stack.Screen name="auth/login"/>
+                <Stack.Screen name="auth"/>
             </Stack.Protected>
 
             <Stack.Protected guard={isLoggedIn}>
-                <Stack.Screen name="private/maps"/>
+                <Stack.Screen name="private"/>
             </Stack.Protected>
         </Stack>
     )

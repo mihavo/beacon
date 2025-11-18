@@ -49,7 +49,7 @@ export default function MapViewer() {
         };
     };
 
-    const fetchSnapshots = async (currentRegion: Region) => {
+    const fetchSnapshots = useCallback(async (currentRegion: Region) => {
         try {
             setIsLoadingSnapshots(true);
 
@@ -65,7 +65,6 @@ export default function MapViewer() {
             const boundingBox = regionToBoundingBox(currentRegion);
             const data = await getInitialSnapshot(boundingBox);
 
-            // Limit the number of snapshots
             const limitedData = data.slice(0, MAX_SNAPSHOTS);
             setSnapshots(limitedData);
             setSnapshotLoaded(true);
@@ -75,17 +74,16 @@ export default function MapViewer() {
         } finally {
             setIsLoadingSnapshots(false);
         }
-    };
+    }, [ZOOM_THRESHOLD, MAX_SNAPSHOTS]);
 
     const debouncedFetchSnapshots = useCallback((newRegion: Region) => {
         if (debounceTimer.current) {
             clearTimeout(debounceTimer.current);
         }
-
         debounceTimer.current = setTimeout(() => {
             fetchSnapshots(newRegion);
         }, 1200);
-    }, []);
+    }, [fetchSnapshots]);
 
     useEffect(() => {
         (async () => {
@@ -168,7 +166,7 @@ export default function MapViewer() {
                 clearTimeout(debounceTimer.current);
             }
         };
-    }, []);
+    }, [fetchSnapshots]);
 
     useEffect(() => {
         if (!authToken || !region || !snapshotLoaded) return;

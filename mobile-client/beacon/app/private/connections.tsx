@@ -37,7 +37,7 @@ export default function Connections() {
     const fetchPendingConnections = useCallback(async () => {
         try {
             const response = await getConnections();
-            const pending = response.connections.filter(conn => conn.status === 'RECEIVED_REQUEST');
+            const pending = response.connections.filter(conn => conn.status === 'PENDING');
             setPendingRequests(pending);
         } catch (error) {
             console.error('Error fetching connections:', error);
@@ -155,7 +155,7 @@ export default function Connections() {
                             Results</Text>
                         {searchResults.length > 0 ? (
                             searchResults.map(user => (
-                                <View key={user.id}
+                                <View key={user.userId}
                                       style={[styles.userCard, isDark && styles.userCardDark]}>
                                     <Ionicons
                                         name={'person-circle'}
