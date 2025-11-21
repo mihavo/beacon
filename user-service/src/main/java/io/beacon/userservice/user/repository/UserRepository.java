@@ -109,7 +109,7 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
       """)
   Flux<UserFriendship> getAllFriends();
 
-  @Query("CALL db.index.fulltext.queryNodes('userSearch', $query) " +
+  @Query("CALL db.index.fulltext.queryNodes('userSearch', '*' + $query + '*') " +
       "YIELD node, score " +
       "RETURN node " +
       "ORDER BY score DESC " +

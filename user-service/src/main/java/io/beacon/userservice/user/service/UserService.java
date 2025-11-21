@@ -50,6 +50,13 @@ public class UserService {
   }
 
   public Flux<UserResponse> search(String query) {
-    return userRepository.fullTextSearch(query).map(userMapper::toUserResponse);
+
+    return userRepository.fullTextSearch(query)
+        .doOnNext(user -> log.debug("Retrieved user entity: {}", user))
+        .map(userMapper::toUserResponse)
+        .onErrorResume(e -> {
+          log.error("Database search failed for query: {}", query, e);
+          return Flux.empty();
+        });
   }
 }

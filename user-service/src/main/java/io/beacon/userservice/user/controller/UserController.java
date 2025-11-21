@@ -5,10 +5,13 @@ import io.beacon.userservice.user.service.UserService;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
@@ -32,5 +35,11 @@ public class UserController {
   @DeleteMapping("/{userId}")
   public Mono<ResponseEntity<Void>> deleteUser(@PathVariable UUID userId) {
     return userService.deleteUser(userId).thenReturn(ResponseEntity.ok().build());
+  }
+
+  @MessageMapping("/search")
+  @SendTo("/topic/users")
+  public Flux<UserResponse> searchUsers(String query) {
+    return userService.search(query);
   }
 }
