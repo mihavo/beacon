@@ -108,4 +108,11 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
             b.id AS friendId
       """)
   Flux<UserFriendship> getAllFriends();
+
+  @Query("CALL db.index.fulltext.queryNodes('userSearch', $query) " +
+      "YIELD node, score " +
+      "RETURN node " +
+      "ORDER BY score DESC " +
+      "LIMIT 100")
+  Flux<User> fullTextSearch(String query);
 }

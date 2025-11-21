@@ -40,7 +40,8 @@ services:
       SERVER_PORT: 8080
       EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
     healthcheck: *spring-healthcheck
-
+    profiles: [ services ]
+  
   service-registry:
     build:
       context: .
@@ -58,7 +59,8 @@ services:
       interval: 5s
       timeout: 3s
       retries: 5
-  
+    profiles: [ services ]
+
   auth-service:
     build:
       context: .
@@ -77,6 +79,7 @@ services:
     depends_on:
       service-registry:
         condition: service_healthy
+    profiles: [ services ]
     healthcheck: *spring-healthcheck
 
   location-service:
@@ -107,6 +110,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    profiles: [ services ]
     healthcheck: *spring-healthcheck
   
   map-service:
@@ -137,6 +141,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    profiles: [ services ]
     healthcheck: *spring-healthcheck
 
   user-service:
@@ -165,6 +170,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    profiles: [ services ]
     healthcheck: *spring-healthcheck
 
   history-service:
@@ -194,6 +200,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    profiles: [ services ]
     healthcheck: *spring-healthcheck
 
   geofence-service:
@@ -224,6 +231,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    profiles: [ services ]
     healthcheck: *spring-healthcheck
 
   notification-service:
@@ -256,6 +264,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+    profiles: [ services ]
     healthcheck: *spring-healthcheck
 
   # Databases & Caching
@@ -269,6 +278,7 @@ services:
       - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-beacon_user_db}
     volumes:
       - neo4j_data:/data
+    profiles: [ deps ]
     healthcheck: *neo4j-healthcheck
   
   history-db:
@@ -282,6 +292,7 @@ services:
     volumes:
       - postgres_history_data:/pgdata
       - ./docker/history/init:/docker-entrypoint-initdb.d
+    profiles: [ deps ]
     healthcheck: *pg-healthcheck
 
   geofence-db:
@@ -295,6 +306,7 @@ services:
     volumes:
       - postgres_geofence_data:/pgdata
       - ./docker/geofence/init:/docker-entrypoint-initdb.d
+    profiles: [ deps ]
     healthcheck: *pg-healthcheck
   
   notification-db:
@@ -308,6 +320,7 @@ services:
     volumes:
       - postgres_notification_data:/pgdata
       - ./docker/notification/init:/docker-entrypoint-initdb.d
+    profiles: [ deps ]
     healthcheck: *pg-healthcheck
   
   location-redis:
@@ -320,6 +333,7 @@ services:
     volumes:
       - location_redis_data:/data
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf
+    profiles: [ deps ]
     healthcheck: *redis-healthcheck
     command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
 
@@ -330,6 +344,7 @@ services:
       - "6380:6379"
     volumes:
       - map_redis_data:/data
+    profiles: [ deps ]
     healthcheck: *redis-healthcheck
 
   # Event Brokers
@@ -341,6 +356,7 @@ services:
       - "9092:9092"
     volumes:
       - kafka_data:/var/lib/kafka/data
+    profiles: [ deps ]
     environment:
       - KAFKA_ENABLE_KRAFT=yes
       - KAFKA_PROCESS_ROLES=broker,controller

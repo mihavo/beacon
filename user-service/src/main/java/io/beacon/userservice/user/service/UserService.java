@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
@@ -46,5 +47,9 @@ public class UserService {
                 (String) context.getAuthentication().getPrincipal())))
         .switchIfEmpty(Mono.error(
             new AuthenticationCredentialsNotFoundException("No user is currently authenticated")));
+  }
+
+  public Flux<UserResponse> search(String query) {
+    return userRepository.fullTextSearch(query).map(userMapper::toUserResponse);
   }
 }
