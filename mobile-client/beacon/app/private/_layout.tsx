@@ -10,6 +10,11 @@ export default function PrivateTabsLayout() {
                 <Icon sf={"map"}></Icon>
             </NativeTabs.Trigger>
 
+            <NativeTabs.Trigger name="geofence">
+                <Label>Geofences</Label>
+                <Icon sf={"network.badge.shield.half.filled"}></Icon>
+            </NativeTabs.Trigger>
+
             <NativeTabs.Trigger name="connections">
                 <Label>Connections</Label>
                 <Icon sf={"person.2.circle"}></Icon>

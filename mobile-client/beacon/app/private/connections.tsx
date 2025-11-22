@@ -104,7 +104,6 @@ export default function Connections() {
     }, []);
 
     useEffect(() => {
-        // Clear existing timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
@@ -139,8 +138,7 @@ export default function Connections() {
 
     const handleAcceptRequest = async (id: string) => {
         try {
-            const response = await acceptFriendRequest({targetUserId: id});
-            console.log(response);
+            await acceptFriendRequest({targetUserId: id});
             Alert.alert('Success', 'Friend request accepted');
             await fetchPendingConnections();
         } catch (error) {
@@ -150,8 +148,7 @@ export default function Connections() {
 
     const handleDeclineRequest = async (id: string) => {
         try {
-            const response = await declineFriendRequest({targetUserId: id});
-            console.log(response);
+            await declineFriendRequest({targetUserId: id});
             Alert.alert('Success', 'Friend request declined');
             await fetchPendingConnections();
         } catch (error) {
@@ -161,8 +158,7 @@ export default function Connections() {
 
     const handleSendRequest = async (id: string) => {
         try {
-            const response = await connect(id);
-            console.log(response);
+            await connect(id);
             Alert.alert('Success', 'Friend request sent');
             setSentRequests(new Set([...sentRequests, id]));
             await fetchPendingConnections();

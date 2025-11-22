@@ -16,7 +16,7 @@ export function ProfileMenu() {
             <ContextMenu>
                 <ContextMenu.Items>
                     <Button
-                        systemImage="person.crop.circle.badge.xmark"
+                        systemImage="person.crop.circle"
                         onPress={() => console.debug('Redirecting to Account')}>
                         Account
                     </Button>
