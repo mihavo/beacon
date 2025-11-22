@@ -31,7 +31,7 @@ public class UserSearchWebSocketHandler implements WebSocketHandler {
     Flux<WebSocketMessage> results = queries
         .switchMap(query ->
             userService.search(query)
-                .map(result -> {
+                .collectList().map(result -> {
                   try {
                     return session.textMessage(objectMapper.writeValueAsString(result));
                   } catch (Exception e) {

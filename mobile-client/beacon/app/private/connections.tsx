@@ -63,16 +63,19 @@ export default function Connections() {
     useEffect(() => {
         (async () => {
             if (ws.current) return;
-            const headers: { [headerName: string]: string } = {};
-            headers["Authorization"] = `Bearer ${await getToken()}`;
-
-            ws.current = new WebSocket(`${BASE}/users/ws/search`, null, headers);
+            const options = {
+                headers: {
+                    'Authorization': `Bearer ${await getToken()}`,
+                }
+            }
+            // @ts-ignore
+            ws.current = new WebSocket(`${BASE}/users/ws/search`, null, options);
 
             ws.current.onmessage = (message) => {
-                setSearchResults(prevResponses => ({
-                    ...prevResponses,
-                    ...JSON.parse(message.data)
-                }));
+                // console.log(message.data);
+                const res = JSON.parse(message.data);
+                console.log(res);
+                setSearchResults(prevResponses => [...prevResponses, JSON.parse(message.data)]);
             };
 
             ws.current.onerror = (e) => {
@@ -93,6 +96,7 @@ export default function Connections() {
 
     useEffect(() => {
         if (searchQuery.length > 3 && ws.current && ws.current.readyState === WebSocket.OPEN) {
+            setSearchResults([]);
             ws.current.send(searchQuery);
         }
     }, [searchQuery]);
@@ -104,10 +108,8 @@ export default function Connections() {
     }, [fetchPendingConnections]);
 
     const handleSearch = async (text: string) => {
-        if (text.trim().length > 0) {
-            setSearchResults([]);
-            setSearchQuery(text);
-        }
+        // setSearchResults([]);
+        setSearchQuery(text);
     };
 
     const handleAcceptRequest = async (id: string) => {
@@ -182,47 +184,43 @@ export default function Connections() {
                     />
                 }
             >
-
-            {searchQuery.trim().length > 0 && (
-                    <View style={styles.section}>
-                        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Search
-                            Results</Text>
-                        {searchResults.length > 0 ? (
-                            searchResults.map(user => (
-                                <View key={user.userId}
-                                      style={[styles.userCard, isDark && styles.userCardDark]}>
-                                    <Ionicons
-                                        name={'person-circle'}
-                                        size={42}
-                                        color={isDark ? '#4a4a4a' : '#e0e0e0'}
-                                    />
-                                    <View style={styles.userInfo}>
-                                        <Text style={[styles.userName,
-                                            isDark && styles.userNameDark]}>{user.name}</Text>
-                                        <Text style={[styles.userUsername, isDark
-                                        && styles.userUsernameDark]}>{user.username}</Text>
-                                    </View>
-                                    {user.connected ? (
-                                        <Text style={styles.connectedBadge}>Connected</Text>
-                                    ) : sentRequests.has(user.id) ? (
-                                        <Text style={[styles.sentBadge,
-                                            isDark && styles.sentBadgeDark]}>Sent</Text>
-                                    ) : (
-                                        <TouchableOpacity
-                                            style={styles.addButton}
-                                            onPress={() => handleSendRequest(user.id)}
-                                        >
-                                            <Text style={styles.addButtonText}>Add</Text>
-                                        </TouchableOpacity>
-                                    )}
+                <View style={styles.section}>
+                    <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Search
+                        Results</Text>
+                    {searchResults.length > 0 ? (
+                        searchResults.map(user => (
+                            <View key={user.id}
+                                  style={[styles.userCard, isDark && styles.userCardDark]}>
+                                <Ionicons
+                                    name={'person-circle'}
+                                    size={42}
+                                    color={isDark ? '#4a4a4a' : '#e0e0e0'}
+                                />
+                                <View style={styles.userInfo}>
+                                    <Text style={[styles.userName,
+                                        isDark && styles.userNameDark]}>{user.fullName}</Text>
+                                    <Text style={[styles.userUsername, isDark
+                                    && styles.userUsernameDark]}>{user.username}</Text>
                                 </View>
-                            ))
-                        ) : (
-                            <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>No
-                                users found</Text>
-                        )}
-                    </View>
-                )}
+                                {sentRequests.has(user.id) ? (
+                                    <Text style={[styles.sentBadge,
+                                        isDark && styles.sentBadgeDark]}>Sent</Text>
+                                ) : (
+                                    <TouchableOpacity
+                                        style={styles.addButton}
+                                        onPress={() => handleSendRequest(user.id)}
+                                    >
+                                        <Text style={styles.addButtonText}>Add</Text>
+                                    </TouchableOpacity>
+                                )}
+                            </View>
+                        ))
+                    ) : (
+                        <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>No
+                            users found</Text>
+                    )}
+                </View>
+
 
                 {/* Pending Requests */}
                 {pendingRequests.length > 0 && (
