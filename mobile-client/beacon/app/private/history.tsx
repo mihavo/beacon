@@ -15,6 +15,7 @@ import {Ionicons} from "@expo/vector-icons";
 import MapView, {Marker, Polyline} from 'react-native-maps';
 import {LocationPoint} from "@/types/History";
 import {getLocationHistory} from "@/lib/api";
+import {reverseGeocodeAsync} from "expo-location";
 
 interface MostVisitedLocation {
     id: string;
@@ -64,8 +65,45 @@ export default function LocationHistory() {
     const fetchLocationHistory = useCallback(async (range: TimeRange) => {
         try {
             setLoading(true);
-            const response = await getLocationHistory(getTimeRangeParams(range));
-            setLocationHistory(response.locations);
+            const historyLocations = await getLocationHistory(getTimeRangeParams(range));
+            const locationsWithAddresses = await Promise.all(
+                historyLocations.map(async (location, index) => {
+                    try {
+                        // Add a small delay between requests to avoid rate limiting
+                        await new Promise(resolve => setTimeout(resolve, index * 800));
+
+                        const geocode = await reverseGeocodeAsync({
+                            latitude: location.latitude,
+                            longitude: location.longitude,
+                        });
+
+                        if (geocode && geocode.length > 0) {
+                            const address = geocode[0];
+                            const addressString = [
+                                address.streetNumber,
+                                address.street,
+                                address.city,
+                                address.region,
+                            ].filter(Boolean).join(', ');
+
+                            return {
+                                ...location,
+                                address: addressString || 'Unknown location',
+                            };
+                        }
+                    } catch (error) {
+                        console.error('Geocoding error for location:', location.id, error);
+                        // Return location without address on error
+                        return {
+                            ...location,
+                            address: 'Address unavailable',
+                        };
+                    }
+                    return location;
+                })
+            );
+
+            setLocationHistory(locationsWithAddresses);
         } catch (error) {
             console.error('Error fetching location history:', error);
         } finally {
@@ -279,7 +317,7 @@ export default function LocationHistory() {
                 >
                     {locationHistory.map((location, index) => (
                         <Marker
-                            key={location.id}
+                            key={`marker-${index}`}
                             coordinate={{
                                 latitude: location.latitude,
                                 longitude: location.longitude,
@@ -296,6 +334,7 @@ export default function LocationHistory() {
                         </Marker>
                     ))}
                     <Polyline
+                        key="polyline"
                         coordinates={coordinates}
                         strokeColor="#007bff"
                         strokeWidth={3}
