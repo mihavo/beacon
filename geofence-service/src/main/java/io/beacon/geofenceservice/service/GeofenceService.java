@@ -36,10 +36,10 @@ public class GeofenceService {
           point.setSRID(4326);
           Geofence geofence = Geofence.builder()
               .center(point)
-              .radius_meters(request.radius_meters())
+              .radius_meters(request.radiusMeters())
               .userId(userId)
               .targetId(UUID.fromString(request.userId()))
-              .triggerType(Optional.ofNullable(request.triggerType()).orElse(TriggerType.ENTER))
+              .triggerType(Optional.ofNullable(request.type()).orElse(TriggerType.ENTER))
               .build();
 
           return geofenceMapper.toCreateResponse(geofenceRepository.save(geofence));

@@ -11,7 +11,7 @@ public record CreateGeofenceRequest(
     @NotNull(message = "Center point latitude is required")
     double centerLatitude,
     @NotNull(message = "Center point radius is required")
-    Double radius_meters,
-    TriggerType triggerType
+    Double radiusMeters,
+    TriggerType type
 ) {
 }
