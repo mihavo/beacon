@@ -10,3 +10,8 @@ export interface LocationPoint {
     timestamp: string;
     address?: string;
 }
+
+export interface AnalyticsLocationPoint extends LocationPoint {
+    visitCount: number;
+    cluster: number;
+}

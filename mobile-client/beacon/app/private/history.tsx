@@ -13,19 +13,9 @@ import React, {useCallback, useEffect, useRef, useState} from "react";
 import {ProfileMenu} from "@/components/profile-menu";
 import {Ionicons} from "@expo/vector-icons";
 import MapView, {Marker, Polyline} from 'react-native-maps';
-import {LocationPoint} from "@/types/History";
-import {getLocationHistory} from "@/lib/api";
+import {AnalyticsLocationPoint, LocationPoint} from "@/types/History";
+import {getLocationHistory, getMostVisitedLocations} from "@/lib/api";
 import {reverseGeocodeAsync} from "expo-location";
-
-interface MostVisitedLocation {
-    id: string;
-    name: string;
-    address: string;
-    latitude: number;
-    longitude: number;
-    visitCount: number;
-    lastVisited: string;
-}
 
 type TimeRange = '24h' | '7d' | '30d';
 
@@ -35,7 +25,7 @@ export default function LocationHistory() {
 
     const [selectedRange, setSelectedRange] = useState<TimeRange>('24h');
     const [locationHistory, setLocationHistory] = useState<LocationPoint[]>([]);
-    const [mostVisited, setMostVisited] = useState<MostVisitedLocation[]>([]);
+    const [mostVisited, setMostVisited] = useState<AnalyticsLocationPoint[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [viewMode, setViewMode] = useState<'timeline' | 'dashboard'>('timeline');
@@ -92,8 +82,7 @@ export default function LocationHistory() {
                             };
                         }
                     } catch (error) {
-                        console.error('Geocoding error for location:', location.id, error);
-                        // Return location without address on error
+                        console.error('Geocoding error for location:', location, error);
                         return {
                             ...location,
                             address: 'Address unavailable',
@@ -103,7 +92,7 @@ export default function LocationHistory() {
                 })
             );
 
-            setLocationHistory(locationsWithAddresses);
+            setLocationHistory(locationsWithAddresses as LocationPoint[]);
         } catch (error) {
             console.error('Error fetching location history:', error);
         } finally {
@@ -113,50 +102,8 @@ export default function LocationHistory() {
 
     const fetchMostVisited = useCallback(async () => {
         try {
-            // TODO: Replace with actual API call
-            // const response = await getMostVisitedLocations();
-            // setMostVisited(response.locations);
-
-            // Mock data
-            const mockMostVisited: MostVisitedLocation[] = [
-                {
-                    id: '1',
-                    name: 'Home',
-                    address: '123 Market St, San Francisco, CA',
-                    latitude: 37.78825,
-                    longitude: -122.4324,
-                    visitCount: 156,
-                    lastVisited: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-                },
-                {
-                    id: '2',
-                    name: 'Office',
-                    address: '456 Mission St, San Francisco, CA',
-                    latitude: 37.79025,
-                    longitude: -122.4344,
-                    visitCount: 98,
-                    lastVisited: new Date(Date.now() - 1000 * 60 * 60 * 8).toISOString(),
-                },
-                {
-                    id: '3',
-                    name: 'Gym',
-                    address: '789 Howard St, San Francisco, CA',
-                    latitude: 37.78625,
-                    longitude: -122.4304,
-                    visitCount: 45,
-                    lastVisited: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-                },
-                {
-                    id: '4',
-                    name: 'Coffee Shop',
-                    address: '321 Valencia St, San Francisco, CA',
-                    latitude: 37.78425,
-                    longitude: -122.4284,
-                    visitCount: 32,
-                    lastVisited: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-                },
-            ];
-            setMostVisited(mockMostVisited);
+            const mostVisitedLocations = await getMostVisitedLocations();
+            setMostVisited(mostVisitedLocations);
         } catch (error) {
             console.error('Error fetching most visited:', error);
         }
@@ -199,7 +146,7 @@ export default function LocationHistory() {
         {value: '30d', label: '30 Days'}
     ];
 
-    const handleLocationPress = (location: LocationPoint | MostVisitedLocation) => {
+    const handleLocationPress = (location: LocationPoint | AnalyticsLocationPoint) => {
         if (mapRef.current) {
             mapRef.current.animateToRegion({
                 latitude: location.latitude,
@@ -251,7 +198,7 @@ export default function LocationHistory() {
         </TouchableOpacity>
     );
 
-    const renderMostVisitedItem = ({item}: { item: MostVisitedLocation }) => (
+    const renderMostVisitedItem = ({item}: { item: AnalyticsLocationPoint }) => (
         <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => handleLocationPress(item)}
@@ -266,14 +213,8 @@ export default function LocationHistory() {
                         />
                     </View>
                     <View style={styles.visitedInfo}>
-                        <Text style={[styles.visitedName, isDark && styles.visitedNameDark]}>
-                            {item.name}
-                        </Text>
                         <Text style={[styles.visitedAddress, isDark && styles.visitedAddressDark]}>
                             {item.address}
-                        </Text>
-                        <Text style={[styles.visitedTime, isDark && styles.visitedTimeDark]}>
-                            Last visited {formatTime(item.lastVisited)}
                         </Text>
                     </View>
                 </View>
@@ -290,8 +231,8 @@ export default function LocationHistory() {
                     </View>
                 </View>
             </View>
-        </TouchableOpacity>
-    ); // <-- Correct closing of the arrow function
+        </TouchableOpacity> // <-- Removed extraneous ')' and ';' here, and the following '}'
+    );
 
     const renderMap = () => {
         if (locationHistory.length === 0) return null;
@@ -311,13 +252,13 @@ export default function LocationHistory() {
         return (
             <View style={styles.mapContainer}>
                 <MapView
-                    ref={mapRef} // Added ref to allow animating to location
+                    ref={mapRef}
                     style={styles.map}
                     initialRegion={region}
                 >
                     {locationHistory.map((location, index) => (
                         <Marker
-                            key={`marker-${index}`}
+                            key={`marker-${location.latitude}-${location.longitude}-${location.timestamp}`}
                             coordinate={{
                                 latitude: location.latitude,
                                 longitude: location.longitude,
@@ -445,7 +386,7 @@ export default function LocationHistory() {
                     ) : (
                         <FlatList
                             data={locationHistory}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => `${item.latitude}-${item.longitude}-${item.timestamp}`}
                             renderItem={renderTimelineItem}
                             contentContainerStyle={styles.timelineList}
                             refreshControl={
@@ -492,7 +433,7 @@ export default function LocationHistory() {
                         </Text>
                         {mostVisited.length > 0 ? (
                             mostVisited.map((location) => (
-                                <View key={location.id}>
+                                <View key={`cluster-${location.cluster}`}>
                                     {renderMostVisitedItem({item: location})}
                                 </View>
                             ))
@@ -738,28 +679,16 @@ const styles = StyleSheet.create({
     locationAddressDark: {
         color: '#ffffff',
     },
-    locationCoords: {
-        backgroundColor: '#f0f0f0',
-        padding: 8,
-        borderRadius: 6,
-    },
-    coordsText: {
-        fontSize: 12,
-        fontFamily: 'monospace',
-        color: '#666',
-    },
-    coordsTextDark: {
-        color: '#999',
-    },
     tapHint: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 4,
+        gap: 4,
+        marginTop: 8,
     },
     tapHintText: {
         fontSize: 12,
         color: '#999',
-        marginLeft: 4,
+        fontStyle: 'italic',
     },
     tapHintTextDark: {
         color: '#666',
@@ -878,6 +807,20 @@ const styles = StyleSheet.create({
     },
     visitedTimeDark: {
         color: '#666',
+    },
+    clusterBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 4,
+        marginTop: 6,
+    },
+    clusterBadgeText: {
+        fontSize: 11,
+        color: '#007bff',
+        fontWeight: '500',
+    },
+    clusterBadgeTextDark: {
+        color: '#4a9eff',
     },
     visitedRight: {
         marginLeft: 12,

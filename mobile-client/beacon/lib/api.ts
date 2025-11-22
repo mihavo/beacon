@@ -15,7 +15,7 @@ import {Alert} from "react-native";
 import {BoundingBox, MapSnapshotResponse, SendBatchedLocationsRequest} from "@/types/Map";
 import {router} from "expo-router";
 import {Geofence} from "@/types/Geofence";
-import {LocationPoint, TimeRangeOptions} from "@/types/History";
+import {AnalyticsLocationPoint, LocationPoint, TimeRangeOptions} from "@/types/History";
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -121,7 +121,14 @@ export async function createGeofence(request: Geofence) {
 }
 
 export async function getLocationHistory(range: TimeRangeOptions) {
+    console.log(range.start.toISOString(), range.end.toISOString());
     const res = await api.get<LocationPoint[]>(
         `history/between?start=${range.start.toISOString()}&end=${range.end.toISOString()}&direction=${range.direction}`)
+    return res.data;
+}
+
+export async function getMostVisitedLocations() {
+    const res = await api.get<AnalyticsLocationPoint[]>(
+        `history/popular`)
     return res.data;
 }
