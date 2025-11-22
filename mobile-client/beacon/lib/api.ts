@@ -15,7 +15,7 @@ import {Alert} from "react-native";
 import {BoundingBox, MapSnapshotResponse, SendBatchedLocationsRequest} from "@/types/Map";
 import {router} from "expo-router";
 import {Geofence} from "@/types/Geofence";
-import * as Notifications from 'expo-notifications';
+import {TimeRangeOptions} from "@/types/History";
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -120,8 +120,8 @@ export async function createGeofence(request: Geofence) {
     return res.data;
 }
 
-export async function subscribeToNotifications() {
-    const token = (await Notifications.getDevicePushTokenAsync()).data;
-    console.log(`Got fcm token:  ${token}`);
-    const res = await api.post('/notifications/subscriptions/subscribe', {token,});
+export async function getLocationHistory(range: TimeRangeOptions) {
+    const res = await api.get(
+        `history/between?start=${range.start}&end=${range.end}&diection=${range.direction}`)
+    return res.data;
 }

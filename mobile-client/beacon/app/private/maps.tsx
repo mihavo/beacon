@@ -1,17 +1,10 @@
 import {StyleSheet, Text, useColorScheme, View} from "react-native";
-import React, {useEffect} from "react";
+import React from "react";
 import {ProfileMenu} from "@/components/profile-menu";
 import MapViewer from "@/app/private/map-viewer";
-import {subscribeToNotifications} from "@/lib/api";
 
 export default function Maps() {
 
-    useEffect(() => {
-        (async () => {
-            await subscribeToNotifications();
-        })();
-    }, []);
-    
     const isDark = useColorScheme() === 'dark';
     return (
         <View style={[styles.container, isDark && styles.containerDark]}>

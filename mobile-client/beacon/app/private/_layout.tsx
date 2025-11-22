@@ -15,9 +15,15 @@ export default function PrivateTabsLayout() {
                 <Icon sf={"network.badge.shield.half.filled"}></Icon>
             </NativeTabs.Trigger>
 
+
             <NativeTabs.Trigger name="connections">
                 <Label>Connections</Label>
                 <Icon sf={"person.2.circle"}></Icon>
+            </NativeTabs.Trigger>
+
+            <NativeTabs.Trigger name="history">
+                <Label>History</Label>
+                <Icon sf={"clock.arrow.trianglehead.counterclockwise.rotate.90"}></Icon>
             </NativeTabs.Trigger>
         </NativeTabs>
     );
