@@ -1,4 +1,5 @@
 import {
+    ActivityIndicator,
     Alert,
     RefreshControl,
     ScrollView,
@@ -34,12 +35,15 @@ export default function Connections() {
     const [searchResults, setSearchResults] = useState<SearchResponse[]>([]);
     const [sentRequests, setSentRequests] = useState(new Set());
     const [refreshing, setRefreshing] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
     const ws = useRef<WebSocket | null>(null);
+    const searchTimeoutRef = useRef<number | null>(null);
 
     const fetchPendingConnections = useCallback(async () => {
         try {
             const response = await getConnections();
-            const pending = response.connections.filter(conn => conn.status === 'PENDING');
+            const pending = response.connections.filter(
+                conn => conn.status === 'SENT_REQUEST' || conn.status === 'RECEIVED_REQUEST');
             setPendingRequests(pending);
         } catch (error) {
             console.error('Error fetching connections:', error);
@@ -72,18 +76,20 @@ export default function Connections() {
             ws.current = new WebSocket(`${BASE}/users/ws/search`, null, options);
 
             ws.current.onmessage = (message) => {
-                // console.log(message.data);
                 const res = JSON.parse(message.data);
-                console.log(res);
-                setSearchResults(prevResponses => [...prevResponses, JSON.parse(message.data)]);
+                setSearchResults(res);
+                setIsSearching(false);
             };
 
+
             ws.current.onerror = (e) => {
-                console.debug('WebSocket error:',);
+                console.debug('WebSocket error:');
+                setIsSearching(false);
             };
 
             ws.current.onclose = (e) => {
                 console.log('WebSocket closed:', e.code, e.reason);
+                setIsSearching(false);
             };
         })();
 
@@ -91,14 +97,34 @@ export default function Connections() {
             if (ws.current) {
                 ws.current.close();
             }
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
         };
     }, []);
 
     useEffect(() => {
-        if (searchQuery.length > 3 && ws.current && ws.current.readyState === WebSocket.OPEN) {
-            setSearchResults([]);
-            ws.current.send(searchQuery);
+        // Clear existing timeout
+        if (searchTimeoutRef.current) {
+            clearTimeout(searchTimeoutRef.current);
         }
+
+        if (searchQuery.length > 3 && ws.current && ws.current.readyState === WebSocket.OPEN) {
+            setIsSearching(true);
+            setSearchResults([]);
+            searchTimeoutRef.current = setTimeout(() => {
+                ws.current?.send(searchQuery);
+            }, 100);
+        } else if (searchQuery.length <= 3) {
+            setSearchResults([]);
+            setIsSearching(false);
+        }
+
+        return () => {
+            if (searchTimeoutRef.current) {
+                clearTimeout(searchTimeoutRef.current);
+            }
+        };
     }, [searchQuery]);
 
     const onRefresh = useCallback(async () => {
@@ -108,7 +134,6 @@ export default function Connections() {
     }, [fetchPendingConnections]);
 
     const handleSearch = async (text: string) => {
-        // setSearchResults([]);
         setSearchQuery(text);
     };
 
@@ -148,10 +173,9 @@ export default function Connections() {
 
     const handleRemoveFriend = async (id: string) => {
         try {
-            const response = await removeFriend(id);
-            console.log(response);
+            await removeFriend(id);
             Alert.alert('Success', 'Connection removed');
-            await fetchPendingConnections();
+            await fetchFriends();
         } catch (error) {
             console.error('Error removing friend:', error);
         }
@@ -184,43 +208,60 @@ export default function Connections() {
                     />
                 }
             >
-                <View style={styles.section}>
-                    <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Search
-                        Results</Text>
-                    {searchResults.length > 0 ? (
-                        searchResults.map(user => (
-                            <View key={user.id}
-                                  style={[styles.userCard, isDark && styles.userCardDark]}>
-                                <Ionicons
-                                    name={'person-circle'}
-                                    size={42}
-                                    color={isDark ? '#4a4a4a' : '#e0e0e0'}
-                                />
-                                <View style={styles.userInfo}>
-                                    <Text style={[styles.userName,
-                                        isDark && styles.userNameDark]}>{user.fullName}</Text>
-                                    <Text style={[styles.userUsername, isDark
-                                    && styles.userUsernameDark]}>{user.username}</Text>
-                                </View>
-                                {sentRequests.has(user.id) ? (
-                                    <Text style={[styles.sentBadge,
-                                        isDark && styles.sentBadgeDark]}>Sent</Text>
-                                ) : (
-                                    <TouchableOpacity
-                                        style={styles.addButton}
-                                        onPress={() => handleSendRequest(user.id)}
-                                    >
-                                        <Text style={styles.addButtonText}>Add</Text>
-                                    </TouchableOpacity>
-                                )}
+                {/* Search Results Section - Only show when user has typed something */}
+                {searchQuery.length > 0 && (
+                    <View style={styles.section}>
+                        <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
+                            Search Results
+                        </Text>
+                        {isSearching ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large"
+                                                   color={isDark ? '#fff' : '#007bff'}/>
+                                <Text
+                                    style={[styles.loadingText, isDark && styles.loadingTextDark]}>
+                                    Searching...
+                                </Text>
                             </View>
-                        ))
-                    ) : (
-                        <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>No
-                            users found</Text>
-                    )}
-                </View>
-
+                        ) : searchResults.length > 0 ? (
+                            searchResults.map(user => (
+                                <View key={user.id}
+                                      style={[styles.userCard, isDark && styles.userCardDark]}>
+                                    <Ionicons
+                                        name={'person-circle'}
+                                        size={42}
+                                        color={isDark ? '#4a4a4a' : '#e0e0e0'}
+                                    />
+                                    <View style={styles.userInfo}>
+                                        <Text style={[styles.userName,
+                                            isDark && styles.userNameDark]}>{user.fullName}</Text>
+                                        <Text style={[styles.userUsername, isDark
+                                        && styles.userUsernameDark]}>{user.username}</Text>
+                                    </View>
+                                    {sentRequests.has(user.id) ? (
+                                        <Text style={[styles.sentBadge,
+                                            isDark && styles.sentBadgeDark]}>Sent</Text>
+                                    ) : (
+                                        <TouchableOpacity
+                                            style={styles.addButton}
+                                            onPress={() => handleSendRequest(user.id)}
+                                        >
+                                            <Text style={styles.addButtonText}>Add</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
+                            ))
+                        ) : searchQuery.length > 3 ? (
+                            <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
+                                No users found
+                            </Text>
+                        ) : (
+                            <Text style={[styles.emptyText, isDark && styles.emptyTextDark]}>
+                                Type at least 4 characters to search
+                            </Text>
+                        )}
+                    </View>
+                )}
 
                 {/* Pending Requests */}
                 {pendingRequests.length > 0 && (
@@ -242,22 +283,33 @@ export default function Connections() {
                                     <Text style={[styles.userUsername, isDark
                                     && styles.userUsernameDark]}>{request.username}</Text>
                                 </View>
-                                <View style={styles.requestActions}>
-                                    <TouchableOpacity
-                                        style={styles.acceptButton}
-                                        onPress={() => handleAcceptRequest(request.userId)}
-                                    >
-                                        <Text style={styles.acceptButtonText}>Accept</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[styles.declineButton,
-                                            isDark && styles.declineButtonDark]}
-                                        onPress={() => handleDeclineRequest(request.userId)}
-                                    >
-                                        <Text style={[styles.declineButtonText,
-                                            isDark && styles.declineButtonTextDark]}>Decline</Text>
-                                    </TouchableOpacity>
-                                </View>
+                                {request.status === 'RECEIVED_REQUEST' ? (
+                                    <View style={styles.requestActions}>
+                                        <TouchableOpacity
+                                            style={styles.acceptButton}
+                                            onPress={() => handleAcceptRequest(request.userId)}
+                                        >
+                                            <Text style={styles.acceptButtonText}>Accept</Text>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity
+                                            style={[styles.declineButton,
+                                                isDark && styles.declineButtonDark]}
+                                            onPress={() => handleDeclineRequest(request.userId)}
+                                        >
+                                            <Text style={[styles.declineButtonText,
+                                                isDark
+                                                && styles.declineButtonTextDark]}>Decline</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : (
+                                    <View style={[styles.sentRequestBadge,
+                                        isDark && styles.sentRequestBadgeDark]}>
+                                        <Text style={[styles.sentRequestText,
+                                            isDark && styles.sentRequestTextDark]}>
+                                            Request Sent
+                                        </Text>
+                                    </View>
+                                )}
                             </View>
                         ))}
                     </View>
@@ -371,6 +423,19 @@ const styles = StyleSheet.create({
     sectionTitleDark: {
         color: '#ffffff',
     },
+    loadingContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 40,
+    },
+    loadingText: {
+        marginTop: 12,
+        fontSize: 14,
+        color: '#666',
+    },
+    loadingTextDark: {
+        color: '#999',
+    },
     userCard: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -480,6 +545,23 @@ const styles = StyleSheet.create({
         fontSize: 14,
     },
     sentBadgeDark: {
+        color: '#999',
+    },
+    sentRequestBadge: {
+        backgroundColor: '#f0f0f0',
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 6,
+    },
+    sentRequestBadgeDark: {
+        backgroundColor: '#2a2a2a',
+    },
+    sentRequestText: {
+        color: '#666',
+        fontWeight: '600',
+        fontSize: 14,
+    },
+    sentRequestTextDark: {
         color: '#999',
     },
     emptyText: {

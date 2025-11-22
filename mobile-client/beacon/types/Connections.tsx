@@ -2,7 +2,7 @@ export type Connection = {
     userId: string;
     fullName: string;
     username: string;
-    status: 'FRIENDS_WITH' | 'PENDING' | 'BLOCKED';
+    status: 'FRIENDS_WITH' | 'SENT_REQUEST' | 'RECEIVED_REQUEST' | 'BLOCKED';
     lastConnectionTimestamp: string;
 };
 
