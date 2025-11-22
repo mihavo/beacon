@@ -44,17 +44,20 @@ public interface LocationHistoryRepository extends JpaRepository<LocationHistory
 
   @Query(value = """
       SELECT cluster_id,
-                   ST_x(ST_Centroid(ST_Collect(location::geometry))) AS longitude,
-                   ST_y(ST_Centroid(ST_Collect(location::geometry))) AS latitude,
+             ST_X(ST_Centroid(ST_Collect(location::geometry))) AS longitude,
+             ST_Y(ST_Centroid(ST_Collect(location::geometry))) AS latitude,
              COUNT(*) AS visits
       FROM (
-              SELECT ST_ClusterKMeans(location::geometry, 5) OVER () AS cluster_id, location
+          SELECT ST_ClusterKMeans(location::geometry, 5) OVER () AS cluster_id, location
         FROM location_history
         WHERE user_id = :userId
-      AND (CAST(:start AS timestamptz) IS NULL OR timestamp >= CAST(:start AS timestamptz))
-      AND (CASt(:start AS timestamptz) IS NULL OR timestamp <= CAST(:end AS timestamptz))
+            AND location IS NOT NULL
+            AND (CAST(:start AS timestamptz) IS NULL OR timestamp >= CAST(:start AS timestamptz))
+            AND (CAST(:end AS timestamptz) IS NULL OR timestamp <= CAST(:end AS timestamptz))
       ) AS clusters
       GROUP BY cluster_id
+      HAVING ST_X(ST_Centroid(ST_Collect(location::geometry))) IS NOT NULL
+         AND ST_Y(ST_Centroid(ST_Collect(location::geometry))) IS NOT NULL
       ORDER BY visits DESC;
       """, nativeQuery = true)
   List<ClusteredLocation> findPopular(@Param("userId") UUID userId, @Param("start") Instant start, @Param("end") Instant end);

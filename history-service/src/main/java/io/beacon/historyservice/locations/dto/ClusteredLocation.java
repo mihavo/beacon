@@ -2,8 +2,8 @@ package io.beacon.historyservice.locations.dto;
 
 public record ClusteredLocation(
     int clusterId,
-    double longitude,
-    double latitude,
+    Double longitude,
+    Double latitude,
     Long visits
 ) {
 }
