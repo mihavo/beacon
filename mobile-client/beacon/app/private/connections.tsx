@@ -9,11 +9,12 @@ import {
     useColorScheme,
     View,
 } from 'react-native';
-import React, {useCallback, useEffect, useState} from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import {ProfileMenu} from "@/components/profile-menu";
-import {Connection} from "@/types/Connections";
+import {Connection, SearchResponse} from "@/types/Connections";
 import {
     acceptFriendRequest,
+    BASE,
     connect,
     declineFriendRequest,
     getConnections,
@@ -21,6 +22,7 @@ import {
     removeFriend
 } from "@/lib/api";
 import {Ionicons} from "@expo/vector-icons";
+import {getToken} from "@/app/context/AuthContext";
 
 export default function Connections() {
     const colorScheme = useColorScheme();
@@ -29,11 +31,11 @@ export default function Connections() {
     const [searchQuery, setSearchQuery] = useState('');
     const [pendingRequests, setPendingRequests] = useState<Connection[]>([]);
     const [friends, setFriends] = useState<Connection[]>([]);
-    const [searchResults, setSearchResults] = useState([]);
+    const [searchResults, setSearchResults] = useState<SearchResponse[]>([]);
     const [sentRequests, setSentRequests] = useState(new Set());
     const [refreshing, setRefreshing] = useState(false);
+    const ws = useRef<WebSocket | null>(null);
 
-    // Extract the fetch logic into a separate function
     const fetchPendingConnections = useCallback(async () => {
         try {
             const response = await getConnections();
@@ -53,26 +55,58 @@ export default function Connections() {
         }
     }, []);
 
-    // Initial load
     useEffect(() => {
         fetchPendingConnections();
         fetchFriends();
     }, [fetchPendingConnections, fetchFriends]);
 
-    // Pull to refresh handler
+    useEffect(() => {
+        (async () => {
+            if (ws.current) return;
+            const headers: { [headerName: string]: string } = {};
+            headers["Authorization"] = `Bearer ${await getToken()}`;
+
+            ws.current = new WebSocket(`${BASE}/users/ws/search`, null, headers);
+
+            ws.current.onmessage = (message) => {
+                setSearchResults(prevResponses => ({
+                    ...prevResponses,
+                    ...JSON.parse(message.data)
+                }));
+            };
+
+            ws.current.onerror = (e) => {
+                console.debug('WebSocket error:',);
+            };
+
+            ws.current.onclose = (e) => {
+                console.log('WebSocket closed:', e.code, e.reason);
+            };
+        })();
+
+        return () => {
+            if (ws.current) {
+                ws.current.close();
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        if (searchQuery.length > 3 && ws.current && ws.current.readyState === WebSocket.OPEN) {
+            ws.current.send(searchQuery);
+        }
+    }, [searchQuery]);
+
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         await fetchPendingConnections();
         setRefreshing(false);
     }, [fetchPendingConnections]);
 
-    const handleSearch = (text) => {
-        setSearchQuery(text);
+    const handleSearch = async (text: string) => {
         if (text.trim().length > 0) {
-            // In real app, this would be an API call
             setSearchResults([]);
-        } else {
-            setSearchResults([]);
+            setSearchQuery(text);
         }
     };
 
@@ -148,8 +182,8 @@ export default function Connections() {
                     />
                 }
             >
-                {/* Search Results */}
-                {searchQuery.trim().length > 0 && (
+
+            {searchQuery.trim().length > 0 && (
                     <View style={styles.section}>
                         <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>Search
                             Results</Text>

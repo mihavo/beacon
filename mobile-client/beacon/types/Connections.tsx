@@ -41,3 +41,5 @@ export type DeclineFriendRequest = {
 }
 
 export type DeclineFriendResponse = {}
+
+export type SearchResponse = GetUserResponse;
