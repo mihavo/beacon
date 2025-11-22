@@ -47,21 +47,6 @@
           "configureAndroidBackup": true,
           "faceIDPermission": "Allow Beacon to access your Face ID biometric data."
         }
-      ],
-      [
-        "expo-notifications",
-        {
-          "defaultChannel": "default",
-          "enableBackgroundRemoteNotifications": false
-        }
-      ],
-      [
-        "expo-build-properties",
-        {
-          "ios": {
-            "useFrameworks": "static"
-          }
-        }
       ]
     ],
     "experiments": {
