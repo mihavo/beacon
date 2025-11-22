@@ -49,9 +49,10 @@
         }
       ],
       [
-        "expo-location",
+        "expo-notifications",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Beacon to use your location."
+          "defaultChannel": "default",
+          "enableBackgroundRemoteNotifications": false
         }
       ]
     ],

@@ -15,6 +15,7 @@ import {Alert} from "react-native";
 import {BoundingBox, MapSnapshotResponse, SendBatchedLocationsRequest} from "@/types/Map";
 import {router} from "expo-router";
 import {Geofence} from "@/types/Geofence";
+import * as Notifications from 'expo-notifications';
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -117,4 +118,10 @@ export async function sendBatchedLocations(request: SendBatchedLocationsRequest)
 export async function createGeofence(request: Geofence) {
     const res = await api.post(`geofence/`, request);
     return res.data;
+}
+
+export async function subscribeToNotifications() {
+    const token = (await Notifications.getDevicePushTokenAsync()).data;
+    console.log(`Got fcm token:  ${token}`);
+    const res = await api.post('/notifications/subscriptions/subscribe', {token,});
 }
