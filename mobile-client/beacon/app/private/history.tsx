@@ -222,7 +222,7 @@ export default function LocationHistory() {
                     <View style={[styles.visitCountBadge, isDark && styles.visitCountBadgeDark]}>
                         <Text style={[styles.visitCountNumber,
                             isDark && styles.visitCountNumberDark]}>
-                            {item.visitCount}
+                            {item.visits}
                         </Text>
                         <Text
                             style={[styles.visitCountLabel, isDark && styles.visitCountLabelDark]}>
@@ -433,7 +433,8 @@ export default function LocationHistory() {
                         </Text>
                         {mostVisited.length > 0 ? (
                             mostVisited.map((location) => (
-                                <View key={`cluster-${location.cluster}`}>
+                                <View
+                                    key={`${location.latitude}-${location.longitude}-${location.timestamp}`}>
                                     {renderMostVisitedItem({item: location})}
                                 </View>
                             ))

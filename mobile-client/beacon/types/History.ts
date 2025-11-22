@@ -12,6 +12,6 @@ export interface LocationPoint {
 }
 
 export interface AnalyticsLocationPoint extends LocationPoint {
-    visitCount: number;
+    visits: number;
     cluster: number;
 }

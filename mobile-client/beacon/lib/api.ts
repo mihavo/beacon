@@ -121,7 +121,6 @@ export async function createGeofence(request: Geofence) {
 }
 
 export async function getLocationHistory(range: TimeRangeOptions) {
-    console.log(range.start.toISOString(), range.end.toISOString());
     const res = await api.get<LocationPoint[]>(
         `history/between?start=${range.start.toISOString()}&end=${range.end.toISOString()}&direction=${range.direction}`)
     return res.data;
