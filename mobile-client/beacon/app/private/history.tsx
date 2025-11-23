@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     useColorScheme,
     View,
+    ViewToken,
 } from 'react-native';
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import {ProfileMenu} from "@/components/profile-menu";
@@ -17,19 +18,43 @@ import {AnalyticsLocationPoint, LocationPoint} from "@/types/History";
 import {getLocationHistory, getMostVisitedLocations} from "@/lib/api";
 import {reverseGeocodeAsync} from "expo-location";
 
+const reverseGeocodeLocation = async (latitude: number, longitude: number): Promise<string> => {
+    const geocode = await reverseGeocodeAsync({
+        latitude,
+        longitude,
+    });
+
+    if (geocode && geocode.length > 0) {
+        const address = geocode[0];
+        const addressString = [
+            address.streetNumber,
+            address.street,
+            address.city,
+            address.region,
+        ].filter(Boolean).join(', ');
+
+        return addressString || 'Unknown location';
+    }
+    return 'Unknown location';
+};
+
 type TimeRange = '24h' | '7d' | '30d';
+
+type LocationPointWithAddress = LocationPoint & { address?: string };
+type AnalyticsLocationPointWithAddress = AnalyticsLocationPoint & { address?: string };
 
 export default function LocationHistory() {
     const colorScheme = useColorScheme();
     const isDark = colorScheme === 'dark';
 
     const [selectedRange, setSelectedRange] = useState<TimeRange>('24h');
-    const [locationHistory, setLocationHistory] = useState<LocationPoint[]>([]);
-    const [mostVisited, setMostVisited] = useState<AnalyticsLocationPoint[]>([]);
+    const [locationHistory, setLocationHistory] = useState<LocationPointWithAddress[]>([]);
+    const [mostVisited, setMostVisited] = useState<AnalyticsLocationPointWithAddress[]>([]);
     const [loading, setLoading] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [viewMode, setViewMode] = useState<'timeline' | 'dashboard'>('timeline');
     const mapRef = useRef<MapView>(null);
+    const geocodingQueueRef = useRef<Set<string>>(new Set());
 
     const getTimeRangeParams = (range: TimeRange) => {
         const end = new Date();
@@ -55,44 +80,14 @@ export default function LocationHistory() {
     const fetchLocationHistory = useCallback(async (range: TimeRange) => {
         try {
             setLoading(true);
-            const historyLocations = await getLocationHistory(getTimeRangeParams(range));
-            const locationsWithAddresses = await Promise.all(
-                historyLocations.map(async (location, index) => {
-                    try {
-                        // Add a small delay between requests to avoid rate limiting
-                        await new Promise(resolve => setTimeout(resolve, index * 800));
-
-                        const geocode = await reverseGeocodeAsync({
-                            latitude: location.latitude,
-                            longitude: location.longitude,
-                        });
-
-                        if (geocode && geocode.length > 0) {
-                            const address = geocode[0];
-                            const addressString = [
-                                address.streetNumber,
-                                address.street,
-                                address.city,
-                                address.region,
-                            ].filter(Boolean).join(', ');
-
-                            return {
-                                ...location,
-                                address: addressString || 'Unknown location',
-                            };
-                        }
-                    } catch (error) {
-                        console.error('Geocoding error for location:', location, error);
-                        return {
-                            ...location,
-                            address: 'Address unavailable',
-                        };
-                    }
-                    return location;
-                })
-            );
-
-            setLocationHistory(locationsWithAddresses as LocationPoint[]);
+            const historyLocations: LocationPoint[] = await getLocationHistory(
+                getTimeRangeParams(range));
+            const historyWithEmptyAddresses: LocationPointWithAddress[] = historyLocations.map(
+                loc => ({
+                    ...loc,
+                    address: undefined,
+                }));
+            setLocationHistory(historyWithEmptyAddresses);
         } catch (error) {
             console.error('Error fetching location history:', error);
         } finally {
@@ -102,12 +97,74 @@ export default function LocationHistory() {
 
     const fetchMostVisited = useCallback(async () => {
         try {
-            const mostVisitedLocations = await getMostVisitedLocations();
-            setMostVisited(mostVisitedLocations);
+            const mostVisitedLocations: AnalyticsLocationPoint[] = await getMostVisitedLocations();
+            const mostVisitedWithEmptyAddresses: AnalyticsLocationPointWithAddress[] = mostVisitedLocations.map(
+                loc => ({
+                    ...loc,
+                    address: undefined,
+                }));
+            setMostVisited(mostVisitedWithEmptyAddresses);
         } catch (error) {
             console.error('Error fetching most visited:', error);
         }
     }, []);
+
+    const geocodeSingleLocation = useCallback(
+        async <T extends LocationPointWithAddress | AnalyticsLocationPointWithAddress>(
+            location: T,
+            list: T[],
+            setState: React.Dispatch<React.SetStateAction<T[]>>,
+            listKey: 'history' | 'visited'
+        ) => {
+            const itemKey = `${listKey}-${location.latitude}-${location.longitude}-${(location as LocationPoint).timestamp
+            || 'analytics'}`;
+
+            if (location.address || geocodingQueueRef.current.has(itemKey)) {
+                return;
+            }
+
+            geocodingQueueRef.current.add(itemKey);
+
+            try {
+                const address = await reverseGeocodeLocation(location.latitude, location.longitude);
+                setState(currentList => {
+                    const index = currentList.findIndex(
+                        item => item.latitude
+                            === location.latitude
+                            && item.longitude
+                            === location.longitude
+                            && ('timestamp' in item ? item.timestamp
+                                === (location as LocationPoint).timestamp : true)
+                    );
+                    if (index > -1) {
+                        const newList = [...currentList];
+                        newList[index] = {...newList[index], address};
+                        return newList;
+                    }
+                    return currentList;
+                });
+            } catch (e) {
+                console.error(`Error geocoding location:`, e);
+                setState(currentList => {
+                    const index = currentList.findIndex(
+                        item => item.latitude
+                            === location.latitude
+                            && item.longitude
+                            === location.longitude
+                            && ('timestamp' in item ? item.timestamp
+                                === (location as LocationPoint).timestamp : true)
+                    );
+                    if (index > -1) {
+                        const newList = [...currentList];
+                        newList[index] = {...newList[index], address: "Address unavailable"};
+                        return newList;
+                    }
+                    return currentList;
+                });
+            } finally {
+                geocodingQueueRef.current.delete(itemKey);
+            }
+        }, []);
 
     useEffect(() => {
         fetchLocationHistory(selectedRange);
@@ -116,10 +173,56 @@ export default function LocationHistory() {
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
+        geocodingQueueRef.current.clear(); // Clear the queue on refresh
+        setLocationHistory([]);
+        setMostVisited([]);
         await fetchLocationHistory(selectedRange);
         await fetchMostVisited();
         setRefreshing(false);
     }, [selectedRange, fetchLocationHistory, fetchMostVisited]);
+
+    const onViewableItemsChangedHistory = useRef(
+        ({viewableItems}: { viewableItems: ViewToken[] }) => {
+            const delay = 500; // Throttle rate limit for geocoding
+            viewableItems.filter(
+                item => item.isViewable && item.item.address === undefined).forEach(
+                (viewableItem, index) => {
+                    // Apply a small staggered delay to reduce burst requests
+                    setTimeout(() => {
+                        const location = viewableItem.item as LocationPointWithAddress;
+                        geocodeSingleLocation(location, locationHistory, setLocationHistory,
+                            'history');
+                    }, index * delay);
+                });
+        }).current;
+
+    const geocodeMostVisitedSequentially = useCallback(async () => {
+        const delay = 500;
+        let updatedLocations = [...mostVisited];
+
+        for (let i = 0; i < updatedLocations.length; i++) {
+            const location = updatedLocations[i];
+            if (!location.address) {
+                try {
+                    const address = await reverseGeocodeLocation(location.latitude,
+                        location.longitude);
+                    updatedLocations[i] = {...location, address};
+                    setMostVisited([...updatedLocations]);
+                } catch (e) {
+                    console.error(`Error geocoding visited location ${i}:`, e);
+                    updatedLocations[i] = {...location, address: "Address unavailable"};
+                    setMostVisited([...updatedLocations]);
+                }
+            }
+            await new Promise(resolve => setTimeout(resolve, delay));
+        }
+    }, [mostVisited]);
+
+    useEffect(() => {
+        if (mostVisited.length > 0 && !mostVisited[0].address && viewMode === 'dashboard') {
+            geocodeMostVisitedSequentially();
+        }
+    }, [mostVisited, viewMode, geocodeMostVisitedSequentially]);
 
     const formatTime = (timestamp: string) => {
         const date = new Date(timestamp);
@@ -157,7 +260,7 @@ export default function LocationHistory() {
         }
     };
 
-    const renderTimelineItem = ({item}: { item: LocationPoint }) => (
+    const renderTimelineItem = ({item}: { item: LocationPointWithAddress }) => (
         <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => handleLocationPress(item)}
@@ -179,12 +282,10 @@ export default function LocationHistory() {
                                 {formatTime(item.timestamp)}
                             </Text>
                         </View>
-                        {item.address && (
-                            <Text style={[styles.locationAddress,
-                                isDark && styles.locationAddressDark]}>
-                                {item.address}
-                            </Text>
-                        )}
+                        <Text style={[styles.locationAddress,
+                            isDark && styles.locationAddressDark]}>
+                            {item.address ?? 'Geocoding address...'}
+                        </Text>
                         <View style={styles.tapHint}>
                             <Ionicons name="map-outline" size={14}
                                       color={isDark ? '#666' : '#999'}/>
@@ -198,7 +299,7 @@ export default function LocationHistory() {
         </TouchableOpacity>
     );
 
-    const renderMostVisitedItem = ({item}: { item: AnalyticsLocationPoint }) => (
+    const renderMostVisitedItem = ({item}: { item: AnalyticsLocationPointWithAddress }) => (
         <TouchableOpacity
             activeOpacity={0.7}
             onPress={() => handleLocationPress(item)}
@@ -214,7 +315,7 @@ export default function LocationHistory() {
                     </View>
                     <View style={styles.visitedInfo}>
                         <Text style={[styles.visitedAddress, isDark && styles.visitedAddressDark]}>
-                            {item.address}
+                            {item.address ?? 'Geocoding address...'}
                         </Text>
                     </View>
                 </View>
@@ -231,7 +332,7 @@ export default function LocationHistory() {
                     </View>
                 </View>
             </View>
-        </TouchableOpacity> // <-- Removed extraneous ')' and ';' here, and the following '}'
+        </TouchableOpacity>
     );
 
     const renderMap = () => {
@@ -285,6 +386,8 @@ export default function LocationHistory() {
             </View>
         );
     };
+
+    const showHistoryLoading = loading && locationHistory.length === 0;
 
     return (
         <View style={[styles.container, isDark && styles.containerDark]}>
@@ -376,11 +479,11 @@ export default function LocationHistory() {
                     {renderMap()}
 
                     {/* Timeline */}
-                    {loading ? (
+                    {showHistoryLoading ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="large" color="#007bff"/>
                             <Text style={[styles.loadingText, isDark && styles.loadingTextDark]}>
-                                Loading history...
+                                {'Loading history...'}
                             </Text>
                         </View>
                     ) : (
@@ -396,6 +499,11 @@ export default function LocationHistory() {
                                     tintColor={isDark ? '#fff' : '#000'}
                                 />
                             }
+                            onViewableItemsChanged={onViewableItemsChangedHistory}
+                            viewabilityConfig={{
+                                itemVisiblePercentThreshold: 50,
+                                waitForInteraction: true,
+                            }}
                             ListEmptyComponent={
                                 <View style={styles.emptyContainer}>
                                     <Ionicons
@@ -431,7 +539,15 @@ export default function LocationHistory() {
                         <Text style={[styles.sectionTitle, isDark && styles.sectionTitleDark]}>
                             Most Visited Locations
                         </Text>
-                        {mostVisited.length > 0 ? (
+                        {loading && mostVisited.length === 0 ? (
+                            <View style={styles.loadingContainer}>
+                                <ActivityIndicator size="large" color="#007bff"/>
+                                <Text
+                                    style={[styles.loadingText, isDark && styles.loadingTextDark]}>
+                                    Loading analytics...
+                                </Text>
+                            </View>
+                        ) : mostVisited.length > 0 ? (
                             mostVisited.map((location) => (
                                 <View
                                     key={`${location.latitude}-${location.longitude}-${location.timestamp}`}>
