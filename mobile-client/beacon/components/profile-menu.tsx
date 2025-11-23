@@ -11,13 +11,18 @@ export function ProfileMenu() {
         await auth.logout();
         router.replace('/auth/login');
     }
+
+    const redirectToAccount = async () => {
+        console.debug('Redirecting to Account')
+        router.replace('/private/account');
+    }
     return (
         <Host>
             <ContextMenu>
                 <ContextMenu.Items>
                     <Button
                         systemImage="person.crop.circle"
-                        onPress={() => console.debug('Redirecting to Account')}>
+                        onPress={redirectToAccount}>
                         Account
                     </Button>
                     <Button
