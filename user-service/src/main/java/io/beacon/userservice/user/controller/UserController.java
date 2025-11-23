@@ -32,7 +32,7 @@ public class UserController {
     return self.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
-  @DeleteMapping
+  @DeleteMapping("/me")
   public Mono<ResponseEntity<Void>> deleteUser() {
     return userService.deleteCurrentUser().thenReturn(ResponseEntity.ok().build());
   }
