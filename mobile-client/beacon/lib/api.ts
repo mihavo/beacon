@@ -11,7 +11,6 @@ import {
     GetFriendsResponse,
     GetUserResponse
 } from "@/types/Connections";
-import {Alert} from "react-native";
 import {BoundingBox, MapSnapshotResponse, SendBatchedLocationsRequest} from "@/types/Map";
 import {router} from "expo-router";
 import {Geofence} from "@/types/Geofence";
@@ -45,14 +44,6 @@ api.interceptors.response.use(
             await logoutRef.current?.();
             return router.replace('/auth/login');
         }
-
-        let message = "Something went wrong.";
-        if (error.response?.data?.message) {
-            message = error.response.data.message;
-        } else if (error.message) {
-            message = error.message;
-        }
-        Alert.alert("Error", message);
         return Promise.reject(error);
     }
 );
@@ -135,5 +126,10 @@ export async function getMostVisitedLocations() {
 
 export async function getUserAccount() {
     const res = await api.get<UserAccount>(`users/me`);
+    return res.data;
+}
+
+export async function deleteUserAccount() {
+    const res = await api.delete(`users/me`);
     return res.data;
 }

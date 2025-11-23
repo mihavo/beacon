@@ -89,21 +89,21 @@ export default function Login() {
 
     const onSubmit = async (data: FormData) => {
         auth.setIsLoading(true);
-
         try {
             const res = await login(data.username, data.password);
-
             if (res?.token) {
                 await auth.login(res.token);
                 router.replace("/private/maps");
             } else {
-                console.log(res);
                 Alert.alert("Login failed", res.error || "Invalid credentials");
                 auth.setIsLoading(false);
             }
         } catch (err: any) {
             auth.setIsLoading(false);
-            Alert.alert("Login failed", "Server Error.");
+            if (err.status === 404) {
+                Alert.alert("Login failed", err.error || "Invalid credentials");
+                return;
+            }
             console.error("Failed to login:", err);
         }
     };

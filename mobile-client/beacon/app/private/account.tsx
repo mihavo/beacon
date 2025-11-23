@@ -10,11 +10,15 @@ import {
 } from 'react-native';
 import React, {useCallback, useEffect, useState} from "react";
 import {Ionicons} from "@expo/vector-icons";
-import {getUserAccount} from "@/lib/api";
+import {deleteUserAccount, getUserAccount} from "@/lib/api";
 import {UserAccount} from "@/types/Account";
+import {router} from "expo-router";
+import {useAuth} from "@/app/context/AuthContext";
 
 export default function Account() {
     const colorScheme = useColorScheme();
+    const auth = useAuth();
+
     const isDark = colorScheme === 'dark';
 
     const [account, setAccount] = useState<UserAccount | null>(null);
@@ -78,9 +82,11 @@ export default function Account() {
                 {
                     text: 'Delete',
                     style: 'destructive',
-                    onPress: () => {
-                        // TODO: Implement account deletion
-                        console.log('Account deletion confirmed');
+                    onPress: async () => {
+                        await deleteUserAccount();
+                        Alert.alert('Account deleted');
+                        await auth.logout();
+                        router.push('/auth/login');
                     },
                 },
             ]
