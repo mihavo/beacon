@@ -3,7 +3,7 @@ import React from "react";
 
 export default function PrivateTabsLayout() {
     return (
-        <NativeTabs>
+        <NativeTabs minimizeBehavior={"onScrollUp"}>
             <NativeTabs.Trigger name="maps">
                 <Label>Maps</Label>
                 <Icon sf={"map"}></Icon>
