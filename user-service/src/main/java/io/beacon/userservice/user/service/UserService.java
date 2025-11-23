@@ -31,14 +31,13 @@ public class UserService {
     return AuthUtils.getCurrentUserId().flatMap(userId -> userRepository.findById(userId).map(userMapper::toUserResponse));
   }
 
-  public Mono<Void> deleteUser(UUID userId) {
-    return userRepository.existsById(userId)
-        .flatMap(exists -> {
-          if (!exists) {
-            return Mono.error(new UserNotFoundException("User with id " + userId + " not found"));
-          }
-          return userRepository.deleteById(userId);
-        });
+  public Mono<Void> deleteCurrentUser() {
+    return AuthUtils.getCurrentUserId().flatMap(this::getUser).flatMap(user -> {
+      if (user == null) {
+        return Mono.error(new UserNotFoundException("User not found"));
+      }
+      return userRepository.deleteById(user.id());
+    });
   }
 
   public Mono<UUID> getCurrentUserId() {

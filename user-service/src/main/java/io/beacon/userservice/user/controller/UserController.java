@@ -32,9 +32,9 @@ public class UserController {
     return self.map(ResponseEntity::ok).defaultIfEmpty(ResponseEntity.notFound().build());
   }
 
-  @DeleteMapping("/{userId}")
-  public Mono<ResponseEntity<Void>> deleteUser(@PathVariable UUID userId) {
-    return userService.deleteUser(userId).thenReturn(ResponseEntity.ok().build());
+  @DeleteMapping
+  public Mono<ResponseEntity<Void>> deleteUser() {
+    return userService.deleteCurrentUser().thenReturn(ResponseEntity.ok().build());
   }
 
   @MessageMapping("/search")

@@ -16,6 +16,7 @@ import {BoundingBox, MapSnapshotResponse, SendBatchedLocationsRequest} from "@/t
 import {router} from "expo-router";
 import {Geofence} from "@/types/Geofence";
 import {AnalyticsLocationPoint, LocationPoint, TimeRangeOptions} from "@/types/History";
+import {UserAccount} from "@/types/Account";
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -129,5 +130,10 @@ export async function getLocationHistory(range: TimeRangeOptions) {
 export async function getMostVisitedLocations() {
     const res = await api.get<AnalyticsLocationPoint[]>(
         `history/popular`)
+    return res.data;
+}
+
+export async function getUserAccount() {
+    const res = await api.get<UserAccount>(`users/me`);
     return res.data;
 }

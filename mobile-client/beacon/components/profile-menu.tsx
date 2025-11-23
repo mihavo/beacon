@@ -14,7 +14,7 @@ export function ProfileMenu() {
 
     const redirectToAccount = async () => {
         console.debug('Redirecting to Account')
-        router.replace('/private/account');
+        router.push('/private/account');
     }
     return (
         <Host>

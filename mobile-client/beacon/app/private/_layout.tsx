@@ -3,8 +3,7 @@ import React from "react";
 
 export default function PrivateTabsLayout() {
     return (
-        <NativeTabs
-        >
+        <NativeTabs>
             <NativeTabs.Trigger name="maps">
                 <Label>Maps</Label>
                 <Icon sf={"map"}></Icon>
@@ -24,6 +23,11 @@ export default function PrivateTabsLayout() {
             <NativeTabs.Trigger name="history">
                 <Label>History</Label>
                 <Icon sf={"clock.arrow.trianglehead.counterclockwise.rotate.90"}></Icon>
+            </NativeTabs.Trigger>
+
+            <NativeTabs.Trigger name="account">
+                <Label>Account</Label>
+                <Icon sf={"person.crop.circle"}/>
             </NativeTabs.Trigger>
         </NativeTabs>
     );

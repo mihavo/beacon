@@ -1,23 +1,23 @@
 #Healthcecks
 x-spring-healthcheck: &spring-healthcheck
   test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
-  interval: 5s
+  interval: 20s
   timeout: 3s
   retries: 5
 x-redis-healthcheck: &redis-healthcheck
   test: [ "CMD", "redis-cli", "ping" ]
-  interval: 10s
+  interval: 20s
   timeout: 5s
   retries: 5
 x-neo4j-healthcheck: &neo4j-healthcheck
   test:
     wget http://localhost:7474 || exit 1
-  interval: 10s
+  interval: 20s
   timeout: 5s
   retries: 5
 x-pg-healthcheck: &pg-healthcheck
   test: [ "CMD-SHELL", "pg_isready" ]
-  interval: 10s
+  interval: 20s
   timeout: 5s
   retries: 5
   start_period: 15s
