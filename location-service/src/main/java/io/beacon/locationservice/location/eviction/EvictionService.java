@@ -48,11 +48,23 @@ public class EvictionService {
 
   private final Map<UUID, Mono<Void>> evictionLocks = new ConcurrentHashMap<>();
 
+  /**
+   * Uses the instance's eviction locks map to handle a set of Monos that subscribe to the runEviction() method.
+   * At max 1 subscription will be created for every userId to avoid duplicate evictions.
+   *
+   * @param userId the userId to run the eviction for
+   * @return a subscription for an eviction of a user's locations
+   */
   public Mono<Void> evaluateEviction(UUID userId) {
-    Mono<Void> current = evictionLocks.getOrDefault(userId, Mono.empty());
-    Mono<Void> next = current.then(runEviction(userId)).cache();
-    evictionLocks.put(userId, next);
-    return next.doFinally(signalType -> evictionLocks.remove(userId));
+    Mono<Void> next = evictionLocks.compute(userId, (key, current) -> {
+          current = current != null ? current : Mono.empty();
+          return current.then(runEviction(userId))
+              .cache();
+        }
+    );
+    return next.doFinally(signalType ->
+        evictionLocks.computeIfPresent(userId, (key, sub) -> sub == next ? null : sub)
+    );
   }
 
   /**
