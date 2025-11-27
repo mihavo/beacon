@@ -52,8 +52,7 @@ public class PublishService {
 
             return redisTemplate.opsForStream()
                 .add(record)
-                .doOnNext(id -> log.info("Published location {}", id))
-                .flatMap(id -> evictionService.evaluateEviction(userId).thenReturn(id));
+                .doOnNext(id -> log.info("Published location {}", id));
           });
 
       PublishLocationRequest lastLocation = input.stream()
@@ -66,15 +65,28 @@ public class PublishService {
               CacheUtils.buildGeospatialMember(userId));
 
       Mono<Boolean> timestampUpdate =
-          valueRedisTemplate.opsForValue().set(CacheUtils.buildTimestampKey(userId), lastLocation.capturedAt().toString());
+          valueRedisTemplate.opsForValue().set(
+              CacheUtils.buildTimestampKey(userId),
+              lastLocation.capturedAt().toString()
+          );
 
       Mono<Void> streamEvent =
-          locationEventsProducer.sendAsStreamEvent(new LocationEvent(userId.toString(), lastLocation.coords().latitude(),
-              lastLocation.coords().longitude(), lastLocation.capturedAt()));
+          locationEventsProducer.sendAsStreamEvent(
+              new LocationEvent(
+                  userId.toString(),
+                  lastLocation.coords().latitude(),
+                  lastLocation.coords().longitude(),
+                  lastLocation.capturedAt()
+              )
+          );
 
       return streamRecords.collectList()
-          .flatMapMany(records -> Mono.when(geoUpdate, timestampUpdate, streamEvent)
-              .thenMany(Flux.fromIterable(records)));
+          .flatMap(records ->
+              Mono.when(geoUpdate, timestampUpdate, streamEvent)
+                  .then(evictionService.evaluateEviction(userId))
+                  .thenReturn(records)
+          )
+          .flatMapMany(Flux::fromIterable);
     });
   }
 }
