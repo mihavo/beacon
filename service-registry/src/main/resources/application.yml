@@ -23,3 +23,11 @@ management:
     metrics:
       export:
         enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+io:
+  beacon:
+    loki:
+      url: 'http://beacon-loki:3100/loki/api/v1/push'
