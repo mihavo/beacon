@@ -16,7 +16,7 @@ x-neo4j-healthcheck: &neo4j-healthcheck
   timeout: 5s
   retries: 5
 x-pg-healthcheck: &pg-healthcheck
-  test: [ "CMD-SHELL", "pg_isready" ]
+  test: [ "CMD-SHELL", "pg_isready -U postgres" ]
   interval: 20s
   timeout: 5s
   retries: 5
@@ -217,6 +217,7 @@ services:
       SERVER_PORT: 8080
       EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
       DB_URL: jdbc:postgresql://geofence-db:5432/geofence_db
+      DB_USERNAME: postgres
       KAFKA_URL: kafka:9093
       GRPC_USER_CHANNEL_URL: user-service:9090
       GRPC_AUTH_CHANNEL_URL: auth-service:9090
@@ -248,6 +249,7 @@ services:
       SERVER_PORT: 8080
       EUREKA_SERVICE_URL: http://service-registry:8761/eureka/
       DB_URL: jdbc:postgresql://notification-db:5432/notification_db
+      DB_USERNAME: postgres
       KAFKA_URL: kafka:9093
       GRPC_USER_CHANNEL_URL: user-service:9090
       GRPC_AUTH_CHANNEL_URL: auth-service:9090
