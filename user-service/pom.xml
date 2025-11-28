@@ -32,6 +32,7 @@
     <jwt.version>0.12.6</jwt.version>
     <bouncy-castle-version>1.82</bouncy-castle-version>
     <io-grpc.version>1.76.0</io-grpc.version>
+    <neo4j-harness.version>5.26.17</neo4j-harness.version>
   </properties>
     <dependencies>
         <dependency>
@@ -146,6 +147,23 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aspects</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>org.neo4j.test</groupId>
+        <artifactId>neo4j-harness</artifactId>
+        <version>${neo4j-harness.version}</version>
+        <scope>test</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-transport</artifactId>
+        <version>4.1.121.Final</version>
       </dependency>
     </dependencies>
     <dependencyManagement>

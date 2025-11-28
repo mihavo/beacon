@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+  <property name="CONSOLE_LOG_PATTERN"
+      value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+  <property name="FILE_LOG_PATTERN"
+      value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
+  <springProperty name="APP_NAME" source="spring.application.name" defaultValue="default"/>
+  <springProperty name="LOKI_URL" source="io.beacon.loki.url"
+      defaultValue="http://localhost:3100/loki/api/v1/push"/>
+
+  <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+    <http>
+      <url>${LOKI_URL}</url>
+    </http>
+    <format>
+      <label>
+        <pattern>compose_service=${APP_NAME},host=${HOSTNAME},level=%level</pattern>
+        <readMarkers>true</readMarkers>
+      </label>
+      <message>
+        <pattern>${FILE_LOG_PATTERN}
+        </pattern>
+      </message>
+    </format>
+  </appender>
+
+
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+      <Pattern>%d{yyyy-MM-dd HH:mm:ss} %highlight(%-5level) %cyan(%logger{36}) - %msg%n</Pattern>
+    </encoder>
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>INFO</level>
+    </filter>
+  </appender>
+
+
+  <root level="INFO">
+    <appender-ref ref="LOKI"/>
+    <appender-ref ref="CONSOLE"/>
+  </root>
+</configuration>
