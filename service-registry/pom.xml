@@ -5,10 +5,10 @@
     <parent>
         <groupId>io.beacon</groupId>
         <artifactId>beacon-parent</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </parent>
     <artifactId>service-registry</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <name>service-registry</name>
     <description>service-registry</description>
     <url/>

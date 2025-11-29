@@ -5,10 +5,10 @@
     <parent>
       <groupId>io.beacon</groupId>
       <artifactId>beacon-parent</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </parent>
     <artifactId>notification-service</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3</version>
     <name>notification-service</name>
     <description>notification-service</description>
     <url/>
@@ -91,12 +91,12 @@
     <dependency>
       <groupId>io.beacon</groupId>
       <artifactId>core</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>io.beacon</groupId>
       <artifactId>security-core</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>org.mapstruct</groupId>
