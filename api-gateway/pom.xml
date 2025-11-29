@@ -5,10 +5,10 @@
   <parent>
     <groupId>io.beacon</groupId>
     <artifactId>beacon-parent</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
   </parent>
     <artifactId>api-gateway</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
     <name>api-gateway</name>
     <description>api-gateway</description>
     <url/>
