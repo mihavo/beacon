@@ -48,8 +48,14 @@ jobs:
     strategy:
       matrix:
         service:
+          - name: api-gateway
+          - name: service-registry
           - name: auth-service
           - name: user-service
+          - name: location-service
+          - name: map-service
+          - name: history-service
+          - name: geofence-service
           - name: notification-service
     
     steps:
