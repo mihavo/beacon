@@ -137,10 +137,3 @@ jobs:
 
       - name: Print Version
         run: "echo 'New Version: ${{steps.bump.outputs.tag}}'"
-
-      - name: Create Release Tag
-        run: |
-          git config user.name github-actions
-          git config user.email github-actions@github.com
-          git tag -a ${{steps.bump.outputs.tag}} -m "Release ${{steps.bump.outputs.tag}}"
-          git push origin ${{steps.bump.outputs.tag}}
