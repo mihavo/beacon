@@ -25,7 +25,7 @@ WORKDIR /app
 
 RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
 
-COPY --from=build /app/${SERVICE_NAME}/target/*-SNAPSHOT.jar app.jar
+COPY --from=build /app/${SERVICE_NAME}/target/*.jar app.jar
 COPY ${SERVICE_NAME}/.env*.properties ./
 COPY ${SERVICE_NAME}/*.pem ./
 
