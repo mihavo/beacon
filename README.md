@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://github.com/mihavo/beacon">
-    <img src="docs/assets/beacon_logo.png" alt="Beacon logo" width="120" height="120"/>
+    <img src="assets/beacon_logo.png" alt="Beacon logo" width="120" height="120"/>
   </a>
 
 # Beacon
@@ -85,7 +85,8 @@ This will start a Prometheus instance for metrics collection, a Grafana instance
 
 ## Contributing
 
-Contributions are welcome! Please read the [Contributing Guide](docs/contributing.md) for details on how to get started.
+Contributions are welcome! Please read the [Contributing Guide](CONTRIBUTING.md) for details on how
+to get started.
 
 ## License
 
