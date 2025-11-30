@@ -57,11 +57,11 @@ alt="TimescaleDB">
 
 ## Architecture
 
-To achieve scalability and modularity, Beacon is built using a microservices architecture. Visit the [Architecture Docs](docs/architecture.md) for more details.
+To achieve scalability and modularity, Beacon is built using a microservices architecture. Visit the [Architecture Docs](https://github.com/mihavo/beacon/wiki/Architecture) for more details.
 
 ## Mobile Client
 
-Check the [Mobile Client Docs](docs/mobile_client.md) for instructions on how to set up and run the mobile client.
+Check the [Mobile Client Docs](https://github.com/mihavo/beacon/wiki/Mobile-Client) for instructions on how to set up and run the mobile client.
 
 ## Quick Start
 

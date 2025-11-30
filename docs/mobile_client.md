@@ -6,7 +6,8 @@
 
 ### Installation & Setup
 
-> ❗️ Testing of the mobile client has been done on iOS devices.
+> [!NOTE]
+> Testing of the mobile client has been done on iOS devices.
 > Several features may not work as expected on Android devices.
 
 To run the mobile client, ensure you have [Node.js](https://nodejs.org/), [Expo CLI](https://docs.expo.dev/get-started/), and a mobile device or emulator.
