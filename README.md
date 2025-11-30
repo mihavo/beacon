@@ -37,13 +37,23 @@ alt="TimescaleDB">
 <br/>
 <div align="center">
 <p>
-  Beacon is a platform for real-time location sharing and geofencing, built using a microservices architecture with scalability in mind.
+  <i>Beacon is a platform for real-time location sharing and geofencing, built using a microservices architecture with scalability in mind.</i>
   <br/>  
-  It is primarily intended for use between closed groups of users with mobile devices.
+  <i>It is primarily intended for use between closed groups of users with mobile devices.</i>
   <br/>  
-  Partially inspired by Apple's Find My & Google's Find Hub.
+  <i>Partially inspired by Apple's Find My & Google's Find Hub.</i>
 </p>
 </div>
+
+## Features
+
+- Real-time location sharing between users
+- Geofencing notifications
+- Scalable microservices architecture
+- Mobile client with iOS (and partial Android) support.
+- Metrics collection via Prometheus & Grafana
+- Log collection via Loki
+- Event-driven messaging with Kafka
 
 ## Architecture
 
@@ -71,37 +81,11 @@ This will start a Prometheus instance for metrics collection, a Grafana instance
 
 ### Mobile Client
 
-To run the mobile client, ensure you have [Node.js](https://nodejs.org/), [Expo CLI](https://docs.expo.dev/get-started/installation/), and a mobile device or emulator set up.
-
-1. Navigate to the `mobile-client` directory:
-
-   ```bash
-   cd mobile-client/beacon
-   ```
-
-2. Install the dependencies:
-
-    ```bash
-      npm install
-    ```
-
-3. Start the Expo development server:
-
-    ```bash
-    npx expo run:ios # for iOS
-    npx expo run:android # for Android
-    ```
-
-4. Follow the instructions in the terminal to open the app on your device or emulator.
-
-<br/>
-
-> ❗️ Testing of the mobile client has been done on iOS devices.
-> Several features may not work as expected on Android devices.
+Check the [Mobile Client Docs](docs/mobile_client.md) for instructions on how to set up and run the mobile client.
 
 ## Contributing
 
-Contributions are welcome! Please read the [Contributing Guide](CONTRIBUTING.md) for details on how to get started.
+Contributions are welcome! Please read the [Contributing Guide](docs/contributing.md) for details on how to get started.
 
 ## License
 
