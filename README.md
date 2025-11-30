@@ -73,15 +73,15 @@ To quickly start all backend services using Docker Compose, use docker-compose i
 docker-compose --profile services --profile deps up -d
 ```
 
-This will start all backend services along with their dependencies (databases, caches & message brokers).
+This will start all backend services along with their dependencies (databases, caches & the message broker).
 
-To enable orchestration and logging collection , add the `orchestration` profile:
+To enable orchestration and log collection, add the `orchestration` profile:
 
 ```bash
 docker-compose --profile services --profile deps --profile orchestration up -d
 ```
 
-This will start a Prometheus instance for metrics collection, a Grafana instance for metrics visualization, and a Loki stack for log collection and visualization.
+This will start a Prometheus instance for metrics collection, a Grafana instance for metrics visualization, and Loki for log collection.
 
 ## Contributing
 

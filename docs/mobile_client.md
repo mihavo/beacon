@@ -9,7 +9,7 @@
 > ❗️ Testing of the mobile client has been done on iOS devices.
 > Several features may not work as expected on Android devices.
 
-To run the mobile client, ensure you have [Node.js](https://nodejs.org/), [Expo CLI](https://docs.expo.dev/get-started/installation/), and a mobile device or emulator set up.
+To run the mobile client, ensure you have [Node.js](https://nodejs.org/), [Expo CLI](https://docs.expo.dev/get-started/), and a mobile device or emulator.
 
 1. Navigate to the `mobile-client` directory:
 
@@ -31,5 +31,3 @@ To run the mobile client, ensure you have [Node.js](https://nodejs.org/), [Expo 
     ```
 
 4. Follow the instructions in the terminal to open the app on your device or emulator.
-
-<br/>
