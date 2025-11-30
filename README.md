@@ -44,3 +44,65 @@ alt="TimescaleDB">
   Partially inspired by Apple's Find My & Google's Find Hub.
 </p>
 </div>
+
+## Architecture
+
+To achieve scalability and modularity, Beacon is built using a microservices architecture. Visit the [Architecture Docs](docs/architecture.md) for more details.
+
+## Quick Start
+
+### Backend Services
+
+To quickly start all backend services using Docker Compose, use docker-compose in combination with profiles:
+
+```bash
+docker-compose --profile services --profile deps up -d
+```
+
+This will start all backend services along with their dependencies (databases, caches & message brokers).
+
+To enable orchestration and logging collection , add the `orchestration` profile:
+
+```bash
+docker-compose --profile services --profile deps --profile orchestration up -d
+```
+
+This will start a Prometheus instance for metrics collection, a Grafana instance for metrics visualization, and a Loki stack for log collection and visualization.
+
+### Mobile Client
+
+To run the mobile client, ensure you have [Node.js](https://nodejs.org/), [Expo CLI](https://docs.expo.dev/get-started/installation/), and a mobile device or emulator set up.
+
+1. Navigate to the `mobile-client` directory:
+
+   ```bash
+   cd mobile-client/beacon
+   ```
+
+2. Install the dependencies:
+
+    ```bash
+      npm install
+    ```
+
+3. Start the Expo development server:
+
+    ```bash
+    npx expo run:ios # for iOS
+    npx expo run:android # for Android
+    ```
+
+4. Follow the instructions in the terminal to open the app on your device or emulator.
+
+<br/>
+
+> ❗️ Testing of the mobile client has been done on iOS devices.
+> Several features may not work as expected on Android devices.
+
+## Contributing
+
+Contributions are welcome! Please read the [Contributing Guide](CONTRIBUTING.md) for details on how to get started.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
