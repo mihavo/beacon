@@ -16,6 +16,7 @@ import {router} from "expo-router";
 import {Geofence} from "@/types/Geofence";
 import {AnalyticsLocationPoint, LocationPoint, TimeRangeOptions} from "@/types/History";
 import {UserAccount} from "@/types/Account";
+import {Alert} from "react-native";
 
 export const BASE = process.env.EXPO_PUBLIC_API_URL;
 
@@ -39,6 +40,30 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
+        if (axios.isAxiosError(error)) {
+            if (error.code === 'ECONNABORTED') {
+                console.debug('Request timeout ECONNABORTED');
+                Alert.alert(
+                    'Connection Timeout',
+                    'The request took too long. Please check your internet connection and try again.',
+                    [{text: 'OK'}]
+                );
+            } else if (error.code === 'ERR_NETWORK') {
+                console.debug('Network error ERR_NETWORK');
+                Alert.alert(
+                    'Server Unreachable',
+                    'Cannot connect to the server. Please check your internet connection or try again later.',
+                    [{text: 'OK'}]
+                );
+            } else {
+                Alert.alert(
+                    'Connection Error',
+                    'Unable to reach the server. Please check your connection and try again.',
+                    [{text: 'OK'}]
+                );
+            }
+            return Promise.reject(error);
+        }
         if (error.response?.status === 401) {
             console.log(error.response?.data?.message);
             await logoutRef.current?.();
