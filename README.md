@@ -59,6 +59,10 @@ alt="TimescaleDB">
 
 To achieve scalability and modularity, Beacon is built using a microservices architecture. Visit the [Architecture Docs](docs/architecture.md) for more details.
 
+## Mobile Client
+
+Check the [Mobile Client Docs](docs/mobile_client.md) for instructions on how to set up and run the mobile client.
+
 ## Quick Start
 
 ### Backend Services
@@ -78,10 +82,6 @@ docker-compose --profile services --profile deps --profile orchestration up -d
 ```
 
 This will start a Prometheus instance for metrics collection, a Grafana instance for metrics visualization, and a Loki stack for log collection and visualization.
-
-### Mobile Client
-
-Check the [Mobile Client Docs](docs/mobile_client.md) for instructions on how to set up and run the mobile client.
 
 ## Contributing
 
