@@ -49,6 +49,7 @@ alt="TimescaleDB">
 
 - [Real-time location sharing](https://github.com/mihavo/beacon/wiki/Location-Processing) between
   users
+- [Live map streaming](https://github.com/mihavo/beacon/wiki/Map-Streaming)
 - Geofencing notifications
 - Scalable microservices architecture
 - Mobile client with iOS (and partial Android) support.
