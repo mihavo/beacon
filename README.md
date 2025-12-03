@@ -47,7 +47,8 @@ alt="TimescaleDB">
 
 ## Features
 
-- Real-time location sharing between users
+- [Real-time location sharing](https://github.com/mihavo/beacon/wiki/Location-Processing) between
+  users
 - Geofencing notifications
 - Scalable microservices architecture
 - Mobile client with iOS (and partial Android) support.
