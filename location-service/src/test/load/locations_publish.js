@@ -1,24 +1,17 @@
 import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
-import { sleep } from "k6";
-import { SharedArray } from "k6/data";
-import { vu } from "k6/execution";
+import {sleep} from "k6";
+import {SharedArray} from "k6/data";
+import {vu} from "k6/execution";
 import http from "k6/http";
 
 const baseUrl = "http://localhost:8080";
 const testUrl = baseUrl + "/locations";
 const authUrl = baseUrl + "/auth/login";
 
-// AUTH Method 1: Single User token from environment
-// const token = __ENV.AUTH_TOKEN;
-//
-// if (!token) {
-//   throw new Error("AUTH_TOKEN environment variable is not set!");
-// }
-
-const users_limit = 50;
+const users_limit = __ENV.USERS_LIMIT ? parseInt(__ENV.USERS_LIMIT, 10) : 50;
 
 //AUTH Method 2: Multiple Users with creds from file in data/creds.csv
-const filePath = "./data/multicreds.csv";
+const filePath = "./data/creds.csv";
 const users = new SharedArray("Logins", function () {
   return papaparse
     .parse(open(filePath), { header: true })
@@ -33,8 +26,7 @@ const clusters = [
 ];
 
 export const options = {
-  vus: users.length, // iterations: 20, // 10 iterations per VU
-  duration: "1m",
+  vus: users.length, duration: "1m",
 };
 
 export function setup() {
@@ -97,8 +89,7 @@ export default function (data) {
 
   console.log(`Status: ${res.status} Body: ${res.body}`);
 
-  // sleep(2 + Math.random() * 5);
-  sleep(0.5);
+  sleep(2);
 }
 
 function getRandomClusterCoordinates() {

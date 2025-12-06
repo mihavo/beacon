@@ -8,22 +8,16 @@ const baseUrl = "http://localhost:8080";
 const testUrl = baseUrl + "/maps";
 const authUrl = baseUrl + "/auth/login";
 
-// AUTH Method 1: Single User token from environment
-// const token = __ENV.AUTH_TOKEN;
-//
-// if (!token) {
-//   throw new Error("AUTH_TOKEN environment variable is not set!");
-// }
-
-//AUTH Method 2: 10k Users with creds from file in data/multicreds.csv
-
 const users_limit = 100;
 
 const bbox = {
-  minLon: '1.5', maxLon: '2.8', minLat: '45.3', maxLat: '50.3'
-}
+  minLon: __ENV.MIN_LON || '1.5',
+  maxLon: __ENV.MAX_LON || '2.8',
+  minLat: __ENV.MIN_LAT || '45.3',
+  maxLat: __ENV.MAX_LAT || '50.3',
+};
 
-const filePath = './data/multicreds.csv'
+const filePath = './data/creds.csv'
 
 const users = new SharedArray("Logins", function () {
   return papaparse.parse(open(filePath), {header: true}).data.slice(0, users_limit);
@@ -35,7 +29,7 @@ export const options = {
 
 export function setup() {
   return users.map((user) => {
-    console.log("Authenticating VU" + vu.idInTest + " / username: ", user.username,);
+    console.log("Authenticating VU" + vu.idInTest + " / username: ", user.username);
     const res = http.post(authUrl, JSON.stringify({
       username: user.username, password: user.password,
     }), {headers: {"Content-Type": "application/json"}},);

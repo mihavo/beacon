@@ -61,6 +61,9 @@ alt="TimescaleDB">
 
 To achieve scalability and modularity, Beacon is built using a microservices architecture. Visit the [Architecture Docs](https://github.com/mihavo/beacon/wiki/Architecture) for more details.
 
+Also check out the [Benchmarks Docs](https://github.com/mihavo/beacon/wiki/Performance-Benchmarks)
+to see how the platform behaves under scale.
+
 ## Mobile Client
 
 Check the [Mobile Client Docs](https://github.com/mihavo/beacon/wiki/Mobile-Client) for instructions on how to set up and run the mobile client.

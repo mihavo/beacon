@@ -1,5 +1,5 @@
 import http from "k6/http";
-import { check, sleep } from "k6";
+import {check, sleep} from "k6";
 import faker from "k6/x/faker";
 
 const LOCATIONS_PER_USER = 10;
@@ -97,8 +97,6 @@ export default function (data) {
       `Failed to publish location for user ${username}. Status: ${locRes.status} Message: ${locRes.message}`,
     );
   }
-  sleep(0.1);
-
   sleep(0.1);
 }
 
