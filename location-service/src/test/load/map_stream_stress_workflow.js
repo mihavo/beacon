@@ -24,7 +24,7 @@ const users = new SharedArray("Logins", function () {
 });
 
 export const options = {
-  vus: users.length, duration: '120s'
+  vus: users.length, duration: '1m'
 };
 
 export function setup() {

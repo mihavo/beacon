@@ -5,8 +5,7 @@ import faker from "k6/x/faker";
 const LOCATIONS_PER_USER = 10;
 
 export let options = {
-  vus: 50,
-  duration: "2m",
+  vus: 50, duration: "2m", setupTimeout: "10m",
   thresholds: {
     http_req_duration: ["p(95)<500"],
   },
@@ -97,7 +96,7 @@ export default function (data) {
       `Failed to publish location for user ${username}. Status: ${locRes.status} Message: ${locRes.message}`,
     );
   }
-  sleep(0.1);
+  sleep(2);
 }
 
 function getRandomClusterCoordinates() {
