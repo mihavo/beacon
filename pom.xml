@@ -20,6 +20,8 @@
     <org.mapstruct.version>1.6.3</org.mapstruct.version>
     <loki.appender.version>1.4.0</loki.appender.version>
     <micrometer.registry.version>1.15.0</micrometer.registry.version>
+    <java-faker.version>1.0.2</java-faker.version>
+    <grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
   </properties>
 
   <modules>
@@ -88,6 +90,24 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-aspects</artifactId>
         <version>${spring.aspects.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.github.javafaker</groupId>
+        <artifactId>javafaker</artifactId>
+        <version>${java-faker.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.devh</groupId>
+        <artifactId>grpc-spring-boot-starter</artifactId>
+        <version>${grpc-spring-boot-starter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.devh</groupId>
+        <artifactId>grpc-client-spring-boot-starter</artifactId>
+        <version>${grpc-spring-boot-starter.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

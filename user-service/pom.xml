@@ -165,6 +165,22 @@
         <artifactId>netty-transport</artifactId>
         <version>4.1.121.Final</version>
       </dependency>
+
+      <dependency>
+        <groupId>com.github.javafaker</groupId>
+        <artifactId>javafaker</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.devh</groupId>
+        <artifactId>grpc-spring-boot-starter</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>net.devh</groupId>
+        <artifactId>grpc-client-spring-boot-starter</artifactId>
+        <scope>test</scope>
+      </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

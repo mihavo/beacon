@@ -3,6 +3,7 @@ package io.beacon.userservice;
 import io.beacon.userservice.grpc.clients.AuthGrpcClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
@@ -12,11 +13,16 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@SpringBootTest
+@SpringBootTest(properties = {
+    "grpc.server.inProcessName=test",
+    "grpc.server.port=-1",
+    "grpc.client.inProcess.address=in-process:test"
+})
 @EmbeddedKafka(partitions = 1, topics = {"user-friendship-events"})
 class UserServiceApplicationTests {
 
   private static Neo4j embeddedDatabaseServer;
+
 
   @BeforeAll
   static void initializeNeo4j() {
@@ -39,6 +45,11 @@ class UserServiceApplicationTests {
     if (embeddedDatabaseServer != null) {
       embeddedDatabaseServer.close();
     }
+  }
+
+  @BeforeEach
+  void cleanDatabase() {
+    embeddedDatabaseServer.defaultDatabaseService().executeTransactionally("MATCH (n) DETACH DELETE n");
   }
 
   @MockitoBean
