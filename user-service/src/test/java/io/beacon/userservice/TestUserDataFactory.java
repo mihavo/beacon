@@ -12,4 +12,10 @@ public class TestUserDataFactory {
         faker.name().username(), faker.name().fullName(), faker.internet().password()
     );
   }
+
+  public static User createUserWithUsername(String username) {
+    return new User(
+        username, faker.name().fullName(), faker.internet().password()
+    );
+  }
 }

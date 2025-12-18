@@ -1,6 +1,9 @@
 package io.beacon.userservice;
 
 import io.beacon.userservice.user.entity.User;
+import io.beacon.userservice.user.repository.UserRepository;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,12 +13,15 @@ import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
 @AutoConfigureInProcessTransport
 public class UserGrpcServiceTest extends UserServiceApplicationTests {
 
   private UserServiceGrpc.UserServiceBlockingStub userServiceStub;
+  @Autowired private UserRepository userRepository;
 
   @BeforeEach
   void setup(@Autowired GrpcChannelFactory channelFactory) {
@@ -43,5 +49,27 @@ public class UserGrpcServiceTest extends UserServiceApplicationTests {
     assertEquals(createRequest.getUsername(), retrievalResponse.getUsername());
     assertEquals(createRequest.getFullName(), retrievalResponse.getFullName());
     assertEquals(createRequest.getPasswordHash(), retrievalResponse.getPasswordHash());
+  }
+
+  @Test
+  public void shouldThrowNotFound_whenRetrievingNonExistentUser() {
+    String username = "tester";
+
+    UserServiceOuterClass.GetUserByUsernameRequest retrieveRequest = UserServiceOuterClass.GetUserByUsernameRequest.newBuilder()
+        .setUsername(username)
+        .build();
+
+    StatusRuntimeException exc =
+        assertThrows(StatusRuntimeException.class, () -> userServiceStub.getUserByUsername(retrieveRequest));
+
+    assertEquals(Status.NOT_FOUND.getCode(), exc.getStatus().getCode());
+    assertTrue(exc.getMessage().contains("User not found"));
+  }
+
+  @Test
+  public void shouldRetrieveAllFriends_whenUserHasFriends() {
+    String username1 = "tester";
+    String username2 = "tester2";
+    UserTestsUtils.givenUsersExist(userRepository, username1, username2);
   }
 }
