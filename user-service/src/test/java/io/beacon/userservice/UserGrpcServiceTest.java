@@ -1,18 +1,26 @@
 package io.beacon.userservice;
 
 import io.beacon.userservice.user.entity.User;
-import net.devh.boot.grpc.client.inject.GrpcClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.grpc.client.GrpcChannelFactory;
+import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
+@AutoConfigureInProcessTransport
 public class UserGrpcServiceTest extends UserServiceApplicationTests {
 
-  @GrpcClient("userService")
   private UserServiceGrpc.UserServiceBlockingStub userServiceStub;
+
+  @BeforeEach
+  void setup(@Autowired GrpcChannelFactory channelFactory) {
+    userServiceStub = UserServiceGrpc.newBlockingStub(channelFactory.createChannel("0.0.0.0:0"));
+  }
 
   @Test
   public void shouldCreateAndRetrieveUser_whenNotExists() {

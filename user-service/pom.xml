@@ -104,6 +104,11 @@
             <artifactId>spring-grpc-test</artifactId>
             <scope>test</scope>
         </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-inprocess</artifactId>
+        <scope>test</scope>
+      </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
@@ -169,16 +174,6 @@
       <dependency>
         <groupId>com.github.javafaker</groupId>
         <artifactId>javafaker</artifactId>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>net.devh</groupId>
-        <artifactId>grpc-spring-boot-starter</artifactId>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>net.devh</groupId>
-        <artifactId>grpc-client-spring-boot-starter</artifactId>
         <scope>test</scope>
       </dependency>
     </dependencies>

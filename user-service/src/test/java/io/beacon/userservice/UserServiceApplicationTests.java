@@ -13,11 +13,7 @@ import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
-@SpringBootTest(properties = {
-    "grpc.server.inProcessName=test",
-    "grpc.server.port=-1",
-    "grpc.client.inProcess.address=in-process:test"
-})
+@SpringBootTest
 @EmbeddedKafka(partitions = 1, topics = {"user-friendship-events"})
 class UserServiceApplicationTests {
 
