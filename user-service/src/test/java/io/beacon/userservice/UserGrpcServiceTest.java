@@ -70,6 +70,15 @@ public class UserGrpcServiceTest extends UserServiceApplicationTests {
   public void shouldRetrieveAllFriends_whenUserHasFriends() {
     String username1 = "tester";
     String username2 = "tester2";
-    UserTestsUtils.givenUsersExist(userRepository, username1, username2);
+    User[] users = UserTestsUtils.givenUsersExist(userRepository, username1, username2);
+    UserTestsUtils.givenUserHasFriend(userRepository, users[0], users[1]);
+
+    String userId = users[0].getId().toString();
+    UserServiceOuterClass.GetUserFriendsResponse friendships =
+        userServiceStub.getUserFriends(
+            UserServiceOuterClass.GetUserFriendsRequest.newBuilder().setUserId(userId).build());
+    assertEquals(1, friendships.getFriendsCount());
+    assertEquals(users[1].getId().toString(), friendships.getFriends(0).getUserId());
+    assertEquals(users[1].getUsername(), friendships.getFriends(0).getUsername());
   }
 }
