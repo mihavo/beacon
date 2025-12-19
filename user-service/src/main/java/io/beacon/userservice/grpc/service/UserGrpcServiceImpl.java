@@ -57,8 +57,7 @@ public class UserGrpcServiceImpl extends UserServiceGrpc.UserServiceImplBase {
 
   @Override public void getUserFriends(GetUserFriendsRequest request,
       StreamObserver<GetUserFriendsResponse> responseObserver) {
-    userRepository.getFriends(UUID.fromString(request.getUserId())).switchIfEmpty(
-            Mono.error(Status.NOT_FOUND.withDescription("User not found").asRuntimeException()))
+    userRepository.getFriends(UUID.fromString(request.getUserId()))
         .collectList().map(users -> {
           List<UserServiceOuterClass.User> friends = users.stream().map(userInfoMapper::toGrpcUser).toList();
           return GetUserFriendsResponse.newBuilder().addAllFriends(friends).build();
