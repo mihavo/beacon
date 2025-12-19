@@ -10,6 +10,8 @@ import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -17,7 +19,7 @@ import reactor.core.publisher.Mono;
 @Service
 @Slf4j
 @AllArgsConstructor
-public class UserService {
+public class UserService implements ReactiveUserDetailsService {
 
   private final UserMapper userMapper;
 
@@ -57,5 +59,9 @@ public class UserService {
           log.error("Database search failed for query: {}", query, e);
           return Flux.empty();
         });
+  }
+
+  @Override public Mono<UserDetails> findByUsername(String username) {
+    return userRepository.findUserByUsername(username).cast(UserDetails.class);
   }
 }

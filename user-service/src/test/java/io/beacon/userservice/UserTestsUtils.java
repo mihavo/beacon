@@ -22,7 +22,7 @@ public class UserTestsUtils {
     Arrays.stream(targets).forEach(target -> givenUserHasSentConnectionRequest(repository, self, target));
   }
 
-  private static void givenUserHasSentConnectionRequest(UserRepository repository, User self, User target) {
+  static void givenUserHasSentConnectionRequest(UserRepository repository, User self, User target) {
     repository.sendFriendRequest(self.getId(), target.getId()).block();
   }
 }
