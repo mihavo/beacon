@@ -16,6 +16,8 @@ public class UserServiceTest extends UserServiceApplicationTests {
   @Autowired private UserRepository userRepository;
   @Autowired private UserService userService;
 
+  final static String TEST_USER_ID = "fc18ed06-33f5-4513-87ff-0a70129a13b5";
+
   @Test
   public void shouldRetrieveUser_whenExists() {
     User user = UserTestsUtils.givenUserExists(userRepository, "tester");
@@ -33,8 +35,9 @@ public class UserServiceTest extends UserServiceApplicationTests {
   }
 
   @Test
+  @WithMockBeaconUser(id = TEST_USER_ID)
   public void shouldDeleteUser_whenExists() {
-    User user = UserTestsUtils.givenUserExists(userRepository, "tester");
+    User user = UserTestsUtils.givenUserExists(userRepository, UUID.fromString(TEST_USER_ID));
     userService.deleteCurrentUser().block();
     UserResponse response = userService.getUser(user.getId()).block();
     assertNull(response);

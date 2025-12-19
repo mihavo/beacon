@@ -3,11 +3,18 @@ package io.beacon.userservice;
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
 import java.util.Arrays;
+import java.util.UUID;
 
 public class UserTestsUtils {
 
   static User givenUserExists(UserRepository repository, String username) {
     return repository.save(TestUserDataFactory.createUserWithUsername(username)).block();
+  }
+
+  static User givenUserExists(UserRepository repository, UUID id) {
+    User user = TestUserDataFactory.createRandomUser();
+    user.setId(id);
+    return repository.save(user).block();
   }
 
   static User[] givenUsersExist(UserRepository repository, String... usernames) {
