@@ -17,4 +17,12 @@ public class UserTestsUtils {
   static void givenUserHasFriend(UserRepository repository, User selfUser, User targetUser) {
     repository.createFriend(selfUser.getId(), targetUser.getId()).block();
   }
+
+  public static void givenUserHasSentConnectionRequests(UserRepository repository, User self, User[] targets) {
+    Arrays.stream(targets).forEach(target -> givenUserHasSentConnectionRequest(repository, self, target));
+  }
+
+  private static void givenUserHasSentConnectionRequest(UserRepository repository, User self, User target) {
+    repository.sendFriendRequest(self.getId(), target.getId()).block();
+  }
 }

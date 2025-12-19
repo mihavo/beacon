@@ -4,6 +4,7 @@ import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,12 +85,30 @@ public class UserGrpcServiceTest extends UserServiceApplicationTests {
 
   @Test
   public void shouldRetrieveNoFriends_whenUserHasNoFriends() {
-    String username1 = "tester";
-    User user = UserTestsUtils.givenUserExists(userRepository, username1);
+    User user = UserTestsUtils.givenUserExists(userRepository, "tester");
 
     UserServiceOuterClass.GetUserFriendsResponse friendships =
         userServiceStub.getUserFriends(
             UserServiceOuterClass.GetUserFriendsRequest.newBuilder().setUserId(user.getId().toString()).build());
     assertTrue(friendships.getFriendsList().isEmpty());
+  }
+
+  @Test
+  public void shouldRetrieveAllFriends() {
+    String username1 = "tester";
+    String username2 = "tester2";
+    String username3 = "tester3";
+    User[] users = UserTestsUtils.givenUsersExist(userRepository, username1, username2, username3);
+    UserTestsUtils.givenUserHasFriend(userRepository, users[0], users[1]);
+    UserTestsUtils.givenUserHasFriend(userRepository, users[0], users[2]);
+
+    String userId = users[0].getId().toString();
+    UserServiceOuterClass.GetUserFriendsResponse friendships =
+        userServiceStub.getUserFriends(
+            UserServiceOuterClass.GetUserFriendsRequest.newBuilder().setUserId(userId).build());
+    assertEquals(2, friendships.getFriendsCount());
+    List<String> friendIds = friendships.getFriendsList().stream().map(UserServiceOuterClass.User::getUserId).toList();
+    assertTrue(friendIds.contains(users[1].getId().toString()));
+    assertTrue(friendIds.contains(users[2].getId().toString()));
   }
 }
