@@ -5,6 +5,7 @@ import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
 import io.beacon.userservice.user.service.UserService;
 import java.util.UUID;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.test.StepVerifier;
@@ -16,6 +17,11 @@ public class UserServiceTest extends UserServiceApplicationTests {
 
   @Autowired private UserRepository userRepository;
   @Autowired private UserService userService;
+
+  @BeforeEach
+  public void setUp() {
+    userRepository.deleteAll().block();
+  }
 
   final static String TEST_USER_ID = "fc18ed06-33f5-4513-87ff-0a70129a13b5";
 
@@ -48,6 +54,15 @@ public class UserServiceTest extends UserServiceApplicationTests {
   public void search_shouldReturnUser_whenUsernameContainsQuery() {
     UserTestsUtils.givenUserExists(userRepository, "tester");
     StepVerifier.create(userService.search("st")).expectNextMatches(user -> user.username().equals("tester")).verifyComplete();
+  }
+
+  @Test
+  public void search_shouldBeCaseInsensitive_whenUsernameContainsQuery() {
+    UserTestsUtils.givenUserExists(userRepository, "Tester");
+
+    StepVerifier.create(userService.search("TEST"))
+        .expectNextCount(1)
+        .verifyComplete();
   }
 
   @Test
