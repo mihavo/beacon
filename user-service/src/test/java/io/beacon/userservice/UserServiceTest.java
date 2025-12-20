@@ -7,6 +7,7 @@ import io.beacon.userservice.user.service.UserService;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import reactor.test.StepVerifier;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -19,7 +20,7 @@ public class UserServiceTest extends UserServiceApplicationTests {
   final static String TEST_USER_ID = "fc18ed06-33f5-4513-87ff-0a70129a13b5";
 
   @Test
-  public void shouldRetrieveUser_whenExists() {
+  public void retrieve_shouldRetrieveUser_whenExists() {
     User user = UserTestsUtils.givenUserExists(userRepository, "tester");
 
     UserResponse response = userService.getUser(user.getId()).block();
@@ -29,17 +30,29 @@ public class UserServiceTest extends UserServiceApplicationTests {
   }
 
   @Test
-  public void shouldReturnEmptyResponse_whenRetrievingNonExistentUser() {
+  public void retrieve_shouldReturnEmptyResponse_whenRetrievingNonExistentUser() {
     UserResponse response = userService.getUser(UUID.randomUUID()).block();
     assertNull(response);
   }
 
   @Test
   @WithMockBeaconUser(id = TEST_USER_ID)
-  public void shouldDeleteUser_whenExists() {
+  public void delete_shouldDeleteUser_whenExists() {
     User user = UserTestsUtils.givenUserExists(userRepository, UUID.fromString(TEST_USER_ID));
     userService.deleteCurrentUser().block();
     UserResponse response = userService.getUser(user.getId()).block();
     assertNull(response);
+  }
+
+  @Test
+  public void search_shouldReturnUser_whenUsernameContainsQuery() {
+    UserTestsUtils.givenUserExists(userRepository, "tester");
+    StepVerifier.create(userService.search("st")).expectNextMatches(user -> user.username().equals("tester")).verifyComplete();
+  }
+
+  @Test
+  public void search_shouldReturnEmpty_whenNoUsernameMatchesQuery() {
+    UserTestsUtils.givenUsersExist(userRepository, "tester", "user", "admin");
+    StepVerifier.create(userService.search("ran")).verifyComplete();
   }
 }
