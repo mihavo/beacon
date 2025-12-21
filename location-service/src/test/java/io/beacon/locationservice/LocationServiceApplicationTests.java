@@ -8,7 +8,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
 @EmbeddedKafka(partitions = 1, topics = {"location-history-events"})
-class LocationServiceApplicationTests {
+public class LocationServiceApplicationTests {
 
   @MockitoBean
   private AuthGrpcClient authGrpcClient;
