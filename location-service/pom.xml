@@ -33,6 +33,7 @@
       <bouncy-castle-version>1.82</bouncy-castle-version>
       <jwt.version>0.12.6</jwt.version>
       <spatial4j.version>0.8</spatial4j.version>
+      <java-faker.version>1.0.2</java-faker.version>
       <embedded-redis.version>0.7.3</embedded-redis.version>
     </properties>
     <dependencies>
@@ -132,6 +133,18 @@
         <groupId>it.ozimov</groupId>
         <artifactId>embedded-redis</artifactId>
         <version>${embedded-redis.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.beacon</groupId>
+        <artifactId>test-core</artifactId>
+        <version>0.0.4</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.github.javafaker</groupId>
+        <artifactId>javafaker</artifactId>
+        <version>${java-faker.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

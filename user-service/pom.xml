@@ -185,6 +185,7 @@
         <groupId>io.beacon</groupId>
         <artifactId>test-core</artifactId>
         <version>0.0.4</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
     <dependencyManagement>
