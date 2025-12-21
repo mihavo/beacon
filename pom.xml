@@ -36,6 +36,7 @@
     <module>history-service</module>
     <module>core</module>
     <module>security-core</module>
+    <module>test-core</module>
   </modules>
   <dependencyManagement>
     <dependencies>

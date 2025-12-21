@@ -1,4 +1,4 @@
-package io.beacon.userservice;
+package io.beacon;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

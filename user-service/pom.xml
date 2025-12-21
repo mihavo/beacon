@@ -181,6 +181,11 @@
         <artifactId>javafaker</artifactId>
         <scope>test</scope>
       </dependency>
+      <dependency>
+        <groupId>io.beacon</groupId>
+        <artifactId>test-core</artifactId>
+        <version>0.0.4</version>
+      </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>

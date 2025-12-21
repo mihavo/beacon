@@ -7,6 +7,8 @@ import java.util.UUID;
 
 public class UserTestsUtils {
 
+  final static String TEST_USER_ID = "fc18ed06-33f5-4513-87ff-0a70129a13b5";
+
   static User givenUserExists(UserRepository repository, String username) {
     return repository.save(TestUserDataFactory.createUserWithUsername(username)).block();
   }

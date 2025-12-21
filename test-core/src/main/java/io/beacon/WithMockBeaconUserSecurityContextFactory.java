@@ -1,4 +1,4 @@
-package io.beacon.userservice;
+package io.beacon;
 
 import io.beacon.security.jwt.JwtAuthenticationToken;
 import org.springframework.security.core.Authentication;

@@ -33,6 +33,7 @@
       <bouncy-castle-version>1.82</bouncy-castle-version>
       <jwt.version>0.12.6</jwt.version>
       <spatial4j.version>0.8</spatial4j.version>
+      <embedded-redis.version>0.7.3</embedded-redis.version>
     </properties>
     <dependencies>
         <dependency>
@@ -126,6 +127,12 @@
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-aspects</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>it.ozimov</groupId>
+        <artifactId>embedded-redis</artifactId>
+        <version>${embedded-redis.version}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
     <dependencyManagement>

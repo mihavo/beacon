@@ -1,5 +1,6 @@
 package io.beacon.userservice;
 
+import io.beacon.WithMockBeaconUser;
 import io.beacon.userservice.user.dto.UserResponse;
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
@@ -10,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import reactor.test.StepVerifier;
 
+import static io.beacon.userservice.UserTestsUtils.TEST_USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
@@ -22,8 +24,6 @@ public class UserServiceTest extends UserServiceApplicationTests {
   public void setUp() {
     userRepository.deleteAll().block();
   }
-
-  final static String TEST_USER_ID = "fc18ed06-33f5-4513-87ff-0a70129a13b5";
 
   @Test
   public void retrieve_shouldRetrieveUser_whenExists() {
