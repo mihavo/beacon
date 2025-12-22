@@ -2,9 +2,7 @@ package io.beacon.locationservice.location.service;
 
 import io.beacon.locationservice.authz.FriendshipPermissionService;
 import io.beacon.locationservice.entity.Location;
-import io.beacon.locationservice.grpc.clients.UserGrpcClient;
 import io.beacon.locationservice.location.fetch.FetchService;
-import io.beacon.locationservice.location.geospatial.GeospatialService;
 import io.beacon.locationservice.models.UserLocation;
 import io.beacon.locationservice.stream.StreamService;
 import io.beacon.permissions.FriendshipAction;
@@ -23,8 +21,6 @@ public class LocationService {
 
   private final FriendshipPermissionService friendshipPermissionService;
   private final FetchService fetchService;
-  private final GeospatialService geospatialService;
-  private final UserGrpcClient userGrpcClient;
   private final StreamService streamService;
 
   /**
