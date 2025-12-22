@@ -8,13 +8,11 @@ import org.junit.jupiter.api.Test;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
-@EmbeddedKafka(partitions = 1, topics = {"user-friendship-events"})
 class UserServiceApplicationTests {
 
   private static Neo4j embeddedDatabaseServer;

@@ -22,6 +22,8 @@
     <micrometer.registry.version>1.15.0</micrometer.registry.version>
     <java-faker.version>1.0.2</java-faker.version>
     <grpc-spring-boot-starter.version>3.1.0.RELEASE</grpc-spring-boot-starter.version>
+    <testcontainers.version>2.0.3</testcontainers.version>
+    <jupiter.version>1.21.3</jupiter.version>
   </properties>
 
   <modules>
@@ -108,6 +110,24 @@
         <groupId>net.devh</groupId>
         <artifactId>grpc-client-spring-boot-starter</artifactId>
         <version>${grpc-spring-boot-starter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers</artifactId>
+        <version>${testcontainers.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>${jupiter.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-testcontainers</artifactId>
+        <version>${spring.boot.version}</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

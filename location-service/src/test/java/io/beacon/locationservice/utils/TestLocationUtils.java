@@ -17,7 +17,8 @@ public class TestLocationUtils {
     Integer locationCount = Optional.ofNullable(numOfLocations).orElse(10);
     return IntStream.range(1, locationCount).mapToObj(i -> {
       Coordinates coords =
-          new Coordinates(Double.valueOf(faker.address().latitude()), Double.valueOf(faker.address().longitude()));
+          new Coordinates(Double.valueOf(faker.address().latitude().replace(",", ".")),
+              Double.valueOf(faker.address().longitude().replace(",", ".")));
       return new PublishLocationRequest(coords, Instant.now());
     }).collect(Collectors.toSet());
   }

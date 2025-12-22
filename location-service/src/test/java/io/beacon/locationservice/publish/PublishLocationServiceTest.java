@@ -1,8 +1,8 @@
 package io.beacon.locationservice.publish;
 
 import io.beacon.WithMockBeaconUser;
-import io.beacon.locationservice.LocationServiceApplicationTests;
-import io.beacon.locationservice.config.TestRedisConfiguration;
+import io.beacon.locationservice.config.RedisTestBase;
+import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
 import io.beacon.locationservice.request.PublishLocationRequest;
 import io.beacon.locationservice.utils.CacheUtils;
 import io.beacon.locationservice.utils.TestLocationUtils;
@@ -17,7 +17,10 @@ import org.springframework.data.domain.Range;
 import org.springframework.data.geo.Point;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 
 import static io.beacon.TestUserConstants.TEST_USER_ID;
@@ -25,11 +28,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
-@SpringBootTest(classes = TestRedisConfiguration.class)
-public class PublishLocationServiceTest extends LocationServiceApplicationTests {
+@SpringBootTest
+@Testcontainers
+@EmbeddedKafka(partitions = 1, topics = {"location-history-events"})
+public class PublishLocationServiceTest extends RedisTestBase {
 
   @Autowired private PublishService publishService;
   @Autowired private ReactiveRedisTemplate<String, Object> redisTemplate;
+
+  @MockitoBean
+  private AuthGrpcClient authGrpcClient;
 
   @Test
   @WithMockBeaconUser(id = TEST_USER_ID)
