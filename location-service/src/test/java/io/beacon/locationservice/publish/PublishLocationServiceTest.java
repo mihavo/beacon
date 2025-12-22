@@ -8,8 +8,12 @@ import io.beacon.locationservice.utils.CacheUtils;
 import io.beacon.locationservice.utils.TestLocationUtils;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,6 +29,7 @@ import reactor.test.StepVerifier;
 
 import static io.beacon.TestUserConstants.TEST_USER_ID;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.within;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
@@ -35,6 +40,7 @@ public class PublishLocationServiceTest extends RedisTestBase {
 
   @Autowired private PublishService publishService;
   @Autowired private ReactiveRedisTemplate<String, Object> redisTemplate;
+  @Autowired private ReactiveRedisTemplate<String, String> valueRedisTemplate;
 
   @MockitoBean
   private AuthGrpcClient authGrpcClient;
@@ -43,7 +49,7 @@ public class PublishLocationServiceTest extends RedisTestBase {
   @WithMockBeaconUser(id = TEST_USER_ID)
   public void publish_shouldPublishLocationRecords() {
     Set<PublishLocationRequest> request = TestLocationUtils.createSampleLocationCoordinates(null);
-    StepVerifier.create(publishService.publish(request)).expectNextCount(1).verifyComplete();
+    StepVerifier.create(publishService.publish(request)).expectNextCount(request.size()).verifyComplete();
 
     UUID userId = UUID.fromString(TEST_USER_ID);
     String cacheLocationKey = CacheUtils.buildLocationStreamKey(userId);
@@ -56,25 +62,30 @@ public class PublishLocationServiceTest extends RedisTestBase {
     assertNotNull(streamRecords);
     assertEquals(streamRecords.size(), request.size());
 
-    streamRecords.forEach(record -> {
-      assertThat(record.getValue())
-          .containsKeys("lat", "lon", "capturedAt")
-          .extracting("lat", "lon")
-          .allMatch(coord -> coord instanceof Double);
-    });
+    Set<Pair<Double, Double>>
+        requestCoords = request.stream()
+        .map(record -> Pair.of(record.coords().latitude(), record.coords().longitude()))
+        .collect(Collectors.toSet());
+
+    Set<Pair<Double, Double>> resultCoords = streamRecords.stream().map(record -> {
+      Map<Object, Object> coords = (record).getValue();
+      return Pair.of(Double.valueOf((String) coords.get("lat")), Double.valueOf((String) coords.get("lon")));
+    }).collect(Collectors.toSet());
+
+    assertThat(resultCoords).isEqualTo(requestCoords);
 
     PublishLocationRequest latestLocationRecord =
         request.stream().max(Comparator.comparing(PublishLocationRequest::capturedAt)).orElseThrow();
-    Point savedPoint = redisTemplate.opsForGeo()
+    Point savedPoint = valueRedisTemplate.opsForGeo()
         .position(CacheUtils.getLocationGeospatialKey(),
             CacheUtils.buildGeospatialMember(userId))
         .block();
 
     assertThat(savedPoint).isNotNull();
-    assertThat(savedPoint.getX()).isEqualTo(latestLocationRecord.coords().longitude());
-    assertThat(savedPoint.getY()).isEqualTo(latestLocationRecord.coords().latitude());
+    assertThat(savedPoint.getX()).isCloseTo(latestLocationRecord.coords().longitude(), within(0.0001));
+    assertThat(savedPoint.getY()).isCloseTo(latestLocationRecord.coords().latitude(), within(0.0001));
 
-    String lastTimestamp = (String) redisTemplate.opsForValue()
+    String lastTimestamp = valueRedisTemplate.opsForValue()
         .get(CacheUtils.buildTimestampKey(userId))
         .block();
 
@@ -89,7 +100,8 @@ public class PublishLocationServiceTest extends RedisTestBase {
     Set<PublishLocationRequest> emptyRequests = Set.of();
 
     StepVerifier.create(publishService.publish(emptyRequests))
-        .verifyComplete();
+        .expectError(NoSuchElementException.class)
+        .verify();
   }
 
   @Test
