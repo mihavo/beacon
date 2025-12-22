@@ -1,6 +1,7 @@
 package io.beacon.userservice;
 
 import io.beacon.WithMockBeaconUser;
+import io.beacon.userservice.config.UserTestsBase;
 import io.beacon.userservice.user.dto.UserResponse;
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
@@ -9,13 +10,15 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
 
 import static io.beacon.TestUserConstants.TEST_USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
-public class UserServiceTest extends UserServiceApplicationTests {
+@SpringBootTest
+public class UserServiceTest extends UserTestsBase {
 
   @Autowired private UserRepository userRepository;
   @Autowired private UserService userService;

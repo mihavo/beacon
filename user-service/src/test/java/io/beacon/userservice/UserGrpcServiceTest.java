@@ -1,5 +1,6 @@
 package io.beacon.userservice;
 
+import io.beacon.userservice.config.UserTestsBase;
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
 import io.grpc.Status;
@@ -8,6 +9,7 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.grpc.client.GrpcChannelFactory;
 import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import userservice.UserServiceGrpc;
@@ -19,7 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
 @AutoConfigureInProcessTransport
-public class UserGrpcServiceTest extends UserServiceApplicationTests {
+@SpringBootTest
+public class UserGrpcServiceTest extends UserTestsBase {
 
   private UserServiceGrpc.UserServiceBlockingStub userServiceStub;
   @Autowired private UserRepository userRepository;
