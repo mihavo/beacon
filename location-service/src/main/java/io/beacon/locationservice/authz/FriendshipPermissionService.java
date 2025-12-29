@@ -42,7 +42,12 @@ public class FriendshipPermissionService {
     Mono<UUID> currentUserId = AuthUtils.getCurrentUserId();
     return switch (action) {
       case VIEW_LOCATION -> currentUserId.flatMap(
-          userId -> isInFriendsList(userId.toString(), targetUserId.toString()));
+          userId -> {
+            if (userId.equals(targetUserId)) {
+              return Mono.just(true);
+            }
+            return isInFriendsList(userId.toString(), targetUserId.toString());
+          });
       //TODO: check for additional actions in the future
     };
   }

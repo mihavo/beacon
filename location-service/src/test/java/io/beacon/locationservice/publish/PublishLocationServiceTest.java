@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -44,6 +45,11 @@ public class PublishLocationServiceTest extends RedisTestBase {
 
   @MockitoBean
   private AuthGrpcClient authGrpcClient;
+
+  @AfterEach
+  void cleanup() {
+    redisTemplate.getConnectionFactory().getReactiveConnection().serverCommands().flushAll().block();
+  }
 
   @Test
   @WithMockBeaconUser(id = TEST_USER_ID)
