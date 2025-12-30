@@ -7,10 +7,12 @@ import io.beacon.locationservice.request.PublishLocationRequest;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import locationservice.LocationServiceOuterClass;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
@@ -19,6 +21,8 @@ public class TestLocationUtils {
 
   private static final Faker faker = new Faker();
 
+  private static final Random random = new Random();
+
   public static Set<PublishLocationRequest> createSampleLocationCoordinates(Integer numOfLocations) {
     Integer locationCount = Optional.ofNullable(numOfLocations).orElse(10);
     return IntStream.range(1, locationCount).mapToObj(i -> {
@@ -26,6 +30,16 @@ public class TestLocationUtils {
           new Coordinates(Double.valueOf(faker.address().latitude().replace(",", ".")),
               Double.valueOf(faker.address().longitude().replace(",", ".")));
       return new PublishLocationRequest(coords, Instant.now());
+    }).collect(Collectors.toSet());
+  }
+
+  public static Set<PublishLocationRequest> createSampleLocationCoordinatesInBbox(LocationServiceOuterClass.BoundingBox bbox,
+      Integer numOfLocations) {
+    Integer locationCount = Optional.ofNullable(numOfLocations).orElse(10);
+    return IntStream.range(1, locationCount).mapToObj(i -> {
+      double lat = bbox.getMinLat() + (bbox.getMaxLat() - bbox.getMinLat()) * random.nextDouble();
+      double lon = bbox.getMinLon() + (bbox.getMaxLon() - bbox.getMinLon()) * random.nextDouble();
+      return new PublishLocationRequest(new Coordinates(lat, lon), Instant.now());
     }).collect(Collectors.toSet());
   }
 
@@ -55,5 +69,19 @@ public class TestLocationUtils {
       String... friendIds) {
     String key = CacheUtils.getFriendshipListKey(userId);
     redisTemplate.opsForSet().add(key, friendIds).block();
+  }
+
+  public static LocationServiceOuterClass.BoundingBox generateRandomBoundingBox(double sizeInDegrees) {
+    double centerLat = -90 + 180 * random.nextDouble();
+    double centerLon = -180 + 360 * random.nextDouble();
+
+    double halfSize = sizeInDegrees / 2;
+
+    return LocationServiceOuterClass.BoundingBox.newBuilder()
+        .setMinLon(Math.max(-180, centerLon - halfSize))
+        .setMaxLon(Math.min(180, centerLon + halfSize))
+        .setMinLat(Math.max(-90, centerLat - halfSize))
+        .setMaxLat(Math.min(90, centerLat + halfSize))
+        .build();
   }
 }
