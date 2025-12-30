@@ -2,6 +2,7 @@ package io.beacon.locationservice.location;
 
 import io.beacon.WithMockBeaconUser;
 import io.beacon.locationservice.config.RedisTestBase;
+import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
 import io.beacon.locationservice.location.geospatial.GeospatialService;
 import io.beacon.locationservice.publish.PublishService;
 import io.beacon.locationservice.request.PublishLocationRequest;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
 
@@ -28,6 +30,8 @@ public class GeospatialServiceTest extends RedisTestBase {
 
   @Autowired
   private ReactiveRedisConnectionFactory redisConnectionFactory;
+
+  @MockitoBean AuthGrpcClient grpcClient;
 
   @Autowired
   private PublishService publishService;
