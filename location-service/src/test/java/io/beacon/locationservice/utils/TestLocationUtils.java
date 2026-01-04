@@ -39,7 +39,7 @@ public class TestLocationUtils {
     return IntStream.range(1, locationCount).mapToObj(i -> {
       double lat = bbox.getMinLat() + (bbox.getMaxLat() - bbox.getMinLat()) * random.nextDouble();
       double lon = bbox.getMinLon() + (bbox.getMaxLon() - bbox.getMinLon()) * random.nextDouble();
-      return new PublishLocationRequest(new Coordinates(lat, lon), Instant.now());
+      return new PublishLocationRequest(new Coordinates(lat, lon), Instant.now().plusSeconds(i));
     }).collect(Collectors.toSet());
   }
 
