@@ -5,6 +5,9 @@ import io.beacon.locationservice.config.RedisTestBase;
 import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
 import io.beacon.locationservice.utils.TestAuthUtils;
 import io.beacon.locationservice.utils.TestLocationUtils;
+import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +18,8 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
 @EmbeddedKafka(partitions = 1, topics = {"location-history-events"})
@@ -46,6 +51,23 @@ public class PublishControllerTest extends RedisTestBase {
         .header("Authorization", TestAuthUtils.createMockAuthHeader())
         .exchange()
         .expectStatus()
-        .isOk();
+        .isOk()
+        .expectBody().isEmpty();
+  }
+
+  @Test
+  void testPublish_emptyLocationRecordsSet() {
+    webTestClient.post()
+        .uri("/")
+        .bodyValue(Collections.emptySet())
+        .header("Authorization", TestAuthUtils.createMockAuthHeader())
+        .exchange()
+        .expectStatus().isBadRequest()
+        .expectBody()
+        .consumeWith(response -> {
+          Assertions.assertNotNull(response.getResponseBody());
+          String body = new String(response.getResponseBody(), StandardCharsets.UTF_8);
+          assertThat(body).contains("must not be empty");
+        });
   }
 }

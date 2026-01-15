@@ -2,6 +2,7 @@ package io.beacon.locationservice.publish;
 
 import io.beacon.locationservice.request.PublishLocationRequest;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.data.redis.connection.stream.RecordId;
@@ -21,7 +22,7 @@ public class PublishController {
     private final PublishService publishService;
 
     @PostMapping("/")
-    public Mono<ResponseEntity<Void>> publish(@RequestBody @Valid Set<PublishLocationRequest> requests) {
+    public Mono<ResponseEntity<Void>> publish(@RequestBody @Valid @NotEmpty Set<@Valid PublishLocationRequest> requests) {
         Flux<RecordId> publish = publishService.publish(requests);
         return publish.then(Mono.just(ResponseEntity.ok().build())); //TODO: evaluate async return of record ids
     }
