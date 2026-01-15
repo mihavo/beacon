@@ -8,6 +8,7 @@ import io.beacon.locationservice.request.PublishLocationRequest;
 import io.beacon.locationservice.utils.TestAuthUtils;
 import io.beacon.locationservice.utils.TestLocationUtils;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Set;
@@ -89,6 +90,21 @@ public class PublishControllerTest extends RedisTestBase {
           String body = new String(response.getResponseBody(), StandardCharsets.UTF_8);
           assertThat(body).contains("latitude: must not be null");
           assertThat(body).contains("longitude: must not be null");
+        });
+  }
+
+  @Test
+  void testPublish_invalidTimestamp() {
+    webTestClient.post().uri("/")
+        .bodyValue(Set.of(new PublishLocationRequest(new Coordinates(-37.8, -86.5214), Instant.now().plus(Duration.ofDays(1)))))
+        .header(TestAuthUtils.AUTH_HEADER, TestAuthUtils.createMockAuthHeader())
+        .exchange()
+        .expectStatus().isBadRequest()
+        .expectBody()
+        .consumeWith(response -> {
+          Assertions.assertNotNull(response.getResponseBody());
+          String body = new String(response.getResponseBody(), StandardCharsets.UTF_8);
+          assertThat(body).contains("must be a date in the past or in the present");
         });
   }
 }
