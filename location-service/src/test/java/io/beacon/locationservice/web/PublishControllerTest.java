@@ -3,10 +3,14 @@ package io.beacon.locationservice.web;
 import io.beacon.locationservice.config.NoAuthSecurityConfig;
 import io.beacon.locationservice.config.RedisTestBase;
 import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
+import io.beacon.locationservice.models.Coordinates;
+import io.beacon.locationservice.request.PublishLocationRequest;
 import io.beacon.locationservice.utils.TestAuthUtils;
 import io.beacon.locationservice.utils.TestLocationUtils;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Collections;
+import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,7 +52,7 @@ public class PublishControllerTest extends RedisTestBase {
     webTestClient.post()
         .uri("/")
         .bodyValue(locations)
-        .header("Authorization", TestAuthUtils.createMockAuthHeader())
+        .header(TestAuthUtils.AUTH_HEADER, TestAuthUtils.createMockAuthHeader())
         .exchange()
         .expectStatus()
         .isOk()
@@ -60,7 +64,7 @@ public class PublishControllerTest extends RedisTestBase {
     webTestClient.post()
         .uri("/")
         .bodyValue(Collections.emptySet())
-        .header("Authorization", TestAuthUtils.createMockAuthHeader())
+        .header(TestAuthUtils.AUTH_HEADER, TestAuthUtils.createMockAuthHeader())
         .exchange()
         .expectStatus().isBadRequest()
         .expectBody()
@@ -68,6 +72,23 @@ public class PublishControllerTest extends RedisTestBase {
           Assertions.assertNotNull(response.getResponseBody());
           String body = new String(response.getResponseBody(), StandardCharsets.UTF_8);
           assertThat(body).contains("must not be empty");
+        });
+  }
+
+  @Test
+  void testPublish_invalidLocationRecordsSet() {
+    webTestClient.post()
+        .uri("/")
+        .bodyValue(Set.of(new PublishLocationRequest(new Coordinates(null, null), Instant.now())))
+        .header(TestAuthUtils.AUTH_HEADER, TestAuthUtils.createMockAuthHeader())
+        .exchange()
+        .expectStatus().isBadRequest()
+        .expectBody()
+        .consumeWith(response -> {
+          Assertions.assertNotNull(response.getResponseBody());
+          String body = new String(response.getResponseBody(), StandardCharsets.UTF_8);
+          assertThat(body).contains("latitude: must not be null");
+          assertThat(body).contains("longitude: must not be null");
         });
   }
 }
