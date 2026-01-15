@@ -7,11 +7,6 @@ import io.beacon.locationservice.models.Coordinates;
 import io.beacon.locationservice.request.PublishLocationRequest;
 import io.beacon.locationservice.utils.TestAuthUtils;
 import io.beacon.locationservice.utils.TestLocationUtils;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.Collections;
-import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +18,12 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Collections;
+import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -36,7 +37,9 @@ public class PublishControllerTest extends RedisTestBase {
 
   @MockitoBean
   private AuthGrpcClient authGrpcClient;
-  @Autowired private ApplicationContext applicationContext;
+
+    @Autowired
+    private ApplicationContext applicationContext;
 
   @BeforeEach
   void setUp() {
