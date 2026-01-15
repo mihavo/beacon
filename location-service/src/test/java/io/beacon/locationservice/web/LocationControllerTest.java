@@ -56,7 +56,7 @@ public class LocationControllerTest extends RedisTestBase {
         Set<PublishLocationRequest> locations = TestLocationUtils.createSampleLocationCoordinates(5);
         TestLocationUtils.givenUserHasPublishedLocations(publishService, locations);
 
-        client.get().uri("/" + TEST_USER_ID + "/recent")
+        client.get().uri("/" + TEST_USER_ID + "/recents")
                 .header(TestAuthUtils.AUTH_HEADER, TestAuthUtils.createMockAuthHeader())
                 .exchange()
                 .expectStatus().isOk().expectBodyList(Location.class).consumeWith(response -> {
@@ -68,6 +68,18 @@ public class LocationControllerTest extends RedisTestBase {
                     assertThat(new HashSet<>(locations)).containsExactlyInAnyOrderElementsOf(results
                     );
                 });
+    }
 
+    @Test
+    @WithMockBeaconUser(id = TEST_USER_ID)
+    public void testFetchRecent_noLocations() {
+
+        client.get().uri("/" + TEST_USER_ID + "/recents")
+                .header(TestAuthUtils.AUTH_HEADER, TestAuthUtils.createMockAuthHeader())
+                .exchange()
+                .expectStatus().isOk().expectBodyList(Location.class).consumeWith(response -> {
+                    Assertions.assertNotNull(response.getResponseBody());
+                    assertThat(response.getResponseBody()).isEmpty();
+                });
     }
 }
