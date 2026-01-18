@@ -4,12 +4,14 @@ import io.beacon.events.LocationEvent;
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.models.Coordinates;
 import io.beacon.locationservice.models.UserLocation;
-import java.time.Instant;
-import java.util.Map;
-import java.util.UUID;
+import io.beacon.locationservice.request.PublishLocationRequest;
 import locationservice.LocationServiceOuterClass;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.domain.geo.GeoLocation;
+
+import java.time.Instant;
+import java.util.Map;
+import java.util.UUID;
 
 public final class LocationMapper {
 
@@ -25,6 +27,13 @@ public final class LocationMapper {
     return new LocationEvent(userId.toString(), location.getCoords().latitude(),
         location.getCoords()
             .longitude(), location.getTimestamp());
+  }
+
+  public static Location toLocation(PublishLocationRequest locationRequest) {
+    return Location.builder()
+            .coords(locationRequest.coords())
+            .timestamp(locationRequest.capturedAt())
+            .build();
   }
 
   public static LocationEvent toLocationEvent(UUID userId, MapRecord<String, String, Object> record) {

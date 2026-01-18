@@ -5,7 +5,7 @@ import io.beacon.locationservice.config.NoAuthSecurityConfig;
 import io.beacon.locationservice.config.RedisTestBase;
 import io.beacon.locationservice.entity.Location;
 import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
-import io.beacon.locationservice.models.Coordinates;
+import io.beacon.locationservice.mappers.LocationMapper;
 import io.beacon.locationservice.publish.PublishService;
 import io.beacon.locationservice.request.PublishLocationRequest;
 import io.beacon.locationservice.utils.TestAuthUtils;
@@ -22,7 +22,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -53,19 +52,17 @@ public class LocationControllerTest extends RedisTestBase {
     @Test
     @WithMockBeaconUser(id = TEST_USER_ID)
     public void testFetchRecent_returnsRecentLocations() {
-        Set<PublishLocationRequest> locations = TestLocationUtils.createSampleLocationCoordinates(5);
-        TestLocationUtils.givenUserHasPublishedLocations(publishService, locations);
+        Set<PublishLocationRequest> locationRequests = TestLocationUtils.createSampleLocationCoordinates(5);
+        TestLocationUtils.givenUserHasPublishedLocations(publishService, locationRequests);
 
         client.get().uri("/" + TEST_USER_ID + "/recents")
                 .header(TestAuthUtils.AUTH_HEADER, TestAuthUtils.createMockAuthHeader())
                 .exchange()
                 .expectStatus().isOk().expectBodyList(Location.class).consumeWith(response -> {
                     Assertions.assertNotNull(response.getResponseBody());
-                    List<PublishLocationRequest> results
-                            = response.getResponseBody().stream().map(l -> new PublishLocationRequest(
-                            new Coordinates(l.getCoords().latitude(), l.getCoords().longitude()),
-                            l.getTimestamp())).toList();
-                    assertThat(new HashSet<>(locations)).containsExactlyInAnyOrderElementsOf(results
+                    List<Location> locations
+                            = locationRequests.stream().map(LocationMapper::toLocation).toList();
+                    assertThat(response.getResponseBody()).containsExactlyInAnyOrderElementsOf(locations
                     );
                 });
     }
