@@ -3,8 +3,6 @@ package io.beacon.locationservice.location.geospatial;
 import io.beacon.locationservice.mappers.LocationMapper;
 import io.beacon.locationservice.models.UserLocation;
 import io.beacon.locationservice.utils.CacheUtils;
-import java.time.Instant;
-import java.util.UUID;
 import locationservice.LocationServiceOuterClass;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +15,9 @@ import org.springframework.data.redis.domain.geo.GeoShape;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.Instant;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor

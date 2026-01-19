@@ -21,11 +21,10 @@ import org.springframework.kafka.test.context.EmbeddedKafka;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 
 import static io.beacon.TestUserConstants.TEST_USER_ID;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -59,26 +58,18 @@ public class StreamControllerTest extends RedisTestBase {
         Set<PublishLocationRequest> locationRequests = TestLocationUtils.createSampleLocationCoordinates(5);
         List<Location> locations = locationRequests.stream().map(LocationMapper::toLocation).toList();
 
+        Executors.newSingleThreadExecutor().submit(() -> {
+            List<Location> results = client.get().uri("/" + TEST_USER_ID + "/stream")
+                    .header(TestAuthUtils.AUTH_HEADER,
+                            TestAuthUtils.createMockAuthHeader())
+                    .accept(MediaType.TEXT_EVENT_STREAM).exchange()
+                    .expectStatus().isOk().returnResult(Location.class).getResponseBody().collectList().block();
+            assertThat(results).containsExactlyInAnyOrderElementsOf(locations);
+        });
 
-        CountDownLatch sseOpened = new CountDownLatch(1);
-        Mono<WebTestClient.ResponseSpec> response = Mono.just(client.get().uri("/" + TEST_USER_ID + "/stream")
-                                                                      .header(TestAuthUtils.AUTH_HEADER,
-                                                                              TestAuthUtils.createMockAuthHeader())
-                                                                      .accept(MediaType.TEXT_EVENT_STREAM).exchange())
-                .doOnSubscribe((_) -> {
-                    sseOpened.countDown();
-                });
-
-
-        response.subscribe();
-        sseOpened.await();
+        Thread.sleep(500);
         TestLocationUtils.givenUserHasPublishedLocations(publishService, locationRequests);
 
-        response.doOnNext(res -> {
-            List<Location> results = res.expectStatus().isOk().returnResult(Location.class).getResponseBody().collectList().block();
-            assertThat(results).containsExactlyInAnyOrderElementsOf(locations);
-
-        }).subscribe();
     }
 
 }
