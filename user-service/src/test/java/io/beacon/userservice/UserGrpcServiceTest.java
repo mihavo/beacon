@@ -5,8 +5,7 @@ import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,21 +14,23 @@ import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
 @AutoConfigureInProcessTransport
 @SpringBootTest
 public class UserGrpcServiceTest extends UserTestsBase {
 
-  private UserServiceGrpc.UserServiceBlockingStub userServiceStub;
-  @Autowired private UserRepository userRepository;
+  private static UserServiceGrpc.UserServiceBlockingStub userServiceStub;
 
-  @BeforeEach
-  void setup(@Autowired GrpcChannelFactory channelFactory) {
-    userServiceStub = UserServiceGrpc.newBlockingStub(channelFactory.createChannel("0.0.0.0:0"));
+  @Autowired
+  private UserRepository userRepository;
+
+  @BeforeAll
+  static void setup(@Autowired GrpcChannelFactory channelFactory) {
+    userServiceStub = UserServiceGrpc.newBlockingStub(channelFactory.createChannel("local"));
   }
 
   @Test

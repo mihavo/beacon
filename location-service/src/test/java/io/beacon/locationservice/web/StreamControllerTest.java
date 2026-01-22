@@ -18,6 +18,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.reactive.server.WebTestClient;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -30,7 +31,8 @@ import static io.beacon.TestUserConstants.TEST_USER_ID;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @SpringBootTest
-@EmbeddedKafka(partitions = 1, topics = {"location-history-events"})
+@EmbeddedKafka
+@DirtiesContext
 @Import(NoAuthSecurityConfig.class)
 @Testcontainers
 public class StreamControllerTest extends RedisTestBase {

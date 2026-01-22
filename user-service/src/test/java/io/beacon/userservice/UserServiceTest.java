@@ -6,12 +6,13 @@ import io.beacon.userservice.user.dto.UserResponse;
 import io.beacon.userservice.user.entity.User;
 import io.beacon.userservice.user.repository.UserRepository;
 import io.beacon.userservice.user.service.UserService;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import reactor.test.StepVerifier;
+
+import java.util.UUID;
 
 import static io.beacon.TestUserConstants.TEST_USER_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;

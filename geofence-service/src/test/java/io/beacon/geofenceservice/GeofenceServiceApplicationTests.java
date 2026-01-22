@@ -4,6 +4,7 @@ import io.beacon.geofenceservice.clients.AuthGrpcClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(properties = {
@@ -12,7 +13,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     "spring.jpa.hibernate.ddl-auto=create-drop",
     "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect"
 })
-@EmbeddedKafka(partitions = 1, topics = {"geofence-alerts"})
+@EmbeddedKafka
+@DirtiesContext
 class GeofenceServiceApplicationTests {
 
   @MockitoBean

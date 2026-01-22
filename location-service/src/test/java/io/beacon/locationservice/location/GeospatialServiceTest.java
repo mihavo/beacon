@@ -8,9 +8,6 @@ import io.beacon.locationservice.models.UserLocation;
 import io.beacon.locationservice.publish.PublishService;
 import io.beacon.locationservice.request.PublishLocationRequest;
 import io.beacon.locationservice.utils.TestLocationUtils;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
 import locationservice.LocationServiceOuterClass;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -18,9 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.connection.ReactiveRedisConnectionFactory;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import reactor.test.StepVerifier;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Set;
 
 import static io.beacon.TestUserConstants.TEST_USER_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -29,7 +31,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Testcontainers
-@EmbeddedKafka(partitions = 1, topics = "location-history-events")
+@EmbeddedKafka
+@DirtiesContext
 public class GeospatialServiceTest extends RedisTestBase {
 
   @Autowired
