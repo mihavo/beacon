@@ -10,7 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.grpc.client.GrpcChannelFactory;
-import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass;
 
@@ -19,7 +18,6 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
 
-@AutoConfigureInProcessTransport
 @SpringBootTest
 public class UserGrpcServiceTest extends UserTestsBase {
 

@@ -4,10 +4,12 @@ import io.beacon.userservice.grpc.clients.AuthGrpcClient;
 import org.junit.jupiter.api.BeforeEach;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
+import org.springframework.grpc.test.AutoConfigureInProcessTransport;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
+@AutoConfigureInProcessTransport
 public abstract class UserTestsBase {
 
   private static Neo4j embeddedDatabaseServer;
