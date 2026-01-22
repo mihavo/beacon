@@ -4,18 +4,15 @@ import com.github.javafaker.Faker;
 import io.beacon.locationservice.models.Coordinates;
 import io.beacon.locationservice.publish.PublishService;
 import io.beacon.locationservice.request.PublishLocationRequest;
-import java.time.Instant;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import locationservice.LocationServiceOuterClass;
 import org.springframework.data.redis.connection.stream.MapRecord;
 import org.springframework.data.redis.connection.stream.StreamRecords;
 import org.springframework.data.redis.core.ReactiveRedisTemplate;
+
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class TestLocationUtils {
 
@@ -27,7 +24,8 @@ public class TestLocationUtils {
     Integer locationCount = Optional.ofNullable(numOfLocations).orElse(10);
     return IntStream.range(1, locationCount).mapToObj(i -> {
       Coordinates coords =
-          new Coordinates(Double.valueOf(faker.address().latitude().replace(",", ".")),
+              new Coordinates((Double.valueOf((faker.address().latitude()).replace(",",
+                                                                                   ".")) / 90) * 85, // GEOADD bounds differ from normal latitude bounds https://redis.io/docs/latest/commands/geoadd/
               Double.valueOf(faker.address().longitude().replace(",", ".")));
       return new PublishLocationRequest(coords, Instant.now());
     }).collect(Collectors.toSet());
