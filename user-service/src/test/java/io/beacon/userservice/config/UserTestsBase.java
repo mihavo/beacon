@@ -1,8 +1,6 @@
 package io.beacon.userservice.config;
 
 import io.beacon.userservice.grpc.clients.AuthGrpcClient;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.neo4j.harness.Neo4j;
 import org.neo4j.harness.Neo4jBuilders;
@@ -14,31 +12,25 @@ public abstract class UserTestsBase {
 
   private static Neo4j embeddedDatabaseServer;
 
-  @BeforeAll
-  static void initializeNeo4j() {
+  static synchronized Neo4j getInstance() {
+    if (embeddedDatabaseServer == null) {
     embeddedDatabaseServer = Neo4jBuilders.newInProcessBuilder()
         .withDisabledServer()
         .build();
+    }
+    return embeddedDatabaseServer;
   }
 
   @DynamicPropertySource
   static void neo4jProperties(DynamicPropertyRegistry registry) {
-
-    registry.add("spring.neo4j.uri", embeddedDatabaseServer::boltURI);
+    registry.add("spring.neo4j.uri", getInstance()::boltURI);
     registry.add("spring.neo4j.authentication.username", () -> "neo4j");
     registry.add("spring.neo4j.authentication.password", () -> null);
   }
 
-  @AfterAll
-  static void stopNeo4j() {
-    if (embeddedDatabaseServer != null) {
-      embeddedDatabaseServer.close();
-    }
-  }
-
   @BeforeEach
   void cleanDatabase() {
-    embeddedDatabaseServer.defaultDatabaseService().executeTransactionally("MATCH (n) DETACH DELETE n");
+    getInstance().defaultDatabaseService().executeTransactionally("MATCH (n) DETACH DELETE n");
   }
 
   @MockitoBean
