@@ -1,7 +1,7 @@
 package io.beacon.locationservice.location;
 
 import io.beacon.WithMockBeaconUser;
-import io.beacon.locationservice.config.RedisTestBase;
+import io.beacon.location.RedisTestBase;
 import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
 import io.beacon.locationservice.location.service.LocationService;
 import io.beacon.locationservice.publish.PublishService;

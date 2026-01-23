@@ -1,7 +1,7 @@
 package io.beacon.mapservice.utils;
 
-import io.beacon.TestLocationUtils;
 import io.beacon.events.LocationEvent;
+import io.beacon.location.TestLocationUtils;
 
 import java.time.Instant;
 

@@ -1,4 +1,4 @@
-package io.beacon.locationservice.config;
+package io.beacon.location;
 
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.test.context.DynamicPropertyRegistry;

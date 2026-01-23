@@ -1,4 +1,4 @@
-package io.beacon;
+package io.beacon.location;
 
 import com.github.javafaker.Faker;
 

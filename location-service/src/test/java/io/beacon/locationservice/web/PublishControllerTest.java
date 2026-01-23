@@ -1,7 +1,7 @@
 package io.beacon.locationservice.web;
 
+import io.beacon.location.RedisTestBase;
 import io.beacon.locationservice.config.NoAuthSecurityConfig;
-import io.beacon.locationservice.config.RedisTestBase;
 import io.beacon.locationservice.grpc.clients.AuthGrpcClient;
 import io.beacon.locationservice.models.Coordinates;
 import io.beacon.locationservice.request.PublishLocationRequest;

@@ -24,8 +24,8 @@ public class TestLocationUtils {
     Integer locationCount = Optional.ofNullable(numOfLocations).orElse(10);
     return IntStream.range(1, locationCount).mapToObj(i -> {
       Coordinates coords =
-              new Coordinates(io.beacon.TestLocationUtils.generateRandomLatitude(),
-                              io.beacon.TestLocationUtils.generateRandomLongitude());
+              new Coordinates(io.beacon.location.TestLocationUtils.generateRandomLatitude(),
+                              io.beacon.location.TestLocationUtils.generateRandomLongitude());
       return new PublishLocationRequest(coords, Instant.now());
     }).collect(Collectors.toSet());
   }
