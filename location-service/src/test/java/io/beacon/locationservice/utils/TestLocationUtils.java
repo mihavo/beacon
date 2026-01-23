@@ -24,9 +24,8 @@ public class TestLocationUtils {
     Integer locationCount = Optional.ofNullable(numOfLocations).orElse(10);
     return IntStream.range(1, locationCount).mapToObj(i -> {
       Coordinates coords =
-              new Coordinates((Double.valueOf((faker.address().latitude()).replace(",",
-                                                                                   ".")) / 90) * 85, // GEOADD bounds differ from normal latitude bounds https://redis.io/docs/latest/commands/geoadd/
-              Double.valueOf(faker.address().longitude().replace(",", ".")));
+              new Coordinates(io.beacon.TestLocationUtils.generateRandomLatitude(),
+                              io.beacon.TestLocationUtils.generateRandomLongitude());
       return new PublishLocationRequest(coords, Instant.now());
     }).collect(Collectors.toSet());
   }
