@@ -16,6 +16,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <java-faker.version>1.0.2</java-faker.version>
   </properties>
 
   <dependencies>
@@ -37,6 +38,11 @@
       <groupId>io.beacon</groupId>
       <artifactId>security-core</artifactId>
       <version>0.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.javafaker</groupId>
+      <artifactId>javafaker</artifactId>
+      <version>${java-faker.version}</version>
     </dependency>
   </dependencies>
 </project>

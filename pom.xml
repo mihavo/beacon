@@ -98,7 +98,6 @@
         <groupId>com.github.javafaker</groupId>
         <artifactId>javafaker</artifactId>
         <version>${java-faker.version}</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>net.devh</groupId>
