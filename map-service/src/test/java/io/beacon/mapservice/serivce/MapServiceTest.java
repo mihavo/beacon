@@ -48,7 +48,7 @@ public class MapServiceTest extends RedisTestBase {
 
     @Test
     @WithMockBeaconUser(id = TEST_USER_ID)
-    public void shouldReceiveLocationsWhenSubscribed() {
+    public void shouldReceiveLocations_whenSubscribed() {
         LocationEvent event = TestMapUtils.createLocationEvent();
         UserLocation expectedLocation = locationMapper.toUserLocation(event);
         Flux<UserLocation> subscribedLocations = mapService.subscribe(TEST_USER_ID,
@@ -64,7 +64,7 @@ public class MapServiceTest extends RedisTestBase {
 
     @Test
     @WithMockBeaconUser(id = TEST_USER_ID)
-    public void shouldNotReceiveLocationsOutsideOfBoundingBox() {
+    public void shouldNotReceiveLocations_whenOutsideSubscriberBoundingBox() {
         LocationEvent event = TestMapUtils.createLocationEvent();
         Flux<UserLocation> subscribedLocations = mapService.subscribe(TEST_USER_ID,
                                                                       new BoundingBox(event.longitude() + 2.0,
