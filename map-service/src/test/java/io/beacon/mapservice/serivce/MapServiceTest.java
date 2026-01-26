@@ -10,6 +10,7 @@ import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.UserLocation;
 import io.beacon.mapservice.service.MapService;
 import io.beacon.mapservice.utils.TestMapUtils;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +31,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 @EmbeddedKafka
 @DirtiesContext
 @Testcontainers
+@DisplayName("Map Service IT Tests")
 public class MapServiceTest extends RedisTestBase {
 
 
@@ -47,6 +49,7 @@ public class MapServiceTest extends RedisTestBase {
     }
 
     @Test
+    @DisplayName("Should receive locations when subscribed within bounding box")
     @WithMockBeaconUser(id = TEST_USER_ID)
     public void shouldReceiveLocations_whenSubscribed() {
         LocationEvent event = TestMapUtils.createLocationEvent();
@@ -64,6 +67,7 @@ public class MapServiceTest extends RedisTestBase {
 
     @Test
     @WithMockBeaconUser(id = TEST_USER_ID)
+    @DisplayName("Should not receive locations when outside subscriber bounding box")
     public void shouldNotReceiveLocations_whenOutsideSubscriberBoundingBox() {
         LocationEvent event = TestMapUtils.createLocationEvent();
         Flux<UserLocation> subscribedLocations = mapService.subscribe(TEST_USER_ID,
