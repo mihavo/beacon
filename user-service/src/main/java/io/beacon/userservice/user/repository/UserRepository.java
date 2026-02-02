@@ -63,6 +63,14 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
   Mono<Boolean> deleteRequest(UUID selfUserId, UUID initiatorUserId);
 
   @Query("""
+      MATCH (a: User {id: $selfUserId}), (b: User {id: $targetUserId} )
+      CREATE (a) - [:FRIENDS_WITH {since: datetime()}] -> (b)
+      CREATE (b) - [:FRIENDS_WITH {since: datetime()}] -> (a)
+      RETURN true
+      """)
+  Mono<Boolean> createFriend(UUID selfUserId, UUID targetUserId);
+
+  @Query("""
       MATCH (a:User {id: $userId}) - [r:FRIENDS_WITH] - (b:User {id: $targetId})
       DELETE r
       RETURN COUNT(r) > 0
@@ -88,7 +96,7 @@ public interface UserRepository extends ReactiveNeo4jRepository<User, UUID> {
 
 
   @Query("""
-      MATCH (a:User {id: $userId})-[r:FRIENDS_WITH]-(b:User)
+      MATCH (a:User {id: $userId})-[r:FRIENDS_WITH]->(b:User)
       RETURN
       b.fullName AS fullName,
       b.id AS userId,

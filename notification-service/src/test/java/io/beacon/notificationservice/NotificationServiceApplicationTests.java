@@ -4,6 +4,7 @@ import io.beacon.notificationservice.clients.AuthGrpcClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
@@ -14,7 +15,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
     "spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.H2Dialect",
 })
 @ActiveProfiles("test")
-@EmbeddedKafka(partitions = 1, topics = {"geofence-alerts"})
+@EmbeddedKafka
+@DirtiesContext
 class NotificationServiceApplicationTests {
 
   @MockitoBean AuthGrpcClient authGrpcClient;

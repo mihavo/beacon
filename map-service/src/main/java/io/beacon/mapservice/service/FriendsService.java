@@ -4,8 +4,6 @@ import io.beacon.events.FriendshipEvent;
 import io.beacon.mapservice.utils.CacheUtils;
 import io.beacon.permissions.FriendshipAction;
 import io.beacon.security.utils.AuthUtils;
-import java.util.List;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
@@ -15,6 +13,9 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass;
+
+import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -44,7 +45,12 @@ public class FriendsService {
 
   public Mono<Boolean> canPerform(UUID requesterId, UUID targetUserId, FriendshipAction action) {
     return switch (action) {
-      case VIEW_LOCATION -> isInFriendsList(requesterId.toString(), targetUserId.toString());
+      case VIEW_LOCATION -> {
+        if (requesterId.equals(targetUserId)) {
+          yield Mono.just(true);
+        }
+        yield isInFriendsList(requesterId.toString(), targetUserId.toString());
+      }
       //TODO: check for additional actions in the future
     };
   }

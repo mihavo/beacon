@@ -90,6 +90,11 @@
         <artifactId>spring-boot-starter-security</artifactId>
       </dependency>
       <dependency>
+        <groupId>org.springframework.security</groupId>
+        <artifactId>spring-security-test</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>io.jsonwebtoken</groupId>
         <artifactId>jjwt-api</artifactId>
         <version>${jwt.version}</version>
@@ -104,6 +109,11 @@
             <artifactId>spring-grpc-test</artifactId>
             <scope>test</scope>
         </dependency>
+      <dependency>
+        <groupId>io.grpc</groupId>
+        <artifactId>grpc-inprocess</artifactId>
+        <scope>test</scope>
+      </dependency>
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
@@ -172,13 +182,9 @@
         <scope>test</scope>
       </dependency>
       <dependency>
-        <groupId>net.devh</groupId>
-        <artifactId>grpc-spring-boot-starter</artifactId>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>net.devh</groupId>
-        <artifactId>grpc-client-spring-boot-starter</artifactId>
+        <groupId>io.beacon</groupId>
+        <artifactId>test-core</artifactId>
+        <version>0.0.4</version>
         <scope>test</scope>
       </dependency>
     </dependencies>

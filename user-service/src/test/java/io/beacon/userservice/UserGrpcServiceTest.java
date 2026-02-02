@@ -1,15 +1,35 @@
 package io.beacon.userservice;
 
+import io.beacon.userservice.config.UserTestsBase;
 import io.beacon.userservice.user.entity.User;
-import net.devh.boot.grpc.client.inject.GrpcClient;
-import org.junit.Test;
+import io.beacon.userservice.user.repository.UserRepository;
+import io.grpc.Status;
+import io.grpc.StatusRuntimeException;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.grpc.client.GrpcChannelFactory;
 import userservice.UserServiceGrpc;
 import userservice.UserServiceOuterClass;
 
-public class UserGrpcServiceTest extends UserServiceApplicationTests {
+import java.util.List;
 
-  @GrpcClient("userService")
-  private UserServiceGrpc.UserServiceBlockingStub userServiceStub;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.AssertionsKt.assertNotNull;
+
+@SpringBootTest
+public class UserGrpcServiceTest extends UserTestsBase {
+
+  private static UserServiceGrpc.UserServiceBlockingStub userServiceStub;
+
+  @Autowired
+  private UserRepository userRepository;
+
+  @BeforeAll
+  static void setup(@Autowired GrpcChannelFactory channelFactory) {
+    userServiceStub = UserServiceGrpc.newBlockingStub(channelFactory.createChannel("local"));
+  }
 
   @Test
   public void shouldCreateAndRetrieveUser_whenNotExists() {
@@ -20,6 +40,77 @@ public class UserGrpcServiceTest extends UserServiceApplicationTests {
         .setPasswordHash(user.getPassword())
         .build();
 
-    UserServiceOuterClass.CreateUserResponse userResponse = userServiceStub.createUser(createRequest);
+    userServiceStub.createUser(createRequest);
+
+    UserServiceOuterClass.GetUserByUsernameRequest retrieveRequest = UserServiceOuterClass.GetUserByUsernameRequest.newBuilder()
+        .setUsername(createRequest.getUsername())
+        .build();
+
+    UserServiceOuterClass.GetUserByUsernameResponse retrievalResponse = userServiceStub.getUserByUsername(retrieveRequest);
+
+    assertNotNull(retrievalResponse.getId());
+    assertEquals(createRequest.getUsername(), retrievalResponse.getUsername());
+    assertEquals(createRequest.getFullName(), retrievalResponse.getFullName());
+    assertEquals(createRequest.getPasswordHash(), retrievalResponse.getPasswordHash());
+  }
+
+  @Test
+  public void shouldThrowNotFound_whenRetrievingNonExistentUser() {
+    String username = "tester";
+
+    UserServiceOuterClass.GetUserByUsernameRequest retrieveRequest = UserServiceOuterClass.GetUserByUsernameRequest.newBuilder()
+        .setUsername(username)
+        .build();
+
+    StatusRuntimeException exc =
+        assertThrows(StatusRuntimeException.class, () -> userServiceStub.getUserByUsername(retrieveRequest));
+
+    assertEquals(Status.NOT_FOUND.getCode(), exc.getStatus().getCode());
+    assertTrue(exc.getMessage().contains("User not found"));
+  }
+
+  @Test
+  public void shouldRetrieveAllFriends_whenUserHasFriends() {
+    String username1 = "tester";
+    String username2 = "tester2";
+    User[] users = UserTestsUtils.givenUsersExist(userRepository, username1, username2);
+    UserTestsUtils.givenUserHasFriend(userRepository, users[0], users[1]);
+
+    String userId = users[0].getId().toString();
+    UserServiceOuterClass.GetUserFriendsResponse friendships =
+        userServiceStub.getUserFriends(
+            UserServiceOuterClass.GetUserFriendsRequest.newBuilder().setUserId(userId).build());
+    assertEquals(1, friendships.getFriendsCount());
+    assertEquals(users[1].getId().toString(), friendships.getFriends(0).getUserId());
+    assertEquals(users[1].getUsername(), friendships.getFriends(0).getUsername());
+  }
+
+  @Test
+  public void shouldRetrieveNoFriends_whenUserHasNoFriends() {
+    User user = UserTestsUtils.givenUserExists(userRepository, "tester");
+
+    UserServiceOuterClass.GetUserFriendsResponse friendships =
+        userServiceStub.getUserFriends(
+            UserServiceOuterClass.GetUserFriendsRequest.newBuilder().setUserId(user.getId().toString()).build());
+    assertTrue(friendships.getFriendsList().isEmpty());
+  }
+
+  @Test
+  public void shouldRetrieveAllFriends() {
+    String username1 = "tester";
+    String username2 = "tester2";
+    String username3 = "tester3";
+    User[] users = UserTestsUtils.givenUsersExist(userRepository, username1, username2, username3);
+    UserTestsUtils.givenUserHasFriend(userRepository, users[0], users[1]);
+    UserTestsUtils.givenUserHasFriend(userRepository, users[0], users[2]);
+
+    String userId = users[0].getId().toString();
+    UserServiceOuterClass.GetUserFriendsResponse friendships =
+        userServiceStub.getUserFriends(
+            UserServiceOuterClass.GetUserFriendsRequest.newBuilder().setUserId(userId).build());
+    assertEquals(2, friendships.getFriendsCount());
+    List<String> friendIds = friendships.getFriendsList().stream().map(UserServiceOuterClass.User::getUserId).toList();
+    assertTrue(friendIds.contains(users[1].getId().toString()));
+    assertTrue(friendIds.contains(users[2].getId().toString()));
   }
 }

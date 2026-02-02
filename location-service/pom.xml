@@ -33,6 +33,7 @@
       <bouncy-castle-version>1.82</bouncy-castle-version>
       <jwt.version>0.12.6</jwt.version>
       <spatial4j.version>0.8</spatial4j.version>
+      <java-faker.version>1.0.2</java-faker.version>
     </properties>
     <dependencies>
         <dependency>
@@ -127,6 +128,24 @@
         <groupId>org.springframework</groupId>
         <artifactId>spring-aspects</artifactId>
       </dependency>
+      <dependency>
+        <groupId>io.beacon</groupId>
+        <artifactId>test-core</artifactId>
+        <version>0.0.4</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>com.github.javafaker</groupId>
+        <artifactId>javafaker</artifactId>
+        <version>${java-faker.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <scope>test</scope>
+      </dependency>
+
     </dependencies>
     <dependencyManagement>
         <dependencies>

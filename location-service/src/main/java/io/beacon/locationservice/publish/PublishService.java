@@ -31,6 +31,15 @@ public class PublishService {
   private final LocationEventsProducer locationEventsProducer;
   private final ReactiveRedisTemplate<String, String> valueRedisTemplate;
 
+  /**
+   * Receives a collection of {@link PublishLocationRequest}s and
+   * from the client that represent recent location captures of the users.
+   * It stores them in the user's dedicated redis stream. The location's metadata (last known location + timestamp)
+   * are also stored in the redis datastore. Evaluate eviction is run at the end using the {@link EvictionService}.
+   *
+   * @param input the collection of location records
+   * @return the new record ids in the redis datastore
+   */
   public Flux<RecordId> publish(Set<PublishLocationRequest> input) {
     Mono<UUID> futureUserId = AuthUtils.getCurrentUserId();
 

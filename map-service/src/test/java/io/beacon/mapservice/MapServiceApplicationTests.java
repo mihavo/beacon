@@ -4,10 +4,12 @@ import io.beacon.mapservice.clients.AuthGrpcClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.kafka.test.context.EmbeddedKafka;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest
-@EmbeddedKafka(partitions = 1, topics = {"geofence-alerts", "location-stream-events"})
+@EmbeddedKafka
+@DirtiesContext
 class MapServiceApplicationTests {
 
   @MockitoBean
