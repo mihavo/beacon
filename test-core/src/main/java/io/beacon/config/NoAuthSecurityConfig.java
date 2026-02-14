@@ -1,4 +1,4 @@
-package io.beacon.locationservice.config;
+package io.beacon.config;
 
 import io.beacon.security.jwt.JwtAuthenticationToken;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -17,8 +17,8 @@ public class NoAuthSecurityConfig {
   public ReactiveAuthenticationManager reactiveAuthenticationManager() {
     return authentication -> {
       JwtAuthenticationToken authToken = new JwtAuthenticationToken(
-          "test-token",
-          TEST_USER_ID
+              "test-token",
+              TEST_USER_ID
       );
       authToken.setAuthenticated(true);
       return Mono.just(authToken);
