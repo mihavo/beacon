@@ -1,11 +1,10 @@
-package io.beacon.mapservice.serivce;
+package io.beacon.mapservice.service;
 
 
 import io.beacon.events.FriendshipEvent;
 import io.beacon.events.enums.FriendshipEventType;
 import io.beacon.location.RedisTestBase;
 import io.beacon.mapservice.clients.AuthGrpcClient;
-import io.beacon.mapservice.service.FriendsService;
 import io.beacon.mapservice.utils.CacheUtils;
 import io.beacon.mapservice.utils.TestFriendsUtils;
 import org.junit.jupiter.api.AfterEach;

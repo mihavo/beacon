@@ -40,6 +40,7 @@ public class MapControllerTest extends RedisTestBase {
     private ApplicationContext applicationContext;
 
     private WebTestClient client;
+   
     @Autowired
     private ReactiveStringRedisTemplate redisTemplate;
 

@@ -12,6 +12,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 @DirtiesContext
 class MapServiceApplicationTests {
 
+
   @MockitoBean
   private AuthGrpcClient authGrpcClient;
 

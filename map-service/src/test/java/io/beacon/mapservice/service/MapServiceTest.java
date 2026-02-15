@@ -1,4 +1,4 @@
-package io.beacon.mapservice.serivce;
+package io.beacon.mapservice.service;
 
 import io.beacon.WithMockBeaconUser;
 import io.beacon.events.LocationEvent;
@@ -8,7 +8,6 @@ import io.beacon.mapservice.mappers.LocationMapper;
 import io.beacon.mapservice.mappers.LocationMapperImpl;
 import io.beacon.mapservice.models.BoundingBox;
 import io.beacon.mapservice.models.UserLocation;
-import io.beacon.mapservice.service.MapService;
 import io.beacon.mapservice.utils.TestMapUtils;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
