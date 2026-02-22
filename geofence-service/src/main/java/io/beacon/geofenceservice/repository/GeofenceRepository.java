@@ -1,13 +1,14 @@
 package io.beacon.geofenceservice.repository;
 
 import io.beacon.geofenceservice.entity.Geofence;
-import java.util.List;
-import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
 
 public interface GeofenceRepository extends JpaRepository<Geofence, UUID> {
 
@@ -34,4 +35,6 @@ public interface GeofenceRepository extends JpaRepository<Geofence, UUID> {
       nativeQuery = true)
   List<Geofence> findRelatedGeofences(@Param("lon") double centerLongitude, @Param("lat") double centerLatitude, @Param(
       "near_meters") double nearMeters);
+
+  Geofence getGeofenceById(UUID id);
 }

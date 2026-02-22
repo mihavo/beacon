@@ -141,6 +141,11 @@
         <groupId>com.github.loki4j</groupId>
         <artifactId>loki-logback-appender</artifactId>
       </dependency>
+        <dependency>
+            <groupId>io.beacon</groupId>
+            <artifactId>test-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
