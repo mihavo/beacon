@@ -10,9 +10,11 @@ COPY core/ core/
 RUN --mount=type=cache,target=/root/.m2  mvn -f core/pom.xml clean install -DskipTests
 COPY security-core/ security-core/
 RUN --mount=type=cache,target=/root/.m2  mvn -f security-core/pom.xml clean install -DskipTests
+COPY test-core/ test-core/
+RUN --mount=type=cache,target=/root/.m2  mvn -f test-core/pom.xml clean install -DskipTests
 
 COPY ${SERVICE_NAME}/pom.xml ${SERVICE_NAME}/pom.xml
-RUN --mount=type=cache,target=/root/.m2  mvn -f ${SERVICE_NAME}/pom.xml dependency:go-offline -B
+RUN --mount=type=cache,target=/root/.m2  mvn -f ${SERVICE_NAME}/pom.xml dependency:go-offline -B -DexcludeScope=test
 
 COPY ${SERVICE_NAME}/src ${SERVICE_NAME}/src
 RUN --mount=type=cache,target=/root/.m2  mvn -f ${SERVICE_NAME}/pom.xml clean package -DskipTests
